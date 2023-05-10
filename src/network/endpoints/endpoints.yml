@@ -1,0 +1,440 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Various endpoints to associate with a VPC
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: VPC Parameters
+        Parameters:
+          - VpcId
+      - Label:
+          default: S3 Endpoint Parameters
+        Parameters:
+          - CreateS3Endpoint
+          - S3RouteTableIds
+          - S3Policy
+      - Label:
+          default: SSM Endpoint Parameters
+        Parameters:
+          - CreateSSMEndpoint
+          - SSMSubnetIds
+          - SSMSecurityGroupIds
+          - SSMPolicy
+      - Label:
+          default: SSM Messages Endpoint Parameters
+        Parameters:
+          - CreateSSMMessagesEndpoint
+          - SSMMessagesSubnetIds
+          - SSMMessagesSecurityGroupIds
+          - SSMMessagesPolicy
+      - Label:
+          default: EC2 Endpoint Parameters
+        Parameters:
+          - CreateEC2Endpoint
+          - EC2SubnetIds
+          - EC2SecurityGroupIds
+          - EC2Policy
+      - Label:
+          default: EC2 Messages Endpoint Parameters
+        Parameters:
+          - CreateEC2MessagesEndpoint
+          - EC2MessagesSubnetIds
+          - EC2MessagesSecurityGroupIds
+          - EC2MessagesPolicy
+      - Label:
+          default: KMS Endpoint Parameters
+        Parameters:
+          - CreateKmsEndpoint
+          - KmsSubnetIds
+          - KmsSecurityGroupIds
+          - KmsPolicy
+      - Label:
+          default: Elastic Load Balancing Endpoint Parameters
+        Parameters:
+          - CreateElasticLoadBalancingEndpoint
+          - ElasticLoadBalancingSubnetIds
+          - ElasticLoadBalancingSecurityGroupIds
+          - ElasticLoadBalancingPolicy
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: ID of the VPC to associate with the endpoints
+
+  CreateS3Endpoint:
+    Type: String
+    Description: Should the endpoint be created
+    Default: "no"
+    AllowedValues:
+      - "yes"
+      - "no"
+
+  S3RouteTableIds:
+    Type: CommaDelimitedList
+    Description: (optional) The route tables that should route to the endpoint
+    Default: ",,"
+
+  S3Policy:
+    Type: String
+    Description: >-
+      (optional) A policy to attach to the endpoint that controls access to the
+      service
+    Default: ""
+
+  CreateSSMEndpoint:
+    Type: String
+    Description: Should the endpoint be created
+    Default: "no"
+    AllowedValues:
+      - "yes"
+      - "no"
+
+  # NOTE: we dont use AWS Specific param types because its not possible to make
+  # them optional
+
+  SSMSubnetIds:
+    Type: CommaDelimitedList
+    Description: (optional) The subnets to place the endpoint in
+    Default: ",,"
+
+  SSMSecurityGroupIds:
+    Type: CommaDelimitedList
+    Description: (optional) The security group to associate with the endpoint
+    Default: ",,"
+
+  SSMPolicy:
+    Type: String
+    Description: >-
+      (optional) A policy to attach to the endpoint that controls access to the
+      service
+    Default: ""
+
+  CreateSSMMessagesEndpoint:
+    Type: String
+    Description: Should the endpoint be created
+    Default: "no"
+    AllowedValues:
+      - "yes"
+      - "no"
+
+  SSMMessagesSubnetIds:
+    Type: CommaDelimitedList
+    Description: (optional) The subnets to place the endpoint in
+    Default: ",,"
+
+  SSMMessagesSecurityGroupIds:
+    Type: CommaDelimitedList
+    Description: (optional) The security group to associate with the endpoint
+    Default: ",,"
+
+  SSMMessagesPolicy:
+    Type: String
+    Description: >-
+      (optional) A policy to attach to the endpoint that controls access to the
+      service
+    Default: ""
+
+  CreateEC2Endpoint:
+    Type: String
+    Description: Should the endpoint be created
+    Default: "no"
+    AllowedValues:
+      - "yes"
+      - "no"
+
+  EC2SubnetIds:
+    Type: CommaDelimitedList
+    Description: (optional) The subnets to place the endpoint in
+    Default: ",,"
+
+  EC2SecurityGroupIds:
+    Type: CommaDelimitedList
+    Description: (optional) The security group to associate with the endpoint
+    Default: ",,"
+
+  EC2Policy:
+    Type: String
+    Description: >-
+      (optional) A policy to attach to the endpoint that controls access to the
+      service
+    Default: ""
+
+  CreateEC2MessagesEndpoint:
+    Type: String
+    Description: Should the endpoint be created
+    Default: "no"
+    AllowedValues:
+      - "yes"
+      - "no"
+
+  EC2MessagesSubnetIds:
+    Type: CommaDelimitedList
+    Description: (optional) The subnets to place the endpoint in
+    Default: ",,"
+
+  EC2MessagesSecurityGroupIds:
+    Type: CommaDelimitedList
+    Description: (optional) The security group to associate with the endpoint
+    Default: ",,"
+
+  EC2MessagesPolicy:
+    Type: String
+    Description: >-
+      (optional) A policy to attach to the endpoint that controls access to the
+      service
+    Default: ""
+
+  CreateKmsEndpoint:
+    Type: String
+    Description: Should the endpoint be created
+    Default: "no"
+    AllowedValues:
+      - "yes"
+      - "no"
+
+  KmsSubnetIds:
+    Type: CommaDelimitedList
+    Description: (optional) The subnets to place the endpoint in
+    Default: ",,"
+
+  KmsSecurityGroupIds:
+    Type: CommaDelimitedList
+    Description: (optional) The security group to associate with the endpoint
+    Default: ",,"
+
+  KmsPolicy:
+    Type: String
+    Description: >-
+      (optional) A policy to attach to the endpoint that controls access to the
+      service
+    Default: ""
+
+  CreateElasticLoadBalancingEndpoint:
+    Type: String
+    Description: Should the endpoint be created
+    Default: "no"
+    AllowedValues:
+      - "yes"
+      - "no"
+
+  ElasticLoadBalancingSubnetIds:
+    Type: CommaDelimitedList
+    Description: (optional) The subnets to place the endpoint in
+    Default: ",,"
+
+  ElasticLoadBalancingSecurityGroupIds:
+    Type: CommaDelimitedList
+    Description: (optional) The security group to associate with the endpoint
+    Default: ",,"
+
+  ElasticLoadBalancingPolicy:
+    Type: String
+    Description: >-
+      (optional) A policy to attach to the endpoint that controls access to the
+      service
+    Default: ""
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  SpecifyS3Endpoint: !Equals [!Ref CreateS3Endpoint, "yes"]
+  SpecifySSMEndpoint: !Equals [!Ref CreateSSMEndpoint, "yes"]
+  SpecifySSMMessagesEndpoint: !Equals [!Ref CreateSSMMessagesEndpoint, "yes"]
+  SpecifyEC2Endpoint: !Equals [!Ref CreateEC2Endpoint, "yes"]
+  SpecifyEC2MessagesEndpoint: !Equals [!Ref CreateEC2MessagesEndpoint, "yes"]
+  SpecifyKmsEndpoint: !Equals [!Ref CreateKmsEndpoint, "yes"]
+  SpecifyElasticLoadBalancingEndpoint: !Equals [!Ref CreateElasticLoadBalancingEndpoint, "yes"]
+
+  SpecifyS3RouteTables: !Not [!Equals [!Select [0, !Ref S3RouteTableIds], ""]]
+  
+  SpecifyS3Policy: !Not [!Equals [!Ref S3Policy, ""]]
+  SpecifySSMPolicy: !Not [!Equals [!Ref SSMPolicy, ""]]
+  SpecifySSMMessagesPolicy: !Not [!Equals [!Ref SSMMessagesPolicy, ""]]
+  SpecifyEC2Policy: !Not [!Equals [!Ref EC2Policy, ""]]
+  SpecifyEC2MessagesPolicy: !Not [!Equals [!Ref EC2MessagesPolicy, ""]]
+  SpecifyKmsPolicy: !Not [!Equals [!Ref KmsPolicy, ""]]
+  SpecifyElasticLoadBalancingPolicy: !Not [!Equals [!Ref ElasticLoadBalancingPolicy, ""]]
+
+  SpecifySSMSecurityGroups: !Not [!Equals [!Select [0, !Ref SSMSecurityGroupIds], ""]]
+  SpecifySSMMessagesSecurityGroups: !Not [!Equals [!Select [0, !Ref SSMMessagesSecurityGroupIds], ""]]
+  SpecifyEC2SecurityGroups: !Not [!Equals [!Select [0, !Ref EC2SecurityGroupIds], ""]]
+  SpecifyEC2MessagesSecurityGroups: !Not [!Equals [!Select [0, !Ref EC2MessagesSecurityGroupIds], ""]]
+  SpecifyKmsSecurityGroups: !Not [!Equals [!Select [0, !Ref KmsSecurityGroupIds], ""]]
+  SpecifyElasticLoadBalancingSecurityGroups: !Not [!Equals [!Select [0, !Ref ElasticLoadBalancingSecurityGroupIds], ""]]
+
+  SpecifySSMSubnets: !Not [!Equals [!Select [0, !Ref SSMSubnetIds], ""]]
+  SpecifySSMMessagesSubnets: !Not [!Equals [!Select [0, !Ref SSMMessagesSubnetIds], ""]]
+  SpecifyEC2Subnets: !Not [!Equals [!Select [0, !Ref EC2SubnetIds], ""]]
+  SpecifyEC2MessagesSubnets: !Not [!Equals [!Select [0, !Ref EC2MessagesSubnetIds], ""]]
+  SpecifyKmsSubnets: !Not [!Equals [!Select [0, !Ref KmsSubnetIds], ""]]
+  SpecifyElasticLoadBalancingSubnets: !Not [!Equals [!Select [0, !Ref ElasticLoadBalancingSubnetIds], ""]]
+
+Resources:
+  s3Endpoint:
+    Condition: SpecifyS3Endpoint
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PolicyDocument: !If
+        - SpecifyS3Policy
+        - !Ref S3Policy
+        - !Ref "AWS::NoValue"
+      RouteTableIds: !If
+        - SpecifyS3RouteTables
+        - !Ref S3RouteTableIds
+        - !Ref "AWS::NoValue"
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
+      VpcEndpointType: Gateway
+      VpcId: !Ref VpcId
+
+  # The endpoint for the Systems Manager service
+  ssmEndpoint:
+    Condition: SpecifySSMEndpoint
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PolicyDocument: !If
+        - SpecifySSMPolicy
+        - !Ref SSMPolicy
+        - !Ref "AWS::NoValue"
+      PrivateDnsEnabled: true
+      SecurityGroupIds: !If
+        - SpecifySSMSecurityGroups
+        - !Ref SSMSecurityGroupIds
+        - !Ref "AWS::NoValue"
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ssm"
+      SubnetIds: !If
+        - SpecifySSMSubnets
+        - !Ref SSMSubnetIds
+        - !Ref "AWS::NoValue"
+      VpcEndpointType: Interface
+      VpcId: !Ref VpcId
+
+  # This endpoint is required only if you are connecting to your instances
+  # through a secure data channel using Session Manager
+  ssmMessagesEndpoint:
+    Condition: SpecifySSMMessagesEndpoint
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PolicyDocument: !If
+        - SpecifySSMMessagesPolicy
+        - !Ref SSMMessagesPolicy
+        - !Ref "AWS::NoValue"
+      PrivateDnsEnabled: true
+      SecurityGroupIds: !If
+        - SpecifySSMMessagesSecurityGroups
+        - !Ref SSMMessagesSecurityGroupIds
+        - !Ref "AWS::NoValue"
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ssmmessages"
+      SubnetIds: !If
+        - SpecifySSMMessagesSubnets
+        - !Ref SSMMessagesSubnetIds
+        - !Ref "AWS::NoValue"
+      VpcEndpointType: Interface
+      VpcId: !Ref VpcId
+
+  # If you're using Systems Manager to create VSS-enabled snapshots, you need to
+  # ensure that you have an endpoint to the EC2 service. Without the EC2
+  # endpoint defined, a call to enumerate attached EBS volumes fails, which
+  # causes the Systems Manager command to fail
+  ec2Endpoint:
+    Condition: SpecifyEC2Endpoint
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PolicyDocument: !If
+        - SpecifyEC2Policy
+        - !Ref EC2Policy
+        - !Ref "AWS::NoValue"
+      PrivateDnsEnabled: true
+      SecurityGroupIds: !If
+        - SpecifyEC2SecurityGroups
+        - !Ref EC2SecurityGroupIds
+        - !Ref "AWS::NoValue"
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ec2"
+      SubnetIds: !If
+        - SpecifyEC2Subnets
+        - !Ref EC2SubnetIds
+        - !Ref "AWS::NoValue"
+      VpcEndpointType: Interface
+      VpcId: !Ref VpcId
+
+  # Systems Manager uses this endpoint to make calls from SSM Agent to the
+  # Systems Manager service
+  ec2MessagesEndpoint:
+    Condition: SpecifyEC2MessagesEndpoint
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PolicyDocument: !If
+        - SpecifyEC2MessagesPolicy
+        - !Ref EC2MessagesPolicy
+        - !Ref "AWS::NoValue"
+      PrivateDnsEnabled: true
+      SecurityGroupIds: !If
+        - SpecifyEC2MessagesSecurityGroups
+        - !Ref EC2MessagesSecurityGroupIds
+        - !Ref "AWS::NoValue"
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ec2messages"
+      SubnetIds: !If
+        - SpecifyEC2MessagesSubnets
+        - !Ref EC2MessagesSubnetIds
+        - !Ref "AWS::NoValue"
+      VpcEndpointType: Interface
+      VpcId: !Ref VpcId
+
+  # This endpoint is optional but can be created if you want to use AWS Key
+  # Management Service (AWS KMS) encryption for Session Manager or Parameter
+  # Store parameters
+  kmsEndpoint:
+    Condition: SpecifyKmsEndpoint
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PolicyDocument: !If
+        - SpecifyKmsPolicy
+        - !Ref KmsPolicy
+        - !Ref "AWS::NoValue"
+      PrivateDnsEnabled: true
+      SecurityGroupIds: !If
+        - SpecifyKmsSecurityGroups
+        - !Ref KmsSecurityGroupIds
+        - !Ref "AWS::NoValue"
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.kms"
+      SubnetIds: !If
+        - SpecifyKmsSubnets
+        - !Ref KmsSubnetIds
+        - !Ref "AWS::NoValue"
+      VpcEndpointType: Interface
+      VpcId: !Ref VpcId
+
+  elasticLoadBalancingEndpoint:
+    Condition: SpecifyElasticLoadBalancingEndpoint
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PolicyDocument: !If
+        - SpecifyElasticLoadBalancingPolicy
+        - !Ref ElasticLoadBalancingPolicy
+        - !Ref "AWS::NoValue"
+      PrivateDnsEnabled: true
+      SecurityGroupIds: !If
+        - SpecifyElasticLoadBalancingSecurityGroups
+        - !Ref ElasticLoadBalancingSecurityGroupIds
+        - !Ref "AWS::NoValue"
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.elasticloadbalancing"
+      SubnetIds: !If
+        - SpecifyElasticLoadBalancingSubnets
+        - !Ref ElasticLoadBalancingSubnetIds
+        - !Ref "AWS::NoValue"
+      VpcEndpointType: Interface
+      VpcId: !Ref VpcId
+
+# Outputs:
+  # add when needed

@@ -1,0 +1,103 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  ...
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: ...
+        Parameters:
+          - ...
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  Foobar:
+    Type: String
+    Description: >-
+      (optional) If this stack is nested; name of the parent stack
+    Default: ...
+    AllowedValues:
+      - ...
+      - ...
+
+  # ParamName:
+  #   Type: String | Number | List<Number> | CommaDelimitedList
+  #     AWS::EC2::AvailabilityZone::Name | AWS::EC2::Image::Id | AWS::EC2::Instance::Id | AWS::EC2::KeyPair::KeyName
+  #     AWS::EC2::SecurityGroup::GroupName | AWS::EC2::SecurityGroup::Id | AWS::EC2::Subnet::Id | AWS::EC2::Volume::Id
+  #     AWS::EC2::VPC::Id | AWS::Route53::HostedZone::Id | List<AWS::EC2::AvailabilityZone::Name> | List<AWS::EC2::Image::Id>
+  #     List<AWS::EC2::Instance::Id> | List<AWS::EC2::SecurityGroup::GroupName> | List<AWS::EC2::SecurityGroup::Id> | List<AWS::EC2::Subnet::Id>
+  #     List<AWS::EC2::Volume::Id> | List<AWS::EC2::VPC::Id> | List<AWS::Route53::HostedZone::Id>
+  #     AWS::SSM::Parameter::Name | AWS::SSM::Parameter::Value<String> | AWS::SSM::Parameter::Value<List<String>> | AWS::SSM::Parameter::Value<CommaDelimitedList>
+  #     AWS::SSM::Parameter::Value<AWS-specific parameter type> | AWS::SSM::Parameter::Value<List<AWS-specific parameter type>> |
+  #   Description: >-
+  #     ...
+  #   Default: ...
+  #   AllowedValues:
+  #     - ...
+  #     - ...
+  #   AllowedPattern: ^[a-zA-Z0-9]*$
+  #   MinLength: ...
+  #   MaxLength: ...
+  #   MinValue: ...
+  #   MaxValue: ...
+  #   ConstraintDescription: ...
+  #   NoEcho: ...
+
+# Rules:
+#   Rule1:
+#     RuleCondition:
+#       rule-specific intrinsic function: Value01
+#     Assertions:
+#       - Assert:
+#           rule-specific intrinsic function: Value02
+#         AssertDescription: Information about this assert
+#   Rule2:
+#     RuleCondition:
+#       rule-specific intrinsic function: Value01
+#     Assertions:
+#       - Assert:
+#           rule-specific intrinsic function: Value02
+#         AssertDescription: Information about this assert
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  # TODO: fill in
+  Specify__XYZ__: !Not [!Equals [!Ref __XYZ__, ""]]
+  # TODO: fill in
+  Specify__ABC__: !Equals [!Ref __ABC__, "yes"]
+  # TODO: fill in
+  Specify__123__: !Not [!Equals [!Select [0, !Split [",", !Join [",", [!Ref __123__, "", "", "", "", ""]]]], ""]]
+  # TODO: fill in
+  Specify__VALS__: !Not [!Equals [!Select [0, !Ref __VALS__], ""]]
+
+Resources:
+
+  example:
+    Condition: ...
+    Type: ...
+    Properties: ...
+
+  exampleStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/foo/bar/_foobar.yml"
+      Parameters:
+        ParentStack: ...
+
+Outputs:
+  OutputName:
+    Description: ...
+    Value: ...
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-...", !Sub "${AWS::StackName}-..."]

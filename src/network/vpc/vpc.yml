@@ -1,0 +1,173 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  A standard VPC using the 10.x.x.x format of subnets with most commonly
+  required resources e.g. internet gateways, prefix lists, endpoints, etc.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: VPC Parameters
+        Parameters:
+          - VPCName
+          - PrimaryCidrBlock
+          - SecondaryCidrBlock1
+          - SecondaryCidrBlock2
+          - SecondaryCidrBlock3
+          - SecondaryCidrBlock4
+          - EnableDnsHostnames
+          - EnableDnsSupport
+          - InstanceTenancy
+          - MaxEntries
+          - WhiteListedCidrBlock
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  VPCName:
+    Type: String
+    Description: >-
+      Name of the VPC. This is also used when naming dependant resources, e.g.
+      a name of 'foo' would result in a prefix list called foo-ipv4-primary
+    Default: ""
+
+  PrimaryCidrBlock:
+    Type: String
+    Description: The primary IPv4 CIDR block for the VPC
+    Default: "10.0.0.0/16"
+
+  SecondaryCidrBlock1:
+    Type: String
+    Description: (optional) The secondary IPv4 CIDR block for the VPC
+    Default: "10.1.0.0/16"
+
+  SecondaryCidrBlock2:
+    Type: String
+    Description: (optional) The secondary IPv4 CIDR block for the VPC
+    Default: "10.2.0.0/16"
+
+  SecondaryCidrBlock3:
+    Type: String
+    Description: (optional) The secondary IPv4 CIDR block for the VPC
+    Default: "10.3.0.0/16"
+
+  SecondaryCidrBlock4:
+    Type: String
+    Description: (optional) The secondary IPv4 CIDR block for the VPC
+    Default: "10.4.0.0/16"
+
+  EnableDnsHostnames:
+    Type: String
+    Description: >-
+      Indicates whether the instances launched in the VPC get DNS hostnames. If
+      enabled, instances in the VPC get DNS hostnames; otherwise, they do not
+    Default: true
+    AllowedValues:
+      - true
+      - false
+
+  EnableDnsSupport:
+    Type: String
+    Description: >-
+      Indicates whether the DNS resolution is supported for the VPC. If enabled,
+      queries to the Amazon provided DNS server at the 169.254.169.253 IP
+      address, or the reserved IP address at the base of the VPC network range
+      "plus two" succeed. If disabled, the Amazon provided DNS service in the
+      VPC that resolves public DNS hostnames to IP addresses is not enabled
+    Default: true
+    AllowedValues:
+      - true
+      - false
+
+  InstanceTenancy:
+    Type: String
+    Description: >-
+      The allowed tenancy of instances launched into the VPC. "default": An
+      instance launched into the VPC runs on shared hardware by default, unless
+      you explicitly specify a different tenancy during instance launch.
+      "dedicated": An instance launched into the VPC is a Dedicated Instance by
+      default, unless you explicitly specify a tenancy of host during instance
+      launch. You cannot specify a tenancy of default during instance launch.
+      NOTE: Updating InstanceTenancy requires no replacement only if you are
+      updating its value from "dedicated" to "default". Updating InstanceTenancy
+      from "default" to "dedicated" requires replacement
+    Default: default
+    AllowedValues:
+      - default
+      - dedicated
+      - host
+  
+  MaxEntries:
+    Type: Number
+    Description: >-
+      The max entries our prefix list can have. NOTE: must be equal to, or more
+      than, the number of CIDRs assigned to the VPC
+    Default: 1
+
+  WhiteListedCidrBlock:
+    Type: String
+    Description: >-
+      The CIDR block the SSH security group will allow access. Leave as
+      127.0.0.1/32 (localhost) if you don't want to specify a white listed CIDR
+      block
+    Default: 127.0.0.1/32
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+
+Resources:
+  vpcStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/network/vpc/_vpc.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        VPCName: !Ref VPCName
+        PrimaryCidrBlock: !Ref PrimaryCidrBlock
+        SecondaryCidrBlock1: !Ref SecondaryCidrBlock1
+        SecondaryCidrBlock2: !Ref SecondaryCidrBlock2
+        SecondaryCidrBlock3: !Ref SecondaryCidrBlock3
+        SecondaryCidrBlock4: !Ref SecondaryCidrBlock4
+        EnableDnsHostnames: !Ref EnableDnsHostnames
+        EnableDnsSupport: !Ref EnableDnsSupport
+        InstanceTenancy: !Ref InstanceTenancy
+
+  prefixListStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/network/vpc/_prefix-list-ipv4.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        PrefixListName: !Ref VPCName
+        CidrBlocks: !GetAtt vpcStack.Outputs.vpcCidrBlocks
+        MaxEntries: !Ref MaxEntries
+
+  publicSecurityGroupStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/network/vpc/_security-groups.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        VpcId: !GetAtt vpcStack.Outputs.vpcId
+        VpcName: !Ref VPCName
+        IsPublic: "yes"
+        WhiteListedCidrBlock: !Ref WhiteListedCidrBlock
+
+  privateSecurityGroupStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/network/vpc/_security-groups.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        VpcId: !GetAtt vpcStack.Outputs.vpcId
+        VpcName: !Ref VPCName
+        IsPublic: "no"

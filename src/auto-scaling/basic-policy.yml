@@ -1,0 +1,369 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Defines an AWS Auto Scaling scaling plan. A scaling plan is used to scale
+  application resources to size them appropriately to ensure that enough
+  resource is available in the application at peak times and to reduce allocated
+  resource during periods of low utilization. This is a basic plan that uses
+  predefined metrics
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: Resource Selection
+        Parameters:
+          - TagFilters1
+          - TagFilters2
+          - TagFilters3
+          - TagFilters4
+          - TagFilters5
+      - Label:
+          default: Service Parameters
+        Parameters:
+          - ServiceNamespace
+          - ResourceId
+          - ScalingPolicyUpdateBehavior
+      - Label:
+          default: Metric Parameters
+        Parameters:
+          - PredefinedLoadMetricType
+          - ResourceLabel
+      - Label:
+          default: Capacity Parameters
+        Parameters:
+          - MaxCapacity
+          - MinCapacity
+          - TargetValue
+          - ScalableDimension
+          - ScheduledActionBufferTime
+      - Label:
+          default: Dynamic Scaling
+        Parameters:
+          - EnableDynamicScaling
+      - Label:
+          default: Predictive Scaling
+        Parameters:
+          - EnablePredictiveScaling
+          - PredictiveScalingMode
+          - PredictiveScalingMaxCapacityBehavior
+          - PredictiveScalingMaxCapacityBuffer
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  TagFilters1:
+    Type: CommaDelimitedList
+    Description: >-
+      A set of tag filters (key and values). Each tag filter specified must
+      contain a key with values as optional. Each scaling plan can include up to
+      5 keys, and each key can include up to 20 values. Tags are part of the
+      syntax that you use to specify the resources you want returned when
+      configuring a scaling plan from the AWS Auto Scaling console. The Key and
+      Values properties can accept any value as long as the combination of
+      values is unique across scaling plans. However, if you also want to use
+      the AWS Auto Scaling console to edit the scaling plan, then you must
+      specify valid values. Specified as TAG, [VALUE, ...]
+    Default: ","
+
+  TagFilters2:
+    Type: CommaDelimitedList
+    Description: (optional)
+    Default: ","
+
+  TagFilters3:
+    Type: CommaDelimitedList
+    Description: (optional)
+    Default: ","
+
+  TagFilters4:
+    Type: CommaDelimitedList
+    Description: (optional)
+    Default: ","
+
+  TagFilters5:
+    Type: CommaDelimitedList
+    Description: (optional)
+    Default: ","
+
+  ServiceNamespace:
+    Type: String
+    Description: The namespace of the AWS service
+    Default: ecs
+    AllowedValues:
+      - autoscaling
+      - dynamodb
+      - ec2
+      - ecs
+      - rds
+
+  ResourceId:
+    Type: String
+    Description: >-
+      The ID of the resource. This string consists of the resource type and
+      unique identifier. Auto Scaling group - The resource type is
+      autoScalingGroup and the unique identifier is the name of the Auto Scaling
+      group. Example: autoScalingGroup/my-asg ... ECS service - The resource
+      type is service and the unique identifier is the cluster name and service
+      name. Example: service/default/sample-webapp ... Spot Fleet request - The
+      resource type is spot-fleet-request and the unique identifier is the Spot
+      Fleet request ID. Example:
+      spot-fleet-request/sfr-73fbd2ce-aa30-494c-8788-1cee4EXAMPLE ... DynamoDB
+      table - The resource type is table and the unique identifier is the
+      resource ID. Example: table/my-table ... DynamoDB global secondary index -
+      The resource type is index and the unique identifier is the resource ID.
+      Example: table/my-table/index/my-table-index ... Aurora DB cluster - The
+      resource type is cluster and the unique identifier is the cluster name.
+      Example: cluster:my-db-cluster
+
+  ScalingPolicyUpdateBehavior:
+    Type: String
+    Description: >-
+      Controls whether your scaling policies that are external to AWS Auto
+      Scaling are deleted and new target tracking scaling policies created. The
+      default value is KeepExternalPolicies
+    Default: KeepExternalPolicies
+    AllowedValues:
+      - KeepExternalPolicies
+      - ReplaceExternalPolicies
+
+  PredefinedLoadMetricType:
+    Type: String
+    Description: The metric type
+    Default: ASGTotalCPUUtilization
+    AllowedValues:
+      - ALBTargetGroupRequestCount
+      - ASGTotalCPUUtilization
+      - ASGTotalNetworkIn
+      - ASGTotalNetworkOut
+
+  ResourceLabel:
+    Type: String
+    Description: >-
+      (conditional: You can't specify a resource label unless the metric type is
+      ALBTargetGroupRequestCount and there is a target group for an Application
+      Load Balancer attached to the Auto Scaling group) Identifies the resource
+      associated with the metric type. You create the resource label by
+      appending the final portion of the load balancer ARN and the final portion
+      of the target group ARN into a single value, separated by a forward slash
+      (/). The format is
+      app/<load-balancer-name>/<load-balancer-id>/targetgroup/<target-group-name>/<target-group-id>,
+      where: ... app/<load-balancer-name>/<load-balancer-id> is the final
+      portion of the load balancer ARN ... and targetgroup/<target-group-name>/<target-group-id> is the final portion of
+      the target group ARN ... This is an example: app/EC2Co-EcsEl-1TKLTMITMM0EO/f37c06a68c1748aa/targetgroup/EC2Co-Defau-LDNM7Q3ZH1ZN/6d4ea56ca2d6a18d
+    Default: ""
+
+  MaxCapacity:
+    Type: Number
+    Description: >-
+      The maximum capacity of the resource. The exception to this upper limit is if you specify a non-default setting
+      for PredictiveScalingMaxCapacityBehavior
+
+  MinCapacity:
+    Type: Number
+    Description: The minimum capacity of the resource
+
+  TargetValue:
+    Type: Number
+    Description: >-
+      The target value for the metric. Although this property accepts numbers of
+      type Double, it won't accept values that are either too small or too
+      large. Values must be in the range of -2^360 to 2^360
+
+  ScalableDimension:
+    Type: String
+    Description: The scalable dimension associated with the resource
+    Default: ecs:service:DesiredCount
+    AllowedValues:
+      - autoscaling:autoScalingGroup:DesiredCapacity
+      - dynamodb:index:ReadCapacityUnits
+      - dynamodb:index:WriteCapacityUnits
+      - dynamodb:table:ReadCapacityUnits
+      - dynamodb:table:WriteCapacityUnits
+      - ec2:spot-fleet-request:TargetCapacity
+      - ecs:service:DesiredCount
+      - rds:cluster:ReadReplicaCount
+
+  ScheduledActionBufferTime:
+    Type: Number
+    Description: >-
+      The amount of time, in seconds, to buffer the run time of scheduled
+      scaling actions when scaling out. For example, if the forecast says to add
+      capacity at 10:00 AM, and the buffer time is 5 minutes, then the run time
+      of the corresponding scheduled scaling action will be 9:55 AM. The
+      intention is to give resources time to be provisioned. For example, it can
+      take a few minutes to launch an EC2 instance. The actual amount of time
+      required depends on several factors, such as the size of the instance and
+      whether there are startup scripts to complete. The value must be less than
+      the forecast interval duration of 3600 seconds (60 minutes)
+    Default: 300
+
+  EnableDynamicScaling:
+    Type: String
+    Description: >-
+      Controls whether dynamic scaling by AWS Auto Scaling is enabled. When
+      dynamic scaling is enabled, AWS Auto Scaling creates target tracking
+      scaling policies based on the specified target tracking configurations
+    Default: true
+    AllowedValues:
+      - true
+      - false
+
+  EnablePredictiveScaling:
+    Type: String
+    Description: >-
+      Controls whether predictive scaling by AWS Auto Scaling is enabled. When
+      predictive scaling is enabled, AWS Auto Scaling uses machine learning to
+      predict what capacity is required at different times based on past metric
+      (up to 14 days ago)
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  PredictiveScalingMode:
+    Type: String
+    Description: >-
+      The predictive scaling mode. The default value is ForecastAndScale.
+      Otherwise, AWS Auto Scaling forecasts capacity but does not apply any
+      scheduled scaling actions based on the capacity forecast
+    Default: ForecastOnly
+    AllowedValues:
+      - ForecastAndScale
+      - ForecastOnly
+
+  PredictiveScalingMaxCapacityBehavior:
+    Type: String
+    Description: >-
+      Defines the behavior that should be applied if the forecast capacity
+      approaches or exceeds the maximum capacity specified for the resource
+    Default: SetForecastCapacityToMaxCapacity
+    AllowedValues:
+      - SetForecastCapacityToMaxCapacity
+      - SetMaxCapacityToForecastCapacity
+      - SetMaxCapacityAboveForecastCapacity
+
+  PredictiveScalingMaxCapacityBuffer:
+    Type: Number
+    Description: >-
+      (conditional: Required if PredictiveScalingMaxCapacityBehavior is set to
+      SetMaxCapacityAboveForecastCapacity, and cannot be used otherwise) The
+      size of the capacity buffer to use when the forecast capacity is close to
+      or exceeds the maximum capacity. The value is specified as a percentage
+      relative to the forecast capacity. For example, if the buffer is 10,
+      this means a 10 percent buffer. With a 10 percent buffer, if the forecast
+      capacity is 50, and the maximum capacity is 40, then the effective maximum
+      capacity is 55
+    Default: 10
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+
+  SpecifyTagFilters1: !Not [!Equals [!Select [0, !Ref TagFilters1], ""]]
+  SpecifyTagFilters2: !Not [!Equals [!Select [0, !Ref TagFilters2], ""]]
+  SpecifyTagFilters3: !Not [!Equals [!Select [0, !Ref TagFilters3], ""]]
+  SpecifyTagFilters4: !Not [!Equals [!Select [0, !Ref TagFilters4], ""]]
+  SpecifyTagFilters5: !Not [!Equals [!Select [0, !Ref TagFilters5], ""]]
+
+  SpecifyTagFilters1Values: !Not [!Equals [!Select [1, !Ref TagFilters1], ""]]
+  SpecifyTagFilters2Values: !Not [!Equals [!Select [1, !Ref TagFilters2], ""]]
+  SpecifyTagFilters3Values: !Not [!Equals [!Select [1, !Ref TagFilters3], ""]]
+  SpecifyTagFilters4Values: !Not [!Equals [!Select [1, !Ref TagFilters4], ""]]
+  SpecifyTagFilters5Values: !Not [!Equals [!Select [1, !Ref TagFilters5], ""]]
+
+  SpecifyDynamicScaling: !Equals [!Ref EnableDynamicScaling, true]
+  SpecifyPredictiveScaling: !Equals [!Ref EnablePredictiveScaling, true]
+
+Resources:
+
+  scalingPlan:
+    Type: AWS::AutoScalingPlans::ScalingPlan
+    Properties: 
+      ApplicationSource: 
+        # NOTE: we don't specify Cfn stacks because some of the requirements
+        # introduce anti patterns, e.g. needing to specify ECS clusters and
+        # services in the same stack. This prevents us from nesting stacks, from
+        # seperating clusters and services, etc. We can easily specify tags in
+        # the launch stack options, and those tags propogate the stacks
+        # resources, and nested stacks, and their resources. This is much
+        # cleaner and lets us scale across multiple stacks w/o hard imposed
+        # limitations
+        # CloudFormationStackARN: String
+        TagFilters: 
+          - !If
+            - SpecifyTagFilters1
+            - Key: !Ref TagFilters1
+              Values: !If [SpecifyTagFilters1Values, TagFilters1Values, !Ref "AWS::NoValue"]
+            - !Ref "AWS::NoValue"
+          - !If
+            - SpecifyTagFilters2
+            - Key: !Ref TagFilters2
+              Values: !If [SpecifyTagFilters2Values, TagFilters2Values, !Ref "AWS::NoValue"]
+            - !Ref "AWS::NoValue"
+          - !If
+            - SpecifyTagFilters3
+            - Key: !Ref TagFilters3
+              Values: !If [SpecifyTagFilters3Values, TagFilters3Values, !Ref "AWS::NoValue"]
+            - !Ref "AWS::NoValue"
+          - !If
+            - SpecifyTagFilters4
+            - Key: !Ref TagFilters4
+              Values: !If [SpecifyTagFilters4Values, TagFilters4Values, !Ref "AWS::NoValue"]
+            - !Ref "AWS::NoValue"
+          - !If
+            - SpecifyTagFilters5
+            - Key: !Ref TagFilters5
+              Values: !If [SpecifyTagFilters5Values, TagFilters5Values, !Ref "AWS::NoValue"]
+            - !Ref "AWS::NoValue"
+      ScalingInstructions:
+        # Note each scaling instruction corresponds to a single resource e.g.
+        # an EC2 Auto Scaling group, ECS Service, Spot Fleet Request, DynamoDB
+        # Table, etc. It seems cleaner and easier to change / update if we have
+        # one policy per resource
+        - DisableDynamicScaling: !If [SpecifyDynamicScaling, true, !Ref "AWS::NoValue"]
+          MaxCapacity: !Ref MaxCapacity
+          MinCapacity: !Ref MinCapacity
+          PredefinedLoadMetricSpecification: 
+            PredefinedLoadMetricType: !Ref PredefinedLoadMetricType
+            ResourceLabel: !Ref ResourceLabel
+          PredictiveScalingMaxCapacityBehavior: !If [SpecifyPredictiveScaling, !Ref PredictiveScalingMaxCapacityBehavior, !Ref "AWS::NoValue"]
+          PredictiveScalingMaxCapacityBuffer: !If [SpecifyPredictiveScaling, !Ref PredictiveScalingMaxCapacityBuffer, !Ref "AWS::NoValue"]
+          PredictiveScalingMode: !If [SpecifyPredictiveScaling, !Ref PredictiveScalingMode, !Ref "AWS::NoValue"]
+          ResourceId: !Ref ResourceId
+          ScalableDimension: !Ref ScalableDimension
+          ScalingPolicyUpdateBehavior: !Ref ScalingPolicyUpdateBehavior
+          ScheduledActionBufferTime: !Ref ScheduledActionBufferTime
+          ServiceNamespace: !Ref ServiceNamespace
+          TargetTrackingConfigurations: 
+            -
+            # - CustomizedScalingMetricSpecification: 
+            #     Dimensions: 
+            #       - Name: String
+            #         Value: String
+            #       - Name: String
+            #         Value: String
+            #       - Name: String
+            #         Value: String
+            #     MetricName: String
+            #     Namespace: String
+            #     Statistic: String
+            #     Unit: String
+            #   DisableScaleIn: Boolean
+            #   EstimatedInstanceWarmup: Integer
+            #   PredefinedScalingMetricSpecification: 
+            #     PredefinedScalingMetricType: String
+            #     ResourceLabel: String
+            #   ScaleInCooldown: Integer
+            #   ScaleOutCooldown: Integer
+              TargetValue: !Ref TargetValue
+
+# Outputs:
+  # specify when needed

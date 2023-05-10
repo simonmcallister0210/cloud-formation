@@ -1,0 +1,65 @@
+version: 0.2
+
+env:
+  shell: bash
+  variables:
+    BUCKET_NAME: "spm0210-wip-templates"
+    BUCKET_CATEGORY_FOLDER: "prototypes"
+    LABELS_BLOCK_FILE: "cicd/labels-block.txt"
+
+phases:
+  pre_build:
+    commands:
+      # check the labels block exists
+      - |
+        if [[ -f "${LABELS_BLOCK_FILE}" ]]; then
+          echo "LABELS_BLOCK_FILE in expected location .. ${LABELS_BLOCK_FILE}"
+          echo "LABELS_BLOCK_FILE contents .."
+          cat "${LABELS_BLOCK_FILE}"
+        else
+        echo "LABELS_BLOCK_FILE NOT in expected location .. ${LABELS_BLOCK_FILE}"
+          exit 1
+        fi
+
+      # generate the variables we're building with
+      - COMMIT_ID="$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c1-8)"
+      - BUILD_DATE_UTC="$(date --utc +%Y-%m-%d)"
+      - BUILD_TIME_UTC="$(date --utc +%H-%M-%S)"
+      - BUCKET_FOLDER="${BUCKET_CATEGORY_FOLDER}/${BUILD_DATE_UTC}_${BUILD_TIME_UTC}_${COMMIT_ID}"
+
+      # log the variables we're building with
+      - echo "BUILD_DATE_UTC is .. ${BUILD_DATE_UTC}"
+      - echo "BUILD_TIME_UTC is .. ${BUILD_TIME_UTC}"
+      - echo "COMMIT_ID is .. ${COMMIT_ID}"
+      - echo "BUCKET_FOLDER is .. ${BUCKET_FOLDER}"
+
+      # create dynamic file path
+      - rm -rf "build/${BUCKET_FOLDER}/"
+      - mkdir -p "build/${BUCKET_FOLDER}/"
+      - echo "build folder created"
+
+      # copy src files to build folder
+      - cp -r src/* "build/${BUCKET_FOLDER}/"
+      - echo "source files copied into build folder"
+  build:
+    commands:
+      # inject label place holders (only in yaml files)
+      - find "build/" -type f -name "*.yml" -exec sed -i "/---/r ${LABELS_BLOCK_FILE}" {} +
+      # (specific to template) inject $__BUCKET_KEY__ 
+      - ( cd "build/" ; find */** -type f -name "*.yml" -exec sed -i "s|\$__BUCKET_KEY__|{}|g" {} \; )
+      # (specific to template) inject $__TEMPLATE__ 
+      - ( cd "build/${BUCKET_FOLDER}" ; find */** -type f -name "*.yml" -exec sed -i "s|\$__TEMPLATE__|{}|g" {} \; )
+      # (applies to all templates) inject label block values
+      - find "build/" -type f -name "*.yml" -exec sed -i "s|\$__BUCKET_NAME__|$BUCKET_NAME|g" {} +
+      - find "build/" -type f -name "*.yml" -exec sed -i "s|\$__BUILD_DATE_UTC__|$BUILD_DATE_UTC|g" {} +
+      - find "build/" -type f -name "*.yml" -exec sed -i "s|\$__BUILD_TIME_UTC__|$BUILD_TIME_UTC|g" {} +
+      - find "build/" -type f -name "*.yml" -exec sed -i "s|\$__COMMIT_ID__|$COMMIT_ID|g" {} +
+      # (applies to all templates) inject folder for TemplateURL property
+      - find "build/" -type f -name "*.yml" -exec sed -i "s|\$__BUCKET_FOLDER__|$BUCKET_FOLDER|g" {} +
+      - echo "all placeholders replaced with build values"
+
+artifacts:
+  files:
+    - "**/*"
+  discard-paths: no
+  base-directory: build

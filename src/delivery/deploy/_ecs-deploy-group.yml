@@ -1,0 +1,187 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  AWS CodeDeploy deployment group that specifies which instances your
+  application revisions are deployed to, along with other deployment options.
+  Specific to in-place ECS deployments
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: Deployment Group Parameters
+        Parameters:
+          - ApplicationName
+          - DeploymentGroupName
+          - DeploymentConfigName
+          - ClusterName
+          - ServiceName
+          - TargetGroupName
+      - Label:
+          default: Rollback Parameters
+        Parameters:
+          - EnableAutoRollback
+          - Events
+      - Label:
+          default: Alarm Parameters
+        Parameters:
+          - EnableAlarms
+          - Alarms
+          - IgnorePollAlarmFailure
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  ApplicationName:
+    Type: String
+    Description: >-
+      The name of an existing CodeDeploy application to associate this
+      deployment group with
+    Default: ""
+
+  DeploymentGroupName:
+    Type: String
+    Description: >-
+      (optional) A name for the deployment group. If you don't specify a name,
+      AWS CloudFormation generates a unique physical ID and uses that ID for the
+      deployment group name. NOTE: If you specify a name, you cannot perform
+      updates that require replacement of this resource. You can perform updates
+      that require no or some interruption. If you must replace the resource,
+      specify a new name
+    Default: ""
+
+  DeploymentConfigName:
+    Type: String
+    Description: >-
+      A deployment configuration name or a predefined configuration name. With
+      predefined configurations, you can deploy application revisions to one
+      instance at a time (CodeDeployDefault.OneAtATime), half of the instances
+      at a time (CodeDeployDefault.HalfAtATime), or all the instances at once
+      (CodeDeployDefault.AllAtOnce)
+    Default: CodeDeployDefault.OneAtATime
+
+  ClusterName:
+    Type: String
+    Description: >-
+      The name of the cluster that the Amazon ECS service is associated with
+    Default: ""
+
+  ServiceName:
+    Type: String
+    Description: The name of the target Amazon ECS service
+    Default: ""
+
+  TargetGroupName:
+    Type: String
+    Description: >-
+      The name of the target group that instances are deregistered from, so they
+      are not serving traffic during a deployment, and then re-registered with
+      after the deployment completes
+
+  EnableAutoRollback:
+    Type: String
+    Description: >-
+      Indicates whether a defined automatic rollback configuration is currently
+      enabled
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  Events:
+    Type: CommaDelimitedList
+    Description: >-
+      The event type or types that trigger a rollback. Valid values are
+      DEPLOYMENT_FAILURE, DEPLOYMENT_STOP_ON_ALARM, or
+      DEPLOYMENT_STOP_ON_REQUEST
+    Default: "DEPLOYMENT_FAILURE,DEPLOYMENT_STOP_ON_ALARM,DEPLOYMENT_STOP_ON_REQUEST"
+
+  EnableAlarms:
+    Type: String
+    Description: >-
+      Indicates whether the alarm configuration is enabled
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  Alarms:
+    Type: CommaDelimitedList
+    Description: >-
+      A list of alarm ARNs configured for the deployment group. A maximum of 10
+      alarms can be added to a deployment group
+    Default: ",,"
+
+  IgnorePollAlarmFailure:
+    Type: String
+    Description: >-
+      Indicates whether a deployment should continue if information about the
+      current state of alarms cannot be retrieved from Amazon CloudWatch
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  SpecifyAutoRollback: !Equals [!Ref EnableAutoRollback, true]
+  SpecifyAlarms: !Equals [!Ref EnableAlarms, true]
+
+Resources:
+
+  deploymentGroupRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "codedeploy.amazonaws.com"
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS
+      Path: "/cfn-defined/"
+
+  deploymentGroup:
+    Type: AWS::CodeDeploy::DeploymentGroup
+    Properties: 
+      AlarmConfiguration: !If
+        - SpecifyAlarms
+        - Alarms: !Ref Alarms
+          Enabled: !Ref EnableAlarms
+          IgnorePollAlarmFailure: !Ref IgnorePollAlarmFailure
+        - !Ref "AWS::NoValue"
+      ApplicationName: !Ref ApplicationName
+      AutoRollbackConfiguration: !If
+        - SpecifyAutoRollback
+        - Enabled: !Ref EnableAutoRollback
+          Events: !Ref Events
+        - !Ref "AWS::NoValue"
+      DeploymentConfigName: !Ref DeploymentConfigName
+      DeploymentGroupName: !Ref DeploymentGroupName
+      DeploymentStyle:
+        DeploymentOption: WITH_TRAFFIC_CONTROL
+        DeploymentType: IN_PLACE
+      ECSServices: 
+        - ClusterName: !Ref ClusterName
+          ServiceName: !Ref ServiceName
+      LoadBalancerInfo: 
+        TargetGroupInfoList: # only 1 item allowed
+          - Name: !Ref TargetGroupName
+      ServiceRoleArn: !GetAtt deploymentGroupRole.Arn
+
+Outputs:
+  deploymentGroupName:
+    Value: !Ref deploymentGroup
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-deploymentGroupName", !Sub "${AWS::StackName}-deploymentGroupName"]

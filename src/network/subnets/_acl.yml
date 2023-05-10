@@ -1,0 +1,2329 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Specifies a network ACL
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: ACL Parameters
+        Parameters:
+          - VpcId
+          - AclName
+      - Label:
+          default: ACL Ingress Entries
+        Parameters:
+          - InRule50SourceType
+          - InRule50Source
+          - InRule50
+          - InRule100SourceType
+          - InRule100Source
+          - InRule100
+          - InRule150SourceType
+          - InRule150Source
+          - InRule150
+          - InRule200SourceType
+          - InRule200Source
+          - InRule200
+          - InRule250SourceType
+          - InRule250Source
+          - InRule250
+          - InRule300SourceType
+          - InRule300Source
+          - InRule300
+          - InRule350SourceType
+          - InRule350Source
+          - InRule350
+          - InRule400SourceType
+          - InRule400Source
+          - InRule400
+          - InRule450SourceType
+          - InRule450Source
+          - InRule450
+          - InRule500SourceType
+          - InRule500Source
+          - InRule500
+          - InRule550SourceType
+          - InRule550Source
+          - InRule550
+          - InRule600SourceType
+          - InRule600Source
+          - InRule600
+          - InRule650SourceType
+          - InRule650Source
+          - InRule650
+          - InRule700SourceType
+          - InRule700Source
+          - InRule700
+          - InRule750SourceType
+          - InRule750Source
+          - InRule750
+          - InRule800SourceType
+          - InRule800Source
+          - InRule800
+          - InRule850SourceType
+          - InRule850Source
+          - InRule850
+          - InRule900SourceType
+          - InRule900Source
+          - InRule900
+          - InRule950SourceType
+          - InRule950Source
+          - InRule950
+          - InRule1000SourceType
+          - InRule1000Source
+          - InRule1000
+      - Label:
+          default: ACL Egress Entries
+        Parameters:
+          - OutRule50DestinationType
+          - OutRule50Destination
+          - OutRule50
+          - OutRule100DestinationType
+          - OutRule100Destination
+          - OutRule100
+          - OutRule150DestinationType
+          - OutRule150Destination
+          - OutRule150
+          - OutRule200DestinationType
+          - OutRule200Destination
+          - OutRule200
+          - OutRule250DestinationType
+          - OutRule250Destination
+          - OutRule250
+          - OutRule300DestinationType
+          - OutRule300Destination
+          - OutRule300
+          - OutRule350DestinationType
+          - OutRule350Destination
+          - OutRule350
+          - OutRule400DestinationType
+          - OutRule400Destination
+          - OutRule400
+          - OutRule450DestinationType
+          - OutRule450Destination
+          - OutRule450
+          - OutRule500DestinationType
+          - OutRule500Destination
+          - OutRule500
+          - OutRule550DestinationType
+          - OutRule550Destination
+          - OutRule550
+          - OutRule600DestinationType
+          - OutRule600Destination
+          - OutRule600
+          - OutRule650DestinationType
+          - OutRule650Destination
+          - OutRule650
+          - OutRule700DestinationType
+          - OutRule700Destination
+          - OutRule700
+          - OutRule750DestinationType
+          - OutRule750Destination
+          - OutRule750
+          - OutRule800DestinationType
+          - OutRule800Destination
+          - OutRule800
+          - OutRule850DestinationType
+          - OutRule850Destination
+          - OutRule850
+          - OutRule900DestinationType
+          - OutRule900Destination
+          - OutRule900
+          - OutRule950DestinationType
+          - OutRule950Destination
+          - OutRule950
+          - OutRule1000DestinationType
+          - OutRule1000Destination
+          - OutRule1000
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: Name of the parent stack. (used for exports)
+
+  VpcId:
+    Type: String
+    Description: ID of the VPC to Issociate with the acl
+
+  AclName:
+    Type: String
+    Description: >-
+      Name of the ACL. Will be used to name resources, for example an ACL name
+      of "test" would generate "test-acl"
+
+  # Ingress Rules
+
+  # InRule50
+
+  InRule50SourceType:
+    Type: String
+    Description: >-
+      (optional) Specified as RuleAction, Protocol, PortFrom / IcmpCode, PortTo
+      / IcmpType
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule50Source:
+    Type: String
+    Description: >-
+      The source of traffic for ingress rule. If InRule50SourceType is
+      cidr-ipv4 then this value is a IPv4 CIDR .. If InRule50SourceType is
+      cidr-ipv6 then this value is a IPv6 CIDR ..  If InRule50SourceType is
+      stack-import then this value is the name of the subnet stack that exports
+      the IPv4 CIDR used as the source
+    Default: ""
+
+  InRule50:
+    Type: CommaDelimitedList
+    Description: >-
+      Specified as RuleAction (allow | deny), Protocol, PortRangeFrom /
+      IcmpCode, PortRangeTo / IcmpType. e.g. allow,6,80,80 is allowing tcp
+      traffic from port 80 to 80, or deny,1,0,8 is denying icmp request ping
+      traffic
+    Default: ",,,"
+
+  # InRule100
+
+  InRule100SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule100Source:
+    Type: String
+    Default: ""
+
+  InRule100:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule150
+
+  InRule150SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule150Source:
+    Type: String
+    Default: ""
+
+  InRule150:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule200
+
+  InRule200SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule200Source:
+    Type: String
+    Default: ""
+
+  InRule200:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule250
+
+  InRule250SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule250Source:
+    Type: String
+    Default: ""
+
+  InRule250:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule300
+
+  InRule300SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule300Source:
+    Type: String
+    Default: ""
+
+  InRule300:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule350
+
+  InRule350SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule350Source:
+    Type: String
+    Default: ""
+
+  InRule350:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule400
+
+  InRule400SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule400Source:
+    Type: String
+    Default: ""
+
+  InRule400:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule450
+
+  InRule450SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule450Source:
+    Type: String
+    Default: ""
+
+  InRule450:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule500
+
+  InRule500SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule500Source:
+    Type: String
+    Default: ""
+
+  InRule500:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule550
+
+  InRule550SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule550Source:
+    Type: String
+    Default: ""
+
+  InRule550:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule600
+
+  InRule600SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule600Source:
+    Type: String
+    Default: ""
+
+  InRule600:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule650
+
+  InRule650SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule650Source:
+    Type: String
+    Default: ""
+
+  InRule650:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule700
+
+  InRule700SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule700Source:
+    Type: String
+    Default: ""
+
+  InRule700:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule750
+
+  InRule750SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule750Source:
+    Type: String
+    Default: ""
+
+  InRule750:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule800
+
+  InRule800SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule800Source:
+    Type: String
+    Default: ""
+
+  InRule800:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule850
+
+  InRule850SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule850Source:
+    Type: String
+    Default: ""
+
+  InRule850:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule900
+
+  InRule900SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule900Source:
+    Type: String
+    Default: ""
+
+  InRule900:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule950
+
+  InRule950SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule950Source:
+    Type: String
+    Default: ""
+
+  InRule950:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule1000
+
+  InRule1000SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  InRule1000Source:
+    Type: String
+    Default: ""
+
+  InRule1000:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # Egress Rules
+
+  # OutRule50
+
+  OutRule50DestinationType:
+    Type: String
+    Description: >-
+      (optional) Specified as RuleAction, Protocol, PortFrom / IcmpCode, PortTo
+      / IcmpType
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule50Destination:
+    Type: String
+    Description: >-
+      The destination of traffic for egress rule. If
+      OutRule50DestinationType is cidr-ipv4 then this value is a IPv4 CIDR
+      .. If OutRule50DestinationType is cidr-ipv6 then this value is a IPv6
+      CIDR ..  If OutRule50DestinationType is stack-import then this value
+      is the name of the subnet stack that exports the IPv4 CIDR used as the
+      destination
+    Default: ""
+
+  OutRule50:
+    Type: CommaDelimitedList
+    Description: >-
+      Specified as RuleAction (allow | deny), Protocol, PortRangeFrom /
+      IcmpCode, PortRangeTo / IcmpType. e.g. allow,6,80,80 is allowing tcp
+      traffic from port 80 to 80, or deny,1,0,8 is denying icmp request ping
+      traffic
+    Default: ",,,"
+
+  # OutRule100
+
+  OutRule100DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule100Destination:
+    Type: String
+    Default: ""
+
+  OutRule100:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule150
+
+  OutRule150DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule150Destination:
+    Type: String
+    Default: ""
+
+  OutRule150:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule200
+
+  OutRule200DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule200Destination:
+    Type: String
+    Default: ""
+
+  OutRule200:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule250
+
+  OutRule250DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule250Destination:
+    Type: String
+    Default: ""
+
+  OutRule250:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule300
+
+  OutRule300DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule300Destination:
+    Type: String
+    Default: ""
+
+  OutRule300:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule350
+
+  OutRule350DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule350Destination:
+    Type: String
+    Default: ""
+
+  OutRule350:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule400
+
+  OutRule400DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule400Destination:
+    Type: String
+    Default: ""
+
+  OutRule400:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule450
+
+  OutRule450DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule450Destination:
+    Type: String
+    Default: ""
+
+  OutRule450:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule500
+
+  OutRule500DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule500Destination:
+    Type: String
+    Default: ""
+
+  OutRule500:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule550
+
+  OutRule550DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule550Destination:
+    Type: String
+    Default: ""
+
+  OutRule550:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule600
+
+  OutRule600DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule600Destination:
+    Type: String
+    Default: ""
+
+  OutRule600:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule650
+
+  OutRule650DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule650Destination:
+    Type: String
+    Default: ""
+
+  OutRule650:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule700
+
+  OutRule700DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule700Destination:
+    Type: String
+    Default: ""
+
+  OutRule700:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule750
+
+  OutRule750DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule750Destination:
+    Type: String
+    Default: ""
+
+  OutRule750:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule800
+
+  OutRule800DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule800Destination:
+    Type: String
+    Default: ""
+
+  OutRule800:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule850
+
+  OutRule850DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule850Destination:
+    Type: String
+    Default: ""
+
+  OutRule850:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule900
+
+  OutRule900DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule900Destination:
+    Type: String
+    Default: ""
+
+  OutRule900:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule950
+
+  OutRule950DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule950Destination:
+    Type: String
+    Default: ""
+
+  OutRule950:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule1000
+
+  OutRule1000DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+
+  OutRule1000Destination:
+    Type: String
+    Default: ""
+
+  OutRule1000:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  # InRule50
+  SpecifyInRule50: !Not [!Equals [!Ref InRule50SourceType, "-"]]
+  InRule50IsIPv4: !Equals [!Ref InRule50SourceType, "cidr-ipv4"]
+  InRule50IsIPv6: !Equals [!Ref InRule50SourceType, "cidr-ipv6"]
+  InRule50IsICMP: !Equals [!Select [1, !Ref InRule50], "1"]
+  InRule50IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule50], "1"]]
+  # InRule100
+  SpecifyInRule100: !Not [!Equals [!Ref InRule100SourceType, "-"]]
+  InRule100IsIPv4: !Equals [!Ref InRule100SourceType, "cidr-ipv4"]
+  InRule100IsIPv6: !Equals [!Ref InRule100SourceType, "cidr-ipv6"]
+  InRule100IsICMP: !Equals [!Select [1, !Ref InRule100], "1"]
+  InRule100IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule100], "1"]]
+  # InRule150
+  SpecifyInRule150: !Not [!Equals [!Ref InRule150SourceType, "-"]]
+  InRule150IsIPv4: !Equals [!Ref InRule150SourceType, "cidr-ipv4"]
+  InRule150IsIPv6: !Equals [!Ref InRule150SourceType, "cidr-ipv6"]
+  InRule150IsICMP: !Equals [!Select [1, !Ref InRule150], "1"]
+  InRule150IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule150], "1"]]
+  # InRule200
+  SpecifyInRule200: !Not [!Equals [!Ref InRule200SourceType, "-"]]
+  InRule200IsIPv4: !Equals [!Ref InRule200SourceType, "cidr-ipv4"]
+  InRule200IsIPv6: !Equals [!Ref InRule200SourceType, "cidr-ipv6"]
+  InRule200IsICMP: !Equals [!Select [1, !Ref InRule200], "1"]
+  InRule200IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule200], "1"]]
+  # InRule250
+  SpecifyInRule250: !Not [!Equals [!Ref InRule250SourceType, "-"]]
+  InRule250IsIPv4: !Equals [!Ref InRule250SourceType, "cidr-ipv4"]
+  InRule250IsIPv6: !Equals [!Ref InRule250SourceType, "cidr-ipv6"]
+  InRule250IsICMP: !Equals [!Select [1, !Ref InRule250], "1"]
+  InRule250IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule250], "1"]]
+  # InRule300
+  SpecifyInRule300: !Not [!Equals [!Ref InRule300SourceType, "-"]]
+  InRule300IsIPv4: !Equals [!Ref InRule300SourceType, "cidr-ipv4"]
+  InRule300IsIPv6: !Equals [!Ref InRule300SourceType, "cidr-ipv6"]
+  InRule300IsICMP: !Equals [!Select [1, !Ref InRule300], "1"]
+  InRule300IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule300], "1"]]
+  # InRule350
+  SpecifyInRule350: !Not [!Equals [!Ref InRule350SourceType, "-"]]
+  InRule350IsIPv4: !Equals [!Ref InRule350SourceType, "cidr-ipv4"]
+  InRule350IsIPv6: !Equals [!Ref InRule350SourceType, "cidr-ipv6"]
+  InRule350IsICMP: !Equals [!Select [1, !Ref InRule350], "1"]
+  InRule350IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule350], "1"]]
+  # InRule400
+  SpecifyInRule400: !Not [!Equals [!Ref InRule400SourceType, "-"]]
+  InRule400IsIPv4: !Equals [!Ref InRule400SourceType, "cidr-ipv4"]
+  InRule400IsIPv6: !Equals [!Ref InRule400SourceType, "cidr-ipv6"]
+  InRule400IsICMP: !Equals [!Select [1, !Ref InRule400], "1"]
+  InRule400IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule400], "1"]]
+  # InRule450
+  SpecifyInRule450: !Not [!Equals [!Ref InRule450SourceType, "-"]]
+  InRule450IsIPv4: !Equals [!Ref InRule450SourceType, "cidr-ipv4"]
+  InRule450IsIPv6: !Equals [!Ref InRule450SourceType, "cidr-ipv6"]
+  InRule450IsICMP: !Equals [!Select [1, !Ref InRule450], "1"]
+  InRule450IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule450], "1"]]
+  # InRule500
+  SpecifyInRule500: !Not [!Equals [!Ref InRule500SourceType, "-"]]
+  InRule500IsIPv4: !Equals [!Ref InRule500SourceType, "cidr-ipv4"]
+  InRule500IsIPv6: !Equals [!Ref InRule500SourceType, "cidr-ipv6"]
+  InRule500IsICMP: !Equals [!Select [1, !Ref InRule500], "1"]
+  InRule500IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule500], "1"]]
+  # InRule550
+  SpecifyInRule550: !Not [!Equals [!Ref InRule550SourceType, "-"]]
+  InRule550IsIPv4: !Equals [!Ref InRule550SourceType, "cidr-ipv4"]
+  InRule550IsIPv6: !Equals [!Ref InRule550SourceType, "cidr-ipv6"]
+  InRule550IsICMP: !Equals [!Select [1, !Ref InRule550], "1"]
+  InRule550IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule550], "1"]]
+  # InRule600
+  SpecifyInRule600: !Not [!Equals [!Ref InRule600SourceType, "-"]]
+  InRule600IsIPv4: !Equals [!Ref InRule600SourceType, "cidr-ipv4"]
+  InRule600IsIPv6: !Equals [!Ref InRule600SourceType, "cidr-ipv6"]
+  InRule600IsICMP: !Equals [!Select [1, !Ref InRule600], "1"]
+  InRule600IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule600], "1"]]
+  # InRule650
+  SpecifyInRule650: !Not [!Equals [!Ref InRule650SourceType, "-"]]
+  InRule650IsIPv4: !Equals [!Ref InRule650SourceType, "cidr-ipv4"]
+  InRule650IsIPv6: !Equals [!Ref InRule650SourceType, "cidr-ipv6"]
+  InRule650IsICMP: !Equals [!Select [1, !Ref InRule650], "1"]
+  InRule650IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule650], "1"]]
+  # InRule700
+  SpecifyInRule700: !Not [!Equals [!Ref InRule700SourceType, "-"]]
+  InRule700IsIPv4: !Equals [!Ref InRule700SourceType, "cidr-ipv4"]
+  InRule700IsIPv6: !Equals [!Ref InRule700SourceType, "cidr-ipv6"]
+  InRule700IsICMP: !Equals [!Select [1, !Ref InRule700], "1"]
+  InRule700IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule700], "1"]]
+  # InRule750
+  SpecifyInRule750: !Not [!Equals [!Ref InRule750SourceType, "-"]]
+  InRule750IsIPv4: !Equals [!Ref InRule750SourceType, "cidr-ipv4"]
+  InRule750IsIPv6: !Equals [!Ref InRule750SourceType, "cidr-ipv6"]
+  InRule750IsICMP: !Equals [!Select [1, !Ref InRule750], "1"]
+  InRule750IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule750], "1"]]
+  # InRule800
+  SpecifyInRule800: !Not [!Equals [!Ref InRule800SourceType, "-"]]
+  InRule800IsIPv4: !Equals [!Ref InRule800SourceType, "cidr-ipv4"]
+  InRule800IsIPv6: !Equals [!Ref InRule800SourceType, "cidr-ipv6"]
+  InRule800IsICMP: !Equals [!Select [1, !Ref InRule800], "1"]
+  InRule800IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule800], "1"]]
+  # InRule850
+  SpecifyInRule850: !Not [!Equals [!Ref InRule850SourceType, "-"]]
+  InRule850IsIPv4: !Equals [!Ref InRule850SourceType, "cidr-ipv4"]
+  InRule850IsIPv6: !Equals [!Ref InRule850SourceType, "cidr-ipv6"]
+  InRule850IsICMP: !Equals [!Select [1, !Ref InRule850], "1"]
+  InRule850IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule850], "1"]]
+  # InRule900
+  SpecifyInRule900: !Not [!Equals [!Ref InRule900SourceType, "-"]]
+  InRule900IsIPv4: !Equals [!Ref InRule900SourceType, "cidr-ipv4"]
+  InRule900IsIPv6: !Equals [!Ref InRule900SourceType, "cidr-ipv6"]
+  InRule900IsICMP: !Equals [!Select [1, !Ref InRule900], "1"]
+  InRule900IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule900], "1"]]
+  # InRule950
+  SpecifyInRule950: !Not [!Equals [!Ref InRule950SourceType, "-"]]
+  InRule950IsIPv4: !Equals [!Ref InRule950SourceType, "cidr-ipv4"]
+  InRule950IsIPv6: !Equals [!Ref InRule950SourceType, "cidr-ipv6"]
+  InRule950IsICMP: !Equals [!Select [1, !Ref InRule950], "1"]
+  InRule950IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule950], "1"]]
+  # InRule1000
+  SpecifyInRule1000: !Not [!Equals [!Ref InRule1000SourceType, "-"]]
+  InRule1000IsIPv4: !Equals [!Ref InRule1000SourceType, "cidr-ipv4"]
+  InRule1000IsIPv6: !Equals [!Ref InRule1000SourceType, "cidr-ipv6"]
+  InRule1000IsICMP: !Equals [!Select [1, !Ref InRule1000], "1"]
+  InRule1000IsNotICMP: !Not [!Equals [!Select [1, !Ref InRule1000], "1"]]
+
+  # OutRule50
+  SpecifyOutRule50: !Not [!Equals [!Ref OutRule50DestinationType, "-"]]
+  OutRule50IsIPv4: !Equals [!Ref OutRule50DestinationType, "cidr-ipv4"]
+  OutRule50IsIPv6: !Equals [!Ref OutRule50DestinationType, "cidr-ipv6"]
+  OutRule50IsICMP: !Equals [!Select [1, !Ref OutRule50], "1"]
+  OutRule50IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule50], "1"]]
+  # OutRule100
+  SpecifyOutRule100: !Not [!Equals [!Ref OutRule100DestinationType, "-"]]
+  OutRule100IsIPv4: !Equals [!Ref OutRule100DestinationType, "cidr-ipv4"]
+  OutRule100IsIPv6: !Equals [!Ref OutRule100DestinationType, "cidr-ipv6"]
+  OutRule100IsICMP: !Equals [!Select [1, !Ref OutRule100], "1"]
+  OutRule100IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule100], "1"]]
+  # OutRule150
+  SpecifyOutRule150: !Not [!Equals [!Ref OutRule150DestinationType, "-"]]
+  OutRule150IsIPv4: !Equals [!Ref OutRule150DestinationType, "cidr-ipv4"]
+  OutRule150IsIPv6: !Equals [!Ref OutRule150DestinationType, "cidr-ipv6"]
+  OutRule150IsICMP: !Equals [!Select [1, !Ref OutRule150], "1"]
+  OutRule150IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule150], "1"]]
+  # OutRule200
+  SpecifyOutRule200: !Not [!Equals [!Ref OutRule200DestinationType, "-"]]
+  OutRule200IsIPv4: !Equals [!Ref OutRule200DestinationType, "cidr-ipv4"]
+  OutRule200IsIPv6: !Equals [!Ref OutRule200DestinationType, "cidr-ipv6"]
+  OutRule200IsICMP: !Equals [!Select [1, !Ref OutRule200], "1"]
+  OutRule200IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule200], "1"]]
+  # OutRule250
+  SpecifyOutRule250: !Not [!Equals [!Ref OutRule250DestinationType, "-"]]
+  OutRule250IsIPv4: !Equals [!Ref OutRule250DestinationType, "cidr-ipv4"]
+  OutRule250IsIPv6: !Equals [!Ref OutRule250DestinationType, "cidr-ipv6"]
+  OutRule250IsICMP: !Equals [!Select [1, !Ref OutRule250], "1"]
+  OutRule250IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule250], "1"]]
+  # OutRule300
+  SpecifyOutRule300: !Not [!Equals [!Ref OutRule300DestinationType, "-"]]
+  OutRule300IsIPv4: !Equals [!Ref OutRule300DestinationType, "cidr-ipv4"]
+  OutRule300IsIPv6: !Equals [!Ref OutRule300DestinationType, "cidr-ipv6"]
+  OutRule300IsICMP: !Equals [!Select [1, !Ref OutRule300], "1"]
+  OutRule300IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule300], "1"]]
+  # OutRule350
+  SpecifyOutRule350: !Not [!Equals [!Ref OutRule350DestinationType, "-"]]
+  OutRule350IsIPv4: !Equals [!Ref OutRule350DestinationType, "cidr-ipv4"]
+  OutRule350IsIPv6: !Equals [!Ref OutRule350DestinationType, "cidr-ipv6"]
+  OutRule350IsICMP: !Equals [!Select [1, !Ref OutRule350], "1"]
+  OutRule350IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule350], "1"]]
+  # OutRule400
+  SpecifyOutRule400: !Not [!Equals [!Ref OutRule400DestinationType, "-"]]
+  OutRule400IsIPv4: !Equals [!Ref OutRule400DestinationType, "cidr-ipv4"]
+  OutRule400IsIPv6: !Equals [!Ref OutRule400DestinationType, "cidr-ipv6"]
+  OutRule400IsICMP: !Equals [!Select [1, !Ref OutRule400], "1"]
+  OutRule400IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule400], "1"]]
+  # OutRule450
+  SpecifyOutRule450: !Not [!Equals [!Ref OutRule450DestinationType, "-"]]
+  OutRule450IsIPv4: !Equals [!Ref OutRule450DestinationType, "cidr-ipv4"]
+  OutRule450IsIPv6: !Equals [!Ref OutRule450DestinationType, "cidr-ipv6"]
+  OutRule450IsICMP: !Equals [!Select [1, !Ref OutRule450], "1"]
+  OutRule450IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule450], "1"]]
+  # OutRule500
+  SpecifyOutRule500: !Not [!Equals [!Ref OutRule500DestinationType, "-"]]
+  OutRule500IsIPv4: !Equals [!Ref OutRule500DestinationType, "cidr-ipv4"]
+  OutRule500IsIPv6: !Equals [!Ref OutRule500DestinationType, "cidr-ipv6"]
+  OutRule500IsICMP: !Equals [!Select [1, !Ref OutRule500], "1"]
+  OutRule500IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule500], "1"]]
+  # OutRule550
+  SpecifyOutRule550: !Not [!Equals [!Ref OutRule550DestinationType, "-"]]
+  OutRule550IsIPv4: !Equals [!Ref OutRule550DestinationType, "cidr-ipv4"]
+  OutRule550IsIPv6: !Equals [!Ref OutRule550DestinationType, "cidr-ipv6"]
+  OutRule550IsICMP: !Equals [!Select [1, !Ref OutRule550], "1"]
+  OutRule550IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule550], "1"]]
+  # OutRule600
+  SpecifyOutRule600: !Not [!Equals [!Ref OutRule600DestinationType, "-"]]
+  OutRule600IsIPv4: !Equals [!Ref OutRule600DestinationType, "cidr-ipv4"]
+  OutRule600IsIPv6: !Equals [!Ref OutRule600DestinationType, "cidr-ipv6"]
+  OutRule600IsICMP: !Equals [!Select [1, !Ref OutRule600], "1"]
+  OutRule600IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule600], "1"]]
+  # OutRule650
+  SpecifyOutRule650: !Not [!Equals [!Ref OutRule650DestinationType, "-"]]
+  OutRule650IsIPv4: !Equals [!Ref OutRule650DestinationType, "cidr-ipv4"]
+  OutRule650IsIPv6: !Equals [!Ref OutRule650DestinationType, "cidr-ipv6"]
+  OutRule650IsICMP: !Equals [!Select [1, !Ref OutRule650], "1"]
+  OutRule650IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule650], "1"]]
+  # OutRule700
+  SpecifyOutRule700: !Not [!Equals [!Ref OutRule700DestinationType, "-"]]
+  OutRule700IsIPv4: !Equals [!Ref OutRule700DestinationType, "cidr-ipv4"]
+  OutRule700IsIPv6: !Equals [!Ref OutRule700DestinationType, "cidr-ipv6"]
+  OutRule700IsICMP: !Equals [!Select [1, !Ref OutRule700], "1"]
+  OutRule700IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule700], "1"]]
+  # OutRule750
+  SpecifyOutRule750: !Not [!Equals [!Ref OutRule750DestinationType, "-"]]
+  OutRule750IsIPv4: !Equals [!Ref OutRule750DestinationType, "cidr-ipv4"]
+  OutRule750IsIPv6: !Equals [!Ref OutRule750DestinationType, "cidr-ipv6"]
+  OutRule750IsICMP: !Equals [!Select [1, !Ref OutRule750], "1"]
+  OutRule750IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule750], "1"]]
+  # OutRule800
+  SpecifyOutRule800: !Not [!Equals [!Ref OutRule800DestinationType, "-"]]
+  OutRule800IsIPv4: !Equals [!Ref OutRule800DestinationType, "cidr-ipv4"]
+  OutRule800IsIPv6: !Equals [!Ref OutRule800DestinationType, "cidr-ipv6"]
+  OutRule800IsICMP: !Equals [!Select [1, !Ref OutRule800], "1"]
+  OutRule800IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule800], "1"]]
+  # OutRule850
+  SpecifyOutRule850: !Not [!Equals [!Ref OutRule850DestinationType, "-"]]
+  OutRule850IsIPv4: !Equals [!Ref OutRule850DestinationType, "cidr-ipv4"]
+  OutRule850IsIPv6: !Equals [!Ref OutRule850DestinationType, "cidr-ipv6"]
+  OutRule850IsICMP: !Equals [!Select [1, !Ref OutRule850], "1"]
+  OutRule850IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule850], "1"]]
+  # OutRule900
+  SpecifyOutRule900: !Not [!Equals [!Ref OutRule900DestinationType, "-"]]
+  OutRule900IsIPv4: !Equals [!Ref OutRule900DestinationType, "cidr-ipv4"]
+  OutRule900IsIPv6: !Equals [!Ref OutRule900DestinationType, "cidr-ipv6"]
+  OutRule900IsICMP: !Equals [!Select [1, !Ref OutRule900], "1"]
+  OutRule900IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule900], "1"]]
+  # OutRule950
+  SpecifyOutRule950: !Not [!Equals [!Ref OutRule950DestinationType, "-"]]
+  OutRule950IsIPv4: !Equals [!Ref OutRule950DestinationType, "cidr-ipv4"]
+  OutRule950IsIPv6: !Equals [!Ref OutRule950DestinationType, "cidr-ipv6"]
+  OutRule950IsICMP: !Equals [!Select [1, !Ref OutRule950], "1"]
+  OutRule950IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule950], "1"]]
+  # OutRule1000
+  SpecifyOutRule1000: !Not [!Equals [!Ref OutRule1000DestinationType, "-"]]
+  OutRule1000IsIPv4: !Equals [!Ref OutRule1000DestinationType, "cidr-ipv4"]
+  OutRule1000IsIPv6: !Equals [!Ref OutRule1000DestinationType, "cidr-ipv6"]
+  OutRule1000IsICMP: !Equals [!Select [1, !Ref OutRule1000], "1"]
+  OutRule1000IsNotICMP: !Not [!Equals [!Select [1, !Ref OutRule1000], "1"]]
+
+Resources:
+  acl:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub "${AclName}-acl"
+
+### Ingress Rules ##############################################################
+
+  inRule50:
+    Condition: SpecifyInRule50
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 50
+      RuleAction: !Select [0, !Ref InRule50]
+      Protocol: !Select [1, !Ref InRule50]
+      CidrBlock: !If
+        - InRule50IsIPv4
+        - !Ref InRule50Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule50IsIPv6
+        - !Ref InRule50Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule50IsICMP
+        - Code: !Select [2, !Ref InRule50]
+          Type: !Select [3, !Ref InRule50]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule50IsNotICMP
+        - From: !Select [2, !Ref InRule50]
+          To: !Select [3, !Ref InRule50]
+        - !Ref "AWS::NoValue"
+        
+  inRule100:
+    Condition: SpecifyInRule100
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 100
+      RuleAction: !Select [0, !Ref InRule100]
+      Protocol: !Select [1, !Ref InRule100]
+      CidrBlock: !If
+        - InRule100IsIPv4
+        - !Ref InRule100Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule100IsIPv6
+        - !Ref InRule100Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule100IsICMP
+        - Code: !Select [2, !Ref InRule100]
+          Type: !Select [3, !Ref InRule100]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule100IsNotICMP
+        - From: !Select [2, !Ref InRule100]
+          To: !Select [3, !Ref InRule100]
+        - !Ref "AWS::NoValue"
+        
+  inRule150:
+    Condition: SpecifyInRule150
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 150
+      RuleAction: !Select [0, !Ref InRule150]
+      Protocol: !Select [1, !Ref InRule150]
+      CidrBlock: !If
+        - InRule150IsIPv4
+        - !Ref InRule150Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule150IsIPv6
+        - !Ref InRule150Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule150IsICMP
+        - Code: !Select [2, !Ref InRule150]
+          Type: !Select [3, !Ref InRule150]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule150IsNotICMP
+        - From: !Select [2, !Ref InRule150]
+          To: !Select [3, !Ref InRule150]
+        - !Ref "AWS::NoValue"
+        
+  inRule200:
+    Condition: SpecifyInRule200
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 200
+      RuleAction: !Select [0, !Ref InRule200]
+      Protocol: !Select [1, !Ref InRule200]
+      CidrBlock: !If
+        - InRule200IsIPv4
+        - !Ref InRule200Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule200IsIPv6
+        - !Ref InRule200Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule200IsICMP
+        - Code: !Select [2, !Ref InRule200]
+          Type: !Select [3, !Ref InRule200]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule200IsNotICMP
+        - From: !Select [2, !Ref InRule200]
+          To: !Select [3, !Ref InRule200]
+        - !Ref "AWS::NoValue"
+        
+  inRule250:
+    Condition: SpecifyInRule250
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 250
+      RuleAction: !Select [0, !Ref InRule250]
+      Protocol: !Select [1, !Ref InRule250]
+      CidrBlock: !If
+        - InRule250IsIPv4
+        - !Ref InRule250Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule250IsIPv6
+        - !Ref InRule250Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule250IsICMP
+        - Code: !Select [2, !Ref InRule250]
+          Type: !Select [3, !Ref InRule250]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule250IsNotICMP
+        - From: !Select [2, !Ref InRule250]
+          To: !Select [3, !Ref InRule250]
+        - !Ref "AWS::NoValue"
+        
+  inRule300:
+    Condition: SpecifyInRule300
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 300
+      RuleAction: !Select [0, !Ref InRule300]
+      Protocol: !Select [1, !Ref InRule300]
+      CidrBlock: !If
+        - InRule300IsIPv4
+        - !Ref InRule300Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule300IsIPv6
+        - !Ref InRule300Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule300IsICMP
+        - Code: !Select [2, !Ref InRule300]
+          Type: !Select [3, !Ref InRule300]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule300IsNotICMP
+        - From: !Select [2, !Ref InRule300]
+          To: !Select [3, !Ref InRule300]
+        - !Ref "AWS::NoValue"
+        
+  inRule350:
+    Condition: SpecifyInRule350
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 350
+      RuleAction: !Select [0, !Ref InRule350]
+      Protocol: !Select [1, !Ref InRule350]
+      CidrBlock: !If
+        - InRule350IsIPv4
+        - !Ref InRule350Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule350IsIPv6
+        - !Ref InRule350Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule350IsICMP
+        - Code: !Select [2, !Ref InRule350]
+          Type: !Select [3, !Ref InRule350]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule350IsNotICMP
+        - From: !Select [2, !Ref InRule350]
+          To: !Select [3, !Ref InRule350]
+        - !Ref "AWS::NoValue"
+        
+  inRule400:
+    Condition: SpecifyInRule400
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 400
+      RuleAction: !Select [0, !Ref InRule400]
+      Protocol: !Select [1, !Ref InRule400]
+      CidrBlock: !If
+        - InRule400IsIPv4
+        - !Ref InRule400Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule400IsIPv6
+        - !Ref InRule400Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule400IsICMP
+        - Code: !Select [2, !Ref InRule400]
+          Type: !Select [3, !Ref InRule400]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule400IsNotICMP
+        - From: !Select [2, !Ref InRule400]
+          To: !Select [3, !Ref InRule400]
+        - !Ref "AWS::NoValue"
+        
+  inRule450:
+    Condition: SpecifyInRule450
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 450
+      RuleAction: !Select [0, !Ref InRule450]
+      Protocol: !Select [1, !Ref InRule450]
+      CidrBlock: !If
+        - InRule450IsIPv4
+        - !Ref InRule450Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule450IsIPv6
+        - !Ref InRule450Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule450IsICMP
+        - Code: !Select [2, !Ref InRule450]
+          Type: !Select [3, !Ref InRule450]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule450IsNotICMP
+        - From: !Select [2, !Ref InRule450]
+          To: !Select [3, !Ref InRule450]
+        - !Ref "AWS::NoValue"
+        
+  inRule500:
+    Condition: SpecifyInRule500
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 500
+      RuleAction: !Select [0, !Ref InRule500]
+      Protocol: !Select [1, !Ref InRule500]
+      CidrBlock: !If
+        - InRule500IsIPv4
+        - !Ref InRule500Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule500IsIPv6
+        - !Ref InRule500Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule500IsICMP
+        - Code: !Select [2, !Ref InRule500]
+          Type: !Select [3, !Ref InRule500]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule500IsNotICMP
+        - From: !Select [2, !Ref InRule500]
+          To: !Select [3, !Ref InRule500]
+        - !Ref "AWS::NoValue"
+        
+  inRule550:
+    Condition: SpecifyInRule550
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 550
+      RuleAction: !Select [0, !Ref InRule550]
+      Protocol: !Select [1, !Ref InRule550]
+      CidrBlock: !If
+        - InRule550IsIPv4
+        - !Ref InRule550Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule550IsIPv6
+        - !Ref InRule550Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule550IsICMP
+        - Code: !Select [2, !Ref InRule550]
+          Type: !Select [3, !Ref InRule550]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule550IsNotICMP
+        - From: !Select [2, !Ref InRule550]
+          To: !Select [3, !Ref InRule550]
+        - !Ref "AWS::NoValue"
+        
+  inRule600:
+    Condition: SpecifyInRule600
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 600
+      RuleAction: !Select [0, !Ref InRule600]
+      Protocol: !Select [1, !Ref InRule600]
+      CidrBlock: !If
+        - InRule600IsIPv4
+        - !Ref InRule600Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule600IsIPv6
+        - !Ref InRule600Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule600IsICMP
+        - Code: !Select [2, !Ref InRule600]
+          Type: !Select [3, !Ref InRule600]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule600IsNotICMP
+        - From: !Select [2, !Ref InRule600]
+          To: !Select [3, !Ref InRule600]
+        - !Ref "AWS::NoValue"
+        
+  inRule650:
+    Condition: SpecifyInRule650
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 650
+      RuleAction: !Select [0, !Ref InRule650]
+      Protocol: !Select [1, !Ref InRule650]
+      CidrBlock: !If
+        - InRule650IsIPv4
+        - !Ref InRule650Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule650IsIPv6
+        - !Ref InRule650Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule650IsICMP
+        - Code: !Select [2, !Ref InRule650]
+          Type: !Select [3, !Ref InRule650]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule650IsNotICMP
+        - From: !Select [2, !Ref InRule650]
+          To: !Select [3, !Ref InRule650]
+        - !Ref "AWS::NoValue"
+        
+  inRule700:
+    Condition: SpecifyInRule700
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 700
+      RuleAction: !Select [0, !Ref InRule700]
+      Protocol: !Select [1, !Ref InRule700]
+      CidrBlock: !If
+        - InRule700IsIPv4
+        - !Ref InRule700Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule700IsIPv6
+        - !Ref InRule700Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule700IsICMP
+        - Code: !Select [2, !Ref InRule700]
+          Type: !Select [3, !Ref InRule700]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule700IsNotICMP
+        - From: !Select [2, !Ref InRule700]
+          To: !Select [3, !Ref InRule700]
+        - !Ref "AWS::NoValue"
+        
+  inRule750:
+    Condition: SpecifyInRule750
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 750
+      RuleAction: !Select [0, !Ref InRule750]
+      Protocol: !Select [1, !Ref InRule750]
+      CidrBlock: !If
+        - InRule750IsIPv4
+        - !Ref InRule750Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule750IsIPv6
+        - !Ref InRule750Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule750IsICMP
+        - Code: !Select [2, !Ref InRule750]
+          Type: !Select [3, !Ref InRule750]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule750IsNotICMP
+        - From: !Select [2, !Ref InRule750]
+          To: !Select [3, !Ref InRule750]
+        - !Ref "AWS::NoValue"
+        
+  inRule800:
+    Condition: SpecifyInRule800
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 800
+      RuleAction: !Select [0, !Ref InRule800]
+      Protocol: !Select [1, !Ref InRule800]
+      CidrBlock: !If
+        - InRule800IsIPv4
+        - !Ref InRule800Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule800IsIPv6
+        - !Ref InRule800Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule800IsICMP
+        - Code: !Select [2, !Ref InRule800]
+          Type: !Select [3, !Ref InRule800]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule800IsNotICMP
+        - From: !Select [2, !Ref InRule800]
+          To: !Select [3, !Ref InRule800]
+        - !Ref "AWS::NoValue"
+        
+  inRule850:
+    Condition: SpecifyInRule850
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 850
+      RuleAction: !Select [0, !Ref InRule850]
+      Protocol: !Select [1, !Ref InRule850]
+      CidrBlock: !If
+        - InRule850IsIPv4
+        - !Ref InRule850Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule850IsIPv6
+        - !Ref InRule850Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule850IsICMP
+        - Code: !Select [2, !Ref InRule850]
+          Type: !Select [3, !Ref InRule850]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule850IsNotICMP
+        - From: !Select [2, !Ref InRule850]
+          To: !Select [3, !Ref InRule850]
+        - !Ref "AWS::NoValue"
+        
+  inRule900:
+    Condition: SpecifyInRule900
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 900
+      RuleAction: !Select [0, !Ref InRule900]
+      Protocol: !Select [1, !Ref InRule900]
+      CidrBlock: !If
+        - InRule900IsIPv4
+        - !Ref InRule900Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule900IsIPv6
+        - !Ref InRule900Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule900IsICMP
+        - Code: !Select [2, !Ref InRule900]
+          Type: !Select [3, !Ref InRule900]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule900IsNotICMP
+        - From: !Select [2, !Ref InRule900]
+          To: !Select [3, !Ref InRule900]
+        - !Ref "AWS::NoValue"
+        
+  inRule950:
+    Condition: SpecifyInRule950
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 950
+      RuleAction: !Select [0, !Ref InRule950]
+      Protocol: !Select [1, !Ref InRule950]
+      CidrBlock: !If
+        - InRule950IsIPv4
+        - !Ref InRule950Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule950IsIPv6
+        - !Ref InRule950Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule950IsICMP
+        - Code: !Select [2, !Ref InRule950]
+          Type: !Select [3, !Ref InRule950]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule950IsNotICMP
+        - From: !Select [2, !Ref InRule950]
+          To: !Select [3, !Ref InRule950]
+        - !Ref "AWS::NoValue"
+        
+  inRule1000:
+    Condition: SpecifyInRule1000
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: false
+      NetworkAclId: !Ref acl
+      RuleNumber: 1000
+      RuleAction: !Select [0, !Ref InRule1000]
+      Protocol: !Select [1, !Ref InRule1000]
+      CidrBlock: !If
+        - InRule1000IsIPv4
+        - !Ref InRule1000Source
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - InRule1000IsIPv6
+        - !Ref InRule1000Source
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - InRule1000IsICMP
+        - Code: !Select [2, !Ref InRule1000]
+          Type: !Select [3, !Ref InRule1000]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - InRule1000IsNotICMP
+        - From: !Select [2, !Ref InRule1000]
+          To: !Select [3, !Ref InRule1000]
+        - !Ref "AWS::NoValue"
+
+### Egress Rules ###############################################################
+
+  outRule50:
+    Condition: SpecifyOutRule50
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 50
+      RuleAction: !Select [0, !Ref OutRule50]
+      Protocol: !Select [1, !Ref OutRule50]
+      CidrBlock: !If
+        - OutRule50IsIPv4
+        - !Ref OutRule50Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule50IsIPv6
+        - !Ref OutRule50Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule50IsICMP
+        - Code: !Select [2, !Ref OutRule50]
+          Type: !Select [3, !Ref OutRule50]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule50IsNotICMP
+        - From: !Select [2, !Ref OutRule50]
+          To: !Select [3, !Ref OutRule50]
+        - !Ref "AWS::NoValue"
+        
+  outRule100:
+    Condition: SpecifyOutRule100
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 100
+      RuleAction: !Select [0, !Ref OutRule100]
+      Protocol: !Select [1, !Ref OutRule100]
+      CidrBlock: !If
+        - OutRule100IsIPv4
+        - !Ref OutRule100Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule100IsIPv6
+        - !Ref OutRule100Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule100IsICMP
+        - Code: !Select [2, !Ref OutRule100]
+          Type: !Select [3, !Ref OutRule100]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule100IsNotICMP
+        - From: !Select [2, !Ref OutRule100]
+          To: !Select [3, !Ref OutRule100]
+        - !Ref "AWS::NoValue"
+        
+  outRule150:
+    Condition: SpecifyOutRule150
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 150
+      RuleAction: !Select [0, !Ref OutRule150]
+      Protocol: !Select [1, !Ref OutRule150]
+      CidrBlock: !If
+        - OutRule150IsIPv4
+        - !Ref OutRule150Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule150IsIPv6
+        - !Ref OutRule150Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule150IsICMP
+        - Code: !Select [2, !Ref OutRule150]
+          Type: !Select [3, !Ref OutRule150]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule150IsNotICMP
+        - From: !Select [2, !Ref OutRule150]
+          To: !Select [3, !Ref OutRule150]
+        - !Ref "AWS::NoValue"
+        
+  outRule200:
+    Condition: SpecifyOutRule200
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 200
+      RuleAction: !Select [0, !Ref OutRule200]
+      Protocol: !Select [1, !Ref OutRule200]
+      CidrBlock: !If
+        - OutRule200IsIPv4
+        - !Ref OutRule200Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule200IsIPv6
+        - !Ref OutRule200Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule200IsICMP
+        - Code: !Select [2, !Ref OutRule200]
+          Type: !Select [3, !Ref OutRule200]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule200IsNotICMP
+        - From: !Select [2, !Ref OutRule200]
+          To: !Select [3, !Ref OutRule200]
+        - !Ref "AWS::NoValue"
+        
+  outRule250:
+    Condition: SpecifyOutRule250
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 250
+      RuleAction: !Select [0, !Ref OutRule250]
+      Protocol: !Select [1, !Ref OutRule250]
+      CidrBlock: !If
+        - OutRule250IsIPv4
+        - !Ref OutRule250Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule250IsIPv6
+        - !Ref OutRule250Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule250IsICMP
+        - Code: !Select [2, !Ref OutRule250]
+          Type: !Select [3, !Ref OutRule250]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule250IsNotICMP
+        - From: !Select [2, !Ref OutRule250]
+          To: !Select [3, !Ref OutRule250]
+        - !Ref "AWS::NoValue"
+        
+  outRule300:
+    Condition: SpecifyOutRule300
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 300
+      RuleAction: !Select [0, !Ref OutRule300]
+      Protocol: !Select [1, !Ref OutRule300]
+      CidrBlock: !If
+        - OutRule300IsIPv4
+        - !Ref OutRule300Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule300IsIPv6
+        - !Ref OutRule300Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule300IsICMP
+        - Code: !Select [2, !Ref OutRule300]
+          Type: !Select [3, !Ref OutRule300]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule300IsNotICMP
+        - From: !Select [2, !Ref OutRule300]
+          To: !Select [3, !Ref OutRule300]
+        - !Ref "AWS::NoValue"
+        
+  outRule350:
+    Condition: SpecifyOutRule350
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 350
+      RuleAction: !Select [0, !Ref OutRule350]
+      Protocol: !Select [1, !Ref OutRule350]
+      CidrBlock: !If
+        - OutRule350IsIPv4
+        - !Ref OutRule350Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule350IsIPv6
+        - !Ref OutRule350Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule350IsICMP
+        - Code: !Select [2, !Ref OutRule350]
+          Type: !Select [3, !Ref OutRule350]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule350IsNotICMP
+        - From: !Select [2, !Ref OutRule350]
+          To: !Select [3, !Ref OutRule350]
+        - !Ref "AWS::NoValue"
+        
+  outRule400:
+    Condition: SpecifyOutRule400
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 400
+      RuleAction: !Select [0, !Ref OutRule400]
+      Protocol: !Select [1, !Ref OutRule400]
+      CidrBlock: !If
+        - OutRule400IsIPv4
+        - !Ref OutRule400Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule400IsIPv6
+        - !Ref OutRule400Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule400IsICMP
+        - Code: !Select [2, !Ref OutRule400]
+          Type: !Select [3, !Ref OutRule400]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule400IsNotICMP
+        - From: !Select [2, !Ref OutRule400]
+          To: !Select [3, !Ref OutRule400]
+        - !Ref "AWS::NoValue"
+        
+  outRule450:
+    Condition: SpecifyOutRule450
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 450
+      RuleAction: !Select [0, !Ref OutRule450]
+      Protocol: !Select [1, !Ref OutRule450]
+      CidrBlock: !If
+        - OutRule450IsIPv4
+        - !Ref OutRule450Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule450IsIPv6
+        - !Ref OutRule450Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule450IsICMP
+        - Code: !Select [2, !Ref OutRule450]
+          Type: !Select [3, !Ref OutRule450]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule450IsNotICMP
+        - From: !Select [2, !Ref OutRule450]
+          To: !Select [3, !Ref OutRule450]
+        - !Ref "AWS::NoValue"
+        
+  outRule500:
+    Condition: SpecifyOutRule500
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 500
+      RuleAction: !Select [0, !Ref OutRule500]
+      Protocol: !Select [1, !Ref OutRule500]
+      CidrBlock: !If
+        - OutRule500IsIPv4
+        - !Ref OutRule500Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule500IsIPv6
+        - !Ref OutRule500Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule500IsICMP
+        - Code: !Select [2, !Ref OutRule500]
+          Type: !Select [3, !Ref OutRule500]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule500IsNotICMP
+        - From: !Select [2, !Ref OutRule500]
+          To: !Select [3, !Ref OutRule500]
+        - !Ref "AWS::NoValue"
+        
+  outRule550:
+    Condition: SpecifyOutRule550
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 550
+      RuleAction: !Select [0, !Ref OutRule550]
+      Protocol: !Select [1, !Ref OutRule550]
+      CidrBlock: !If
+        - OutRule550IsIPv4
+        - !Ref OutRule550Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule550IsIPv6
+        - !Ref OutRule550Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule550IsICMP
+        - Code: !Select [2, !Ref OutRule550]
+          Type: !Select [3, !Ref OutRule550]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule550IsNotICMP
+        - From: !Select [2, !Ref OutRule550]
+          To: !Select [3, !Ref OutRule550]
+        - !Ref "AWS::NoValue"
+        
+  outRule600:
+    Condition: SpecifyOutRule600
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 600
+      RuleAction: !Select [0, !Ref OutRule600]
+      Protocol: !Select [1, !Ref OutRule600]
+      CidrBlock: !If
+        - OutRule600IsIPv4
+        - !Ref OutRule600Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule600IsIPv6
+        - !Ref OutRule600Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule600IsICMP
+        - Code: !Select [2, !Ref OutRule600]
+          Type: !Select [3, !Ref OutRule600]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule600IsNotICMP
+        - From: !Select [2, !Ref OutRule600]
+          To: !Select [3, !Ref OutRule600]
+        - !Ref "AWS::NoValue"
+        
+  outRule650:
+    Condition: SpecifyOutRule650
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 650
+      RuleAction: !Select [0, !Ref OutRule650]
+      Protocol: !Select [1, !Ref OutRule650]
+      CidrBlock: !If
+        - OutRule650IsIPv4
+        - !Ref OutRule650Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule650IsIPv6
+        - !Ref OutRule650Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule650IsICMP
+        - Code: !Select [2, !Ref OutRule650]
+          Type: !Select [3, !Ref OutRule650]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule650IsNotICMP
+        - From: !Select [2, !Ref OutRule650]
+          To: !Select [3, !Ref OutRule650]
+        - !Ref "AWS::NoValue"
+        
+  outRule700:
+    Condition: SpecifyOutRule700
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 700
+      RuleAction: !Select [0, !Ref OutRule700]
+      Protocol: !Select [1, !Ref OutRule700]
+      CidrBlock: !If
+        - OutRule700IsIPv4
+        - !Ref OutRule700Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule700IsIPv6
+        - !Ref OutRule700Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule700IsICMP
+        - Code: !Select [2, !Ref OutRule700]
+          Type: !Select [3, !Ref OutRule700]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule700IsNotICMP
+        - From: !Select [2, !Ref OutRule700]
+          To: !Select [3, !Ref OutRule700]
+        - !Ref "AWS::NoValue"
+        
+  outRule750:
+    Condition: SpecifyOutRule750
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 750
+      RuleAction: !Select [0, !Ref OutRule750]
+      Protocol: !Select [1, !Ref OutRule750]
+      CidrBlock: !If
+        - OutRule750IsIPv4
+        - !Ref OutRule750Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule750IsIPv6
+        - !Ref OutRule750Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule750IsICMP
+        - Code: !Select [2, !Ref OutRule750]
+          Type: !Select [3, !Ref OutRule750]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule750IsNotICMP
+        - From: !Select [2, !Ref OutRule750]
+          To: !Select [3, !Ref OutRule750]
+        - !Ref "AWS::NoValue"
+        
+  outRule800:
+    Condition: SpecifyOutRule800
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 800
+      RuleAction: !Select [0, !Ref OutRule800]
+      Protocol: !Select [1, !Ref OutRule800]
+      CidrBlock: !If
+        - OutRule800IsIPv4
+        - !Ref OutRule800Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule800IsIPv6
+        - !Ref OutRule800Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule800IsICMP
+        - Code: !Select [2, !Ref OutRule800]
+          Type: !Select [3, !Ref OutRule800]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule800IsNotICMP
+        - From: !Select [2, !Ref OutRule800]
+          To: !Select [3, !Ref OutRule800]
+        - !Ref "AWS::NoValue"
+        
+  outRule850:
+    Condition: SpecifyOutRule850
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 850
+      RuleAction: !Select [0, !Ref OutRule850]
+      Protocol: !Select [1, !Ref OutRule850]
+      CidrBlock: !If
+        - OutRule850IsIPv4
+        - !Ref OutRule850Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule850IsIPv6
+        - !Ref OutRule850Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule850IsICMP
+        - Code: !Select [2, !Ref OutRule850]
+          Type: !Select [3, !Ref OutRule850]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule850IsNotICMP
+        - From: !Select [2, !Ref OutRule850]
+          To: !Select [3, !Ref OutRule850]
+        - !Ref "AWS::NoValue"
+        
+  outRule900:
+    Condition: SpecifyOutRule900
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 900
+      RuleAction: !Select [0, !Ref OutRule900]
+      Protocol: !Select [1, !Ref OutRule900]
+      CidrBlock: !If
+        - OutRule900IsIPv4
+        - !Ref OutRule900Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule900IsIPv6
+        - !Ref OutRule900Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule900IsICMP
+        - Code: !Select [2, !Ref OutRule900]
+          Type: !Select [3, !Ref OutRule900]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule900IsNotICMP
+        - From: !Select [2, !Ref OutRule900]
+          To: !Select [3, !Ref OutRule900]
+        - !Ref "AWS::NoValue"
+        
+  outRule950:
+    Condition: SpecifyOutRule950
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 950
+      RuleAction: !Select [0, !Ref OutRule950]
+      Protocol: !Select [1, !Ref OutRule950]
+      CidrBlock: !If
+        - OutRule950IsIPv4
+        - !Ref OutRule950Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule950IsIPv6
+        - !Ref OutRule950Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule950IsICMP
+        - Code: !Select [2, !Ref OutRule950]
+          Type: !Select [3, !Ref OutRule950]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule950IsNotICMP
+        - From: !Select [2, !Ref OutRule950]
+          To: !Select [3, !Ref OutRule950]
+        - !Ref "AWS::NoValue"
+        
+  outRule1000:
+    Condition: SpecifyOutRule1000
+    Type: AWS::EC2::NetworkAclEntry
+    Properties: 
+      Egress: true
+      NetworkAclId: !Ref acl
+      RuleNumber: 1000
+      RuleAction: !Select [0, !Ref OutRule1000]
+      Protocol: !Select [1, !Ref OutRule1000]
+      CidrBlock: !If
+        - OutRule1000IsIPv4
+        - !Ref OutRule1000Destination
+        - !Ref "AWS::NoValue"
+      Ipv6CidrBlock: !If
+        - OutRule1000IsIPv6
+        - !Ref OutRule1000Destination
+        - !Ref "AWS::NoValue"
+      Icmp: !If
+        - OutRule1000IsICMP
+        - Code: !Select [2, !Ref OutRule1000]
+          Type: !Select [3, !Ref OutRule1000]
+        - !Ref "AWS::NoValue"
+      PortRange: !If
+        - OutRule1000IsNotICMP
+        - From: !Select [2, !Ref OutRule1000]
+          To: !Select [3, !Ref OutRule1000]
+        - !Ref "AWS::NoValue"
+
+Outputs:
+  aclId:
+    Value: !GetAtt acl.Id
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-aclId", !Sub "${AWS::StackName}-aclId"]
+
+
+#
+# WWW = 0.0.0.0/0
+# XXX = private subnet e.g. 10.1.0.0/19
+# _X_ = whitelisted ip / CIDR e.g. 12.34.56.78/32
+# n = number of connected subnets
+#
+# PUBLIC:
+#   IN: 5
+#       iHttpsAll: WWW:443
+#       iHttpAll:  WWW:80
+#       iEphmAll:  WWW:1024-65535
+#       iIcmpAll:  WWW:ICMP
+#       iSshHome:  _X_:22
+#   OUT: 4 + 2n
+#       oHttpsAll: WWW:443
+#       oHttpAll:  WWW:80
+#       oEphmAll:  WWW:1024-65535
+#       oIcmpAll:  WWW:ICMP
+#       oEphmPriN: XXX:1024-65535
+#       oSshPriN:  XXX:22
+# PRIVATE:
+#   IN: 1 + 3n
+#       iEphmNat:  WWW:1024-65535
+#       iEphmPriN: XXX:1024-65535
+#       iIcmpPriN: XXX:ICMP
+#       iSshPriN:  XXX:22
+#   OUT: 2 + 2n
+#       oHttpsNat: WWW:443
+#       oHttpNat:  WWW:80
+#       oEphmPriN: XXX:1024-65535
+#       oIcmpPriN: XXX:ICMP
+#

@@ -1,0 +1,284 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Common re-usable security groups to use across a VPC, e.g. HTTP, ICMP, SSH
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: VPC Parameters
+        Parameters:
+          - VpcId
+          - VpcName
+          - IsPublic
+          - WhiteListedCidrBlock
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  VpcId:
+    Type: String
+    Description: ID of the VPC associated with the security groups
+
+  VpcName:
+    Type: String
+    Description: Name of the VPC associated with the security groups
+
+  IsPublic:
+    Type: String
+    Description: >-
+      Are the security groups used in a public context, i.e are they accessible
+      from the internet or only from the VPC
+    Default: "no"
+    AllowedValues:
+      - "yes"
+      - "no"
+
+  WhiteListedCidrBlock:
+    Type: String
+    Description: >-
+      (conditional: only applicaple if IsPublic is yes) The CIDR block the SSH
+      security group will allow access
+    Default: 127.0.0.1/32
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  SpecifyPublic: !Equals [!Ref IsPublic, "yes"]
+
+Resources:
+
+  ### HTTP #####################################################################
+
+  httpSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: !If
+        - SpecifyPublic
+        - !Sub "Public HTTP SG for ${VpcId}, accessible from internet"
+        - !Sub "Private HTTP SG for ${VpcId}, accessible only from VPC"
+      GroupName: !If
+        - SpecifyPublic
+        - !Sub "${VpcName}-public-http"
+        - !Sub "${VpcName}-private-http"
+      SecurityGroupEgress: 
+        - CidrIp: 0.0.0.0/0
+          FromPort: 80
+          ToPort: 80
+          IpProtocol: tcp
+        - CidrIp: 0.0.0.0/0
+          FromPort: 443
+          ToPort: 443
+          IpProtocol: tcp
+      VpcId: !Ref VpcId
+
+  httpPublicSecurityGroupIngress:
+    Condition: SpecifyPublic
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId: !Ref httpSecurityGroup
+      FromPort: 80
+      ToPort: 80
+      IpProtocol: tcp
+
+  httpsPublicSecurityGroupIngress:
+    Condition: SpecifyPublic
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId: !Ref httpSecurityGroup
+      FromPort: 443
+      ToPort: 443
+      IpProtocol: tcp
+
+  httpSelfSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref httpSecurityGroup
+      SourceSecurityGroupId: !Ref httpSecurityGroup
+      FromPort: 80
+      ToPort: 80
+      IpProtocol: tcp
+
+  httpsSelfSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref httpSecurityGroup
+      SourceSecurityGroupId: !Ref httpSecurityGroup
+      FromPort: 443
+      ToPort: 443
+      IpProtocol: tcp
+
+  ### ICMP #####################################################################
+
+  icmpSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: !If
+        - SpecifyPublic
+        - !Sub "Public ICMP SG for ${VpcId}, accessible from internet"
+        - !Sub "Private ICMP SG for ${VpcId}, accessible only from VPC"
+      GroupName: !If
+        - SpecifyPublic
+        - !Sub "${VpcName}-public-icmp"
+        - !Sub "${VpcName}-private-icmp"
+      SecurityGroupEgress:
+        # Echo Request (Type8, Code0)
+        - CidrIp: 0.0.0.0/0
+          FromPort: 8
+          ToPort: -1
+          IpProtocol: icmp
+        # Echo Reply (Type0, Code0)
+        - CidrIp: 0.0.0.0/0
+          FromPort: 0
+          ToPort: -1
+          IpProtocol: icmp
+        # Fragmentation Needed (Type3, Code4)
+        - CidrIp: 0.0.0.0/0
+          FromPort: 3
+          ToPort: 4
+          IpProtocol: icmp
+        # Time Exceeded (Type11, Code0)
+        - CidrIp: 0.0.0.0/0
+          FromPort: 11
+          ToPort: -1
+          IpProtocol: icmp
+      VpcId: !Ref VpcId
+
+  icmpEchoRequestPublicSecurityGroupIngress:
+    Condition: SpecifyPublic
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId: !Ref icmpSecurityGroup
+      FromPort: 8
+      ToPort: -1
+      IpProtocol: icmp
+
+  icmpEchoReplyPublicSecurityGroupIngress:
+    Condition: SpecifyPublic
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId: !Ref icmpSecurityGroup
+      FromPort: 0
+      ToPort: -1
+      IpProtocol: icmp
+
+  icmpFragmentationNeededPublicSecurityGroupIngress:
+    Condition: SpecifyPublic
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId: !Ref icmpSecurityGroup
+      FromPort: 3
+      ToPort: 4
+      IpProtocol: icmp
+
+  icmpTimeExceededPublicSecurityGroupIngress:
+    Condition: SpecifyPublic
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId: !Ref icmpSecurityGroup
+      FromPort: 11
+      ToPort: -1
+      IpProtocol: icmp
+
+  icmpEchoRequestSelfSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref icmpSecurityGroup
+      SourceSecurityGroupId: !Ref icmpSecurityGroup
+      FromPort: 8
+      ToPort: -1
+      IpProtocol: icmp
+
+  icmpEchoReplySelfSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref icmpSecurityGroup
+      SourceSecurityGroupId: !Ref icmpSecurityGroup
+      FromPort: 0
+      ToPort: -1
+      IpProtocol: icmp
+
+  icmpFragmentationNeededSelfSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref icmpSecurityGroup
+      SourceSecurityGroupId: !Ref icmpSecurityGroup
+      FromPort: 3
+      ToPort: 4
+      IpProtocol: icmp
+
+  icmpTimeExceededSelfSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref icmpSecurityGroup
+      SourceSecurityGroupId: !Ref icmpSecurityGroup
+      FromPort: 11
+      ToPort: -1
+      IpProtocol: icmp
+
+  ### SSH ######################################################################
+
+  bastionSSHSecurityGroup:
+    Condition: SpecifyPublic
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: !Sub "SSH bastion / tunnel SG for ${VpcId}"
+      GroupName: !Sub "${VpcName}-ssh-bastion"
+      SecurityGroupEgress: # replaces the default all traffic 0.0.0.0/0 rule
+        - CidrIp: 127.0.0.1/32
+          IpProtocol: "-1"
+          Description: "Dummy to replace default rule"
+      SecurityGroupIngress:
+        - CidrIp: !Ref WhiteListedCidrBlock
+          FromPort: 22
+          ToPort: 22
+          IpProtocol: tcp
+      VpcId: !Ref VpcId
+
+  instanceSSHSecurityGroup:
+    Condition: SpecifyPublic
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: !Sub "SSH instance (accessible via bastion / tunnel) SG for ${VpcId}"
+      GroupName: !Sub "${VpcName}-ssh-instance"
+      SecurityGroupEgress: # replaces the default all traffic 0.0.0.0/0 rule
+        - CidrIp: 127.0.0.1/32
+          IpProtocol: "-1"
+          Description: "Dummy to replace default rule"
+      SecurityGroupIngress:
+        SourceSecurityGroupId: !Ref bastionSSHSecurityGroup
+        FromPort: 22
+        ToPort: 22
+        IpProtocol: tcp
+      VpcId: !Ref VpcId
+
+  bastionSSHSecurityGroupEgress:
+    Condition: SpecifyPublic
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties: 
+      GroupId: !Ref bastionSSHSecurityGroup
+      DestinationSecurityGroupId: !Ref instanceSSHSecurityGroup
+      FromPort: 22
+      ToPort: 22
+      IpProtocol: tcp
+
+# Outputs:
+#   OutputName:
+#     Description: ...
+#     Value: ...
+#     Export:
+#       Name: !If [SpecifyParentStack, !Sub "${ParentStack}-...", !Sub "${AWS::StackName}-..."]

@@ -1,0 +1,592 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  RDS PostgreSQL instance. If you import an existing DB instance, and the
+  template configuration doesn't match the actual configuration of the DB
+  instance, AWS CloudFormation applies the changes in the template during
+  the import operation. WARNING: If a DB instance is deleted or replaced during
+  an update, AWS CloudFormation deletes all automated snapshots. However, it
+  retains manual DB snapshots. During an update that requires replacement, you
+  can apply a stack policy to prevent DB instances from being replaced. We
+  highly recommend that you take a snapshot of the database before updating the
+  stack. If you don't, you lose the data when AWS CloudFormation replaces your
+  DB instance. To preserve your data, perform the procedure found here:
+  https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-rds-database-instance.html
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: General DB Parameters
+        Parameters:
+          - DBInstanceIdentifier
+          - DBClusterIdentifier
+          - EngineVersion
+          - DBParameterGroupName
+          - OptionGroupName
+          - MasterUsername
+          - MasterUserPassword
+          - DBName
+          - DBInstanceClass
+          - DeletionProtection
+          - AssociatedRoles
+      - Label:
+          default: Storage Parameters
+        Parameters:
+          - StorageType
+          - AllocatedStorage
+          - Iops
+          - MaxAllocatedStorage
+      - Label:
+          default: Network Parameters
+        Parameters:
+          - Port
+          - VpcId
+          - Subnets
+          - AvailabilityZone
+          - PubliclyAccessible
+      - Label:
+          default: Backup Parameters
+        Parameters:
+          - BackupRetentionPeriod
+          - PreferredBackupWindow
+          - CopyTagsToSnapshot
+          - DeleteAutomatedBackups
+      - Label:
+          default: Encryption Parameters
+        Parameters:
+          - StorageEncrypted
+          - KmsKeyId
+          - CACertificateIdentifier
+      - Label:
+          default: Performance Insight Parameters
+        Parameters:
+          - EnablePerformanceInsights
+          - PerformanceInsightsRetentionPeriod
+          - PerformanceInsightsKMSKeyId
+      - Label:
+          default: Monitoring Parameters
+        Parameters:
+          - MonitoringInterval
+          - MonitoringRoleArn
+      - Label:
+          default: Logging Parameters
+        Parameters:
+          - CloudwatchLogsExports
+      - Label:
+          default: Maintenance Parameters
+        Parameters:
+          - AutoMinorVersionUpgrade
+          - AllowMajorVersionUpgrade
+          - PreferredMaintenanceWindow
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  DBInstanceIdentifier:
+    Type: String
+    Description: >-
+      (optional) A name for the DB instance. If you specify a name, AWS
+      CloudFormation converts it to lowercase. If you don't specify a name, AWS
+      CloudFormation generates a unique physical ID and uses that ID for the DB
+      instance
+    Default: ""
+
+  DBClusterIdentifier:
+    Type: String
+    Description: >-
+      (optional) The identifier of the DB cluster that the instance will belong
+      to
+    Default: ""
+
+  EngineVersion:
+    Type: String
+    Description: >-
+      The version number of the database engine to use. For available versions
+      see: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts.General.DBVersions
+    Default: "14.2"
+
+  DBParameterGroupName:
+    Type: String
+    Description: >-
+      (optional) The name of an existing DB parameter group. If you don't
+      specify a value for the DBParameterGroupName property, the default DB
+      parameter group for the specified engine and engine version is used. NOTE:
+      If any of the data members of the referenced parameter group are changed
+      during an update, the DB instance might need to be restarted, which causes
+      some interruption. If the parameter group contains static parameters,
+      whether they were changed or not, an update triggers a reboot
+    Default: ""
+
+  OptionGroupName:
+    Type: String
+    Description: >-
+      (optional) Indicates that the DB instance should be associated with the
+      specified option group. NOTE: Permanent options, such as the TDE option
+      for Oracle Advanced Security TDE, can't be removed from an option group.
+      Also, that option group can't be removed from a DB instance once it is
+      associated with a DB instance
+    Default: ""
+
+  MasterUsername:
+    Type: AWS::SSM::Parameter::Name
+    Description: The master user name for the DB instance
+
+  MasterUserPassword:
+    Type: AWS::SSM::Parameter::Name
+    Description: >-
+      The password for the master user. The password can include any printable
+      ASCII character except "/", """, or "@". Must be between 8 and 128
+      characters long
+
+  DBName:
+    Type: AWS::SSM::Parameter::Name
+    Description: >-
+      The name of the database to create when the DB instance is created. Must
+      be between 1 - 63 letters, numbers, or underscores. Must begin with a
+      letter or an underscore. Subsequent characters can be letters,
+      underscores, or digits (0-9). NOTE: If you specify the
+      DBSnapshotIdentifier property, AWS CloudFormation ignores this property
+
+  DBInstanceClass:
+    Type: String
+    Description: >-
+      The compute and memory capacity of the DB instance, for example,
+      db.m4.large. Not all DB instance classes are available in all AWS Regions,
+      or for all database engines. For a list of available classes see:
+      https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html
+    Default: db.t4g.micro
+
+  DeletionProtection:
+    Type: String
+    Description: >-
+      Indicates whether the DB instance has deletion protection enabled. The
+      database can't be deleted when deletion protection is enabled
+    Default: true
+    AllowedValues:
+      - true
+      - false
+
+  AssociatedRoles:
+    Type: CommaDelimitedList
+    Description: >-
+      (optional) The AWS Identity and Access Management (IAM) roles associated
+      with the DB instance
+    Default: ","
+
+  StorageType:
+    Type: String
+    Description: >-
+      Specifies the storage type to be associated with the DB instance. The
+      standard value is also known as 'magnetic'. NOTE: If you specify io1, you
+      must also include a value for the Iops parameter
+    Default: standard
+    AllowedValues:
+      - standard
+      - gp2
+      - io1
+
+  AllocatedStorage:
+    Type: String
+    Description: >-
+      (optional) The amount of storage (in gigabytes) to be initially allocated
+      for the database instance. NOTE: If any value is set in the Iops
+      parameter, AllocatedStorage must be at least 100 GiB, which corresponds to
+      the minimum Iops value of 1,000. If you increase the Iops value (in 1,000
+      IOPS increments), then you must also increase the AllocatedStorage value
+      (in 100-GiB increments). Needs to be in the range of standard: 5-3072,
+      io1: 100 - 65536, gp2: 20 - 65536
+    Default: "5"
+
+  Iops:
+    Type: Number
+    Description: >-
+      (conditional: only required if StorageType is io1) The number of I/O
+      operations per second (IOPS) that the database provisions. The value must
+      be equal to or greater than 1000. If you specify this property, you must
+      follow the range of allowed ratios of your requested IOPS rate to the
+      amount of storage that you allocate (IOPS to allocated storage). For
+      example, you can provision an Oracle database instance with 1000 IOPS and
+      200 GiB of storage (a ratio of 5:1), or specify 2000 IOPS with 200 GiB of
+      storage (a ratio of 10:1). For more info see:
+      https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#USER_PIOPS
+    Default: 3000
+
+  MaxAllocatedStorage:
+    Type: String
+    Description: >-
+      (optional) The upper limit in gibibytes (GiB) to which Amazon RDS can
+      automatically scale the storage of the DB instance. 0 means don't
+      automatically allocate more storage. Minimum is 101, maximum is 16,384.
+      For more details see:
+      https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIOPS.StorageTypes.html#USER_PIOPS.Autoscaling
+    Default: 0
+
+  Port:
+    Type: String
+    Description: >-
+      The port number on which the database accepts connections
+    Default: "5432"
+
+  VpcId:
+    Type: String
+    Description: >-
+      VPC the DB is associated with. Used when creating the security groups
+
+  SubnetIds:
+    Type: CommaDelimitedList
+    Description: >-
+      Subnets the DB is associated with. Used to create a subnet group. NOTE: If
+      you update this value, the new subnet group must be a subnet group in a
+      new VPC
+
+  AvailabilityZone:
+    Type: String
+    Description: >-
+      (optional) The Availability Zone that the database instance will be
+      created in, e.g. eu-west-2b. You can also specify 'multi-az' if the
+      instance is a multiple availability zone deployment. NOTE:  The specified
+      Availability Zone must be in the same region as the current endpoint
+    Default: ""
+
+  PubliclyAccessible:
+    Type: String
+    Description: >-
+      Indicates whether the DB instance is an internet-facing instance. If you
+      specify true, AWS CloudFormation creates an instance with a publicly
+      resolvable DNS name, which resolves to a public IP address. If you specify
+      false, AWS CloudFormation creates an internal instance with a DNS name
+      that resolves to a private IP address. The default behavior value depends
+      on your VPC setup and the database subnet group
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  BackupRetentionPeriod:
+    Type: Number
+    Description: >-
+      (optional) The number of days for which automated backups are retained.
+      Setting this parameter to a positive number enables backups. Setting this
+      parameter to 0 disables automated backups. Must be a value from 0 to 35.
+      NOTE: 't be set to 0 if the DB instance is a source to read replicas
+    Default: 0
+
+  PreferredBackupWindow:
+    Type: String
+    Description: >-
+      (conditional: only applicable if BackupRetentionPeriod is not 0) The daily
+      time range during which automated backups are created if automated backups
+      are enabled, using the BackupRetentionPeriod parameter. Must be:
+      hh24:mi-hh24:mi format, in UTC, not conflict with preferred maintenance
+      window, be at least 30 minutes
+    Default: "02:00-04:00"
+
+  CopyTagsToSnapshot:
+    Type: String
+    Description: >-
+      A value that indicates whether to copy tags from the DB instance to
+      snapshots of the DB instance
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  DeleteAutomatedBackups:
+    Type: String
+    Description: >-
+      Indicates whether to remove automated backups immediately after the DB
+      instance is deleted
+    Default: true
+    AllowedValues:
+      - true
+      - false
+
+  StorageEncrypted:
+    Type: String
+    Description: >-
+      Indicates whether the DB instance is encrypted. NOTE: If you specify the
+      SnapshotIdentifier or SourceDBInstanceIdentifier property, don't specify
+      this property. The value is inherited from the snapshot or source DB
+      instance, and if the DB instance is encrypted, the specified KmsKeyId
+      property is used
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  KmsKeyId:
+    Type: String
+    Description: >-
+      (optional) The ARN of the AWS KMS key that's used to encrypt the DB
+      instance, such as arn:aws:kms:us-east-1:012345678910:key/abcd1234-a123-456a-a12b-a123b4cd56ef.
+      If you enable the StorageEncrypted property but don't specify this
+      property, AWS CloudFormation uses the default KMS key, but if you specify
+      this property StorageEncrypted must be true. If you specify the
+      SourceDBInstanceIdentifier property, the value is inherited from the
+      source DB instance if the read replica is created in the same region. If
+      you create an encrypted read replica in a different AWS Region, then you
+      must specify a KMS key for the destination AWS Region. KMS encryption keys
+      are specific to the region that they're created in, and you can't use
+      encryption keys from one region in another region. If you specify the
+      SnapshotIdentifier property, the StorageEncrypted property value is
+      inherited from the snapshot, and if the DB instance is encrypted, the
+      specified KmsKeyId property is used
+    Default: ""
+
+  CACertificateIdentifier:
+    Type: String
+    Description: >-
+      (optional) The identifier of the CA certificate for this DB instance. For
+      more information about CA certificate identifiers for RDS DB engines, see
+      https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL-certificate-rotation.html
+    Default: ""
+
+  EnablePerformanceInsights:
+    Type: String
+    Description: >-
+      Indicates whether to enable Performance Insights for the DB instance
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  PerformanceInsightsRetentionPeriod:
+    Type: Number
+    Description: >-
+      (conditional: only applicable if EnablePerformanceInsights is true) The
+      amount of time, in days, to retain Performance Insights data. Valid values
+      are 7 or 731 (2 years)
+    Default: 31
+
+  PerformanceInsightsKMSKeyId:
+    Type: String
+    Description: >-
+      (optional) The AWS KMS key identifier for encryption of Performance
+      Insights data. The KMS key identifier is the key ARN, key ID, alias ARN,
+      or alias name for the KMS key. If you do not specify a value for
+      PerformanceInsightsKMSKeyId, then Amazon RDS uses your default KMS key
+    Default: ""
+
+  MonitoringInterval:
+    Type: Number
+    Description: >-
+      (optional) The interval, in seconds, between points when Enhanced
+      Monitoring metrics are collected for the DB instance. To disable
+      collection of Enhanced Monitoring metrics, specify 0
+    Default: 0
+
+  MonitoringRoleArn:
+    Type: String
+    Description: >-
+      (conditional: required if MonitoringInterval is anything other than 0) The
+      ARN for the IAM role that permits RDS to send enhanced monitoring metrics
+      to Amazon CloudWatch Logs
+    Default: ""
+
+  CloudwatchLogsExports:
+    Type: CommaDelimitedList
+    Description: >-
+      (optional) The list of log types that need to be enabled for exporting to
+      CloudWatch Logs
+    Default: "postgresql,upgrade"
+
+  AutoMinorVersionUpgrade:
+    Type: String
+    Description: >-
+      Indicates whether minor engine upgrades are applied automatically to the
+      DB instance during the maintenance window
+    Default: true
+    AllowedValues:
+      - true
+      - false
+
+  AllowMajorVersionUpgrade:
+    Type: String
+    Description: >-
+      indicates whether major version upgrades are allowed. Changing this
+      parameter doesn't result in an outage and the change is asynchronously
+      applied as soon as possible. NOTE: Major version upgrades must be allowed
+      when specifying a value for the EngineVersion parameter that is a
+      different major version than the DB instance's current version
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  PreferredMaintenanceWindow:
+    Type: String
+    Description: >-
+      (optional) The weekly time range during which system maintenance can
+      occur, in Universal Coordinated Time (UTC). Format must be:
+      ddd:hh24:mi-ddd:hh24:mi. The default is a 30-minute window selected at
+      random from an 8-hour block of time for each AWS Region, occurring on a
+      random day of the week. To see the time blocks available see:
+      https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_UpgradeDBInstance.Maintenance.html#AdjustingTheMaintenanceWindow
+      NOTE: This property applies when AWS CloudFormation initially creates the
+      DB instance. If you use AWS CloudFormation to update the DB instance,
+      those updates are applied immediately
+    Default: ""
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  SpecifyDBInstanceIdentifier: !Not [!Equals [!Ref DBInstanceIdentifier, ""]]
+  SpecifyDBClusterIdentifier: !Not [!Equals [!Ref DBClusterIdentifier, ""]]
+  SpecifyDBParameterGroupName: !Not [!Equals [!Ref DBParameterGroupName, ""]]
+  SpecifyOptionGroupName: !Not [!Equals [!Ref OptionGroupName, ""]]
+  SpecifyDeletionProtection: !Equals [!Ref DeletionProtection, true]
+  SpecifyAssociatedRoles: !Not [!Equals [!Select [0, !Ref AssociatedRoles], ""]]
+  SpecifyStorageTypeIO1: !Equals [!Ref StorageType, "io1"]
+  SpecifyMaxAllocatedStorage: !Not [!Equals [!Ref MaxAllocatedStorage, 0]]
+  SpecifyAvailabilityZone: !And
+    - !Not [!Equals [!Ref AvailabilityZone, ""]]
+    - !Not [!Equals [!Ref AvailabilityZone, "multi-az"]]
+  SpecifyMultipleAvailabilityZones: !And
+    - !Not [!Equals [!Ref AvailabilityZone, ""]]
+    - !Equals [!Ref AvailabilityZone, "multi-az"]
+  SpecifyPubliclyAccessible: !Equals [!Ref PubliclyAccessible, true]
+  SpecifyBackupRetentionPeriod: !Not [!Equals [!Ref BackupRetentionPeriod, 0]]
+  SpecifyCopyTagsToSnapshot: !Equals [!Ref CopyTagsToSnapshot, true]
+  SpecifyDeleteAutomatedBackups: !Equals [!Ref DeleteAutomatedBackups, true]
+  SpecifyStorageEncrypted: !Equals [!Ref StorageEncrypted, true]
+  SpecifyKmsKeyId: !Not [!Equals [!Ref KmsKeyId, ""]]
+  SpecifyCACertificateIdentifier: !Not [!Equals [!Ref CACertificateIdentifier, ""]]
+  SpecifyPerformanceInsights: !Not [!Equals [!Ref EnablePerformanceInsights, ""]]
+  SpecifyPerformanceInsightsKMSKeyId: !And
+    - !Condition SpecifyPerformanceInsights
+    - !Not [!Equals [!Ref PerformanceInsightsKMSKeyId, ""]]
+  SpecifyMonitoringInterval: !Not [!Equals [!Ref MonitoringInterval, 0]]
+  SpecifyMonitoringRoleArn: !Not [!Equals [!Ref MonitoringRoleArn, ""]]
+  SpecifyCloudwatchLogsExports: !Not [!Equals [!Select [0, !Ref CloudwatchLogsExports], ""]]
+  SpecifyAutoMinorVersionUpgrade: !Equals [!Ref AutoMinorVersionUpgrade, true]
+  SpecifyAllowMajorVersionUpgrade: !Equals [!Ref AllowMajorVersionUpgrade, true]
+  SpecifyPreferredMaintenanceWindow: !Not [!Equals [!Ref PreferredMaintenanceWindow, ""]]
+
+Resources:
+
+  dbSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties: 
+      DBSubnetGroupDescription: !Sub "Subnets associated with ${AWS::StackName}"
+      SubnetIds: !Ref SubnetIds
+
+  serverPostgreSQLSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: !If
+        - SpecifyDBInstanceIdentifier
+        - !Sub "RDS PostgreSQL server SG for ${DBInstanceIdentifier}"
+        - !Sub "RDS PostgreSQL server SG for ${AWS::StackName}"
+      GroupName: !If
+        - SpecifyDBInstanceIdentifier
+        - !Sub "${DBInstanceIdentifier}-postgresql-server"
+        - !Sub "${AWS::StackName}-postgresql-server"
+      SecurityGroupEgress: # replaces the default all traffic 0.0.0.0/0 rule
+      - CidrIp: 127.0.0.1/32
+        IpProtocol: "-1"
+        Description: "Dummy to replace default rule"
+      VpcId: !Ref VpcId
+
+  clientPostgreSQLSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: !If
+        - SpecifyDBInstanceIdentifier
+        - !Sub "RDS PostgreSQL client SG for ${DBInstanceIdentifier}"
+        - !Sub "RDS PostgreSQL client SG for ${AWS::StackName}"
+      GroupName: !If
+        - SpecifyDBInstanceIdentifier
+        - !Sub "${DBInstanceIdentifier}-postgresql-client"
+        - !Sub "${AWS::StackName}-postgresql-client"
+      VpcId: !Ref VpcId
+
+  serverPostgreSQLSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties: 
+      GroupId: !Ref serverPostgreSQLSecurityGroup
+      IpProtocol: tcp
+      SourceSecurityGroupId: !Ref clientPostgreSQLSecurityGroup
+      FromPort: !Ref Port
+      ToPort: !Ref Port
+
+  clientPostgreSQLSecurityGroupEgress:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties: 
+      GroupId: !Ref clientPostgreSQLSecurityGroup
+      IpProtocol: tcp
+      DestinationSecurityGroupId: !Ref serverPostgreSQLSecurityGroup
+      FromPort: !Ref Port
+      ToPort: !Ref Port
+
+  dbInstance:
+    Type: AWS::RDS::DBInstance
+    Properties: 
+      AllocatedStorage: !Ref AllocatedStorage
+      AllowMajorVersionUpgrade: !If [SpecifyAllowMajorVersionUpgrade, true, false]
+      AssociatedRoles: !If [SpecifyAssociatedRoles, !Ref AssociatedRoles, !Ref "AWS::NoValue"]
+      AutoMinorVersionUpgrade: !If [SpecifyAutoMinorVersionUpgrade, true, false]
+      AvailabilityZone: !If [SpecifyAvailabilityZone, !Ref AvailabilityZone, !Ref "AWS::NoValue"]
+      BackupRetentionPeriod: !If [SpecifyBackupRetentionPeriod, !Ref BackupRetentionPeriod, !Ref "AWS::NoValue"]
+      CACertificateIdentifier: !If [SpecifyCACertificateIdentifier, !Ref CACertificateIdentifier, !Ref "AWS::NoValue"]
+      # CharacterSetName: String
+      CopyTagsToSnapshot: !If [SpecifyCopyTagsToSnapshot, true, false]
+      DBClusterIdentifier: !If [SpecifyDBClusterIdentifier, !Ref DBClusterIdentifier, !Ref "AWS::NoValue"]
+      DBInstanceClass: !Ref DBInstanceClass
+      DBInstanceIdentifier: !If [SpecifyDBInstanceIdentifier, !Ref DBInstanceIdentifier, !Ref "AWS::NoValue"]
+      DBName: !Ref DBName
+      DBParameterGroupName: !If [SpecifyDBParameterGroupName, !Ref DBParameterGroupName, !Ref "AWS::NoValue"]
+      DBSnapshotIdentifier: String
+      DBSubnetGroupName: !Ref dbSubnetGroup
+      DeleteAutomatedBackups: !If [SpecifyDeleteAutomatedBackups, true, false]
+      DeletionProtection: !If [SpecifyDeletionProtection, true, false]
+      # Domain: String
+      # DomainIAMRoleName: String
+      EnableCloudwatchLogsExports: !If [SpecifyCloudwatchLogsExports, !Ref CloudwatchLogsExports, !Ref "AWS::NoValue"]
+      # EnableIAMDatabaseAuthentication: !If [SpecifyIAMDatabaseAuthentication, true, false]
+      EnablePerformanceInsights: !If [SpecifyPerformanceInsights, true, false]
+      Engine: postgres
+      EngineVersion: !Ref EngineVersion
+      Iops: !If [SpecifyStorageTypeIO1, !Ref Iops, !Ref "AWS::NoValue"]
+      KmsKeyId: !If [SpecifyKmsKeyId, !Ref KmsKeyId, !Ref "AWS::NoValue"]
+      LicenseModel: postgresql-license
+      MasterUsername: !Ref MasterUsername
+      MasterUserPassword: !Ref MasterUserPassword
+      MaxAllocatedStorage: !If [SpecifyMaxAllocatedStorage, !Ref MaxAllocatedStorage, !Ref "AWS::NoValue"]
+      MonitoringInterval: !If [SpecifyMonitoringInterval, !Ref MonitoringInterval, !Ref "AWS::NoValue"]
+      MonitoringRoleArn: !If [SpecifyMonitoringRoleArn, !Ref MonitoringRoleArn, !Ref "AWS::NoValue"]
+      MultiAZ: !If [SpecifyMultipleAvailabilityZones, true, false]
+      OptionGroupName: !If [SpecifyOptionGroupName, !Ref OptionGroupName, !Ref "AWS::NoValue"]
+      PerformanceInsightsKMSKeyId: !If [SpecifyPerformanceInsightsKMSKeyId, !Ref PerformanceInsightsKMSKeyId, !Ref "AWS::NoValue"]
+      PerformanceInsightsRetentionPeriod: !If [SpecifyPerformanceInsights, !Ref PerformanceInsightsRetentionPeriod, !Ref "AWS::NoValue"]
+      Port: !Ref Port
+      PreferredBackupWindow: !If [SpecifyBackupRetentionPeriod, !Ref PreferredBackupWindow, !Ref "AWS::NoValue"]
+      PreferredMaintenanceWindow: !If [SpecifyPreferredMaintenanceWindow, !Ref PreferredMaintenanceWindow, !Ref "AWS::NoValue"]
+      # -- ?? not sure what this is, doesn't it infer it from the DBInstanceClass?
+      # ProcessorFeatures: 
+      #   - ProcessorFeature
+      # PromotionTier: Integer
+      PubliclyAccessible: !If [SpecifyPubliclyAccessible, true, false]
+      # -- only applicable to read replicas. You may want to create a seperate template for read replicas
+      # SourceDBInstanceIdentifier: String
+      # SourceRegion: String
+      StorageEncrypted: !If [SpecifyStorageEncrypted, true, false]
+      StorageType: !Ref StorageType
+      # Timezone: String
+      UseDefaultProcessorFeatures: true
+      VPCSecurityGroups: 
+        - !Ref serverPostgreSQLSecurityGroup
+
+# Outputs:
+#   OutputName:
+#     Description: ...
+#     Value: ...
+#     Export:
+#       Name: !If [SpecifyParentStack, !Sub "${ParentStack}-...", !Sub "${AWS::StackName}-..."]

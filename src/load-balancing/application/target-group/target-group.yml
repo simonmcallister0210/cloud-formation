@@ -1,0 +1,611 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Specifies a target group for an Application Load Balancer
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: Target Group Parameters
+        Parameters:
+          - VpcId
+          - Name
+          - IpAddressType
+          - Protocol
+          - ProtocolVersion
+          - Port
+          - DeregisterDelay
+      - Label:
+          default: Stickiness Parameters
+        Parameters:
+          - EnableStickiness
+          - StickinessType
+          - StickinessAppCookieName
+          - StickinessCookieDuration
+      - Label:
+          default: Instance And IP Target Group Parameters
+        Parameters:
+          - LoadBalancingAlgorithm
+          - SlowStartSeconds
+      - Label:
+          default: Lambda Target Group Parameters
+        Parameters:
+          - EnableLambdaMultiValueHeaders
+      - Label:
+          default: Target Parameters
+        Parameters:
+          - TargetType
+          - Target1
+          - Target2
+          - Target3
+          - Target4
+          - Target5
+          - Target6
+          - Target7
+          - Target8
+          - Target9
+          - Target10
+      - Label:
+          default: Heatlh Check Parameters
+        Parameters:
+          - MatcherHttpCode
+          - MatcherGrpcCode
+          - HealthCheckEnabled
+          - HealthCheckIntervalSeconds
+          - HealthCheckPath
+          - HealthCheckPort
+          - HealthCheckProtocol
+          - HealthCheckTimeoutSeconds
+          - HealthyThresholdCount
+          - UnhealthyThresholdCount
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  VpcId:
+    Type: String
+    Description: >-
+      (conditional: If the target is a Lambda function, this parameter does not
+      apply. Otherwise, this parameter is required) The identifier of the
+      virtual private cloud (VPC)
+
+  Name:
+    Type: String
+    Description: >-
+      (optional) The name of the target group. This name must be unique per
+      region per account, can have a maximum of 32 characters, must contain only
+      alphanumeric characters or hyphens, and must not begin or end with a
+      hyphen
+    Default: ""
+
+  IpAddressType:
+    Type: String
+    Description: The type of IP address used for this target group
+    Default: ipv4
+    AllowedValues:
+      - ipv4
+      - ipv6
+
+  Protocol:
+    Type: String
+    Description: >-
+      The protocol to use for routing traffic to the targets. If the target is a
+      Lambda function, this parameter does not apply
+    Default: HTTPS
+    AllowedValues:
+      - HTTP
+      - HTTPS
+
+  ProtocolVersion:
+    Type: String
+    Description: The protocol version
+    Default: HTTP2
+    AllowedValues:
+      - GRPC
+      - HTTP1
+      - HTTP2
+
+  Port:
+    Type: Number
+    Description: >-
+      The port on which the targets receive traffic. This port is used unless
+      you specify a port override when registering the target. NOTE: if the
+      target is a Lambda function, this parameter does not apply
+    Default: 443
+    MinValue: 1
+    MaxValue: 65535
+
+  DeregisterDelay:
+    Type: String
+    Description: >-
+      (optional) The amount of time, in seconds, for Elastic Load Balancing to
+      wait before changing the state of a deregistering target from draining to
+      unused. The range is 0-3600 seconds. NOTE: If the target is a Lambda
+      function, this attribute is not supported
+    Default: "300"
+
+  EnableStickiness:
+    Type: String
+    Description: Indicates whether sticky sessions are enabled
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  StickinessType:
+    Type: String
+    Description: The type of sticky sessions
+    Default: lb_cookie
+    AllowedValues:
+      - lb_cookie
+      - app_cookie
+
+  StickinessAppCookieName:
+    Type: String
+    Description: >-
+      (conditional: only required for Instance and IP targets AND if
+      StickinessType is app_cookie) Indicates the name of the application-based
+      cookie. Names that start with the following prefixes are not allowed:
+      AWSALB, AWSALBAPP, and AWSALBTG; they're reserved for use by the load
+      balancer
+    Default: ""
+
+  StickinessCookieDuration:
+    Type: String
+    Description: >-
+      (conditional: only applicable for Instance and IP targets) The time period,
+      in seconds, during which requests from a client should be routed to the
+      same target. After this time period expires, the cookie is considered
+      stale. The range is 1 second to 1 week (604800 seconds) balancer
+    Default: "86400" # 1 day
+
+  LoadBalancingAlgorithm:
+    Type: String
+    Description: >-
+      NOTE: only applicable to Instance and IP targets. The load balancing
+      algorithm determines how the load balancer selects targets when routing
+      requests
+    Default: round_robin
+    AllowedValues:
+      - round_robin
+      - least_outstanding_requests
+
+  SlowStartSeconds:
+    Type: String
+    Description: >-
+      NOTE: only applicable to Instance and IP targets. The time period, in
+      seconds, during which a newly registered target receives an increasing
+      share of the traffic to the target group. After this time period ends, the
+      target receives its full share of traffic. The range is 30-900 seconds
+      (15 minutes). The default is 0 seconds (disabled)
+    Default: "0"
+
+  EnableLambdaMultiValueHeaders:
+    Type: String
+    Description: >-
+      NOTE: only applicable to Lambda targets. Indicates whether the request and
+      response headers that are exchanged between the load balancer and the
+      Lambda function include arrays of values or strings. If the value is false
+      and the request contains a duplicate header field name or query parameter
+      key, the load balancer uses the last value sent by the client
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  TargetType:
+    Type: String
+    Description: >-
+      The type of target that you must specify when registering targets with
+      this target group. You can't specify targets for a target group using more
+      than one target type. instance - Register targets by instance ID. ip -
+      Register targets by IP address. You can specify IP addresses from the
+      subnets of the virtual private cloud (VPC) for the target group, the RFC
+      1918 range (10.0.0.0/8, 172.16.0.0/12, and 192.168.0.0/16), and the RFC
+      6598 range (100.64.0.0/10). You can't specify publicly routable IP
+      addresses. lambda - Register a single Lambda function as a target. alb -
+      Register a single Application Load Balancer as a target
+    Default: instance
+    AllowedValues:
+      - alb
+      - instance
+      - ip
+      - lambda
+
+  Target1:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies a target to add to a target group. Values are AVAILABILITY_ZONE,
+      ID, PORT.
+      
+      ... AVAILABILITY_ZONE: This can be an Availability Zone or all. This
+      determines whether the target receives traffic from the load balancer
+      nodes in the specified Availability Zone or from all enabled Availability
+      Zones for the load balancer. This parameter is not supported if the target
+      type of the target group is instance or alb. If the target type is ip and
+      the IP address is in a subnet of the VPC for the target group, the
+      Availability Zone is automatically detected and this parameter is
+      optional. If the IP address is outside the VPC, this parameter is
+      required. With an Application Load Balancer, if the target type is ip and
+      the IP address is outside the VPC for the target group, the only supported
+      value is all
+      
+      ... ID: The ID of the target. If the target type of the target
+      group is instance, specify an instance ID. If the target type is ip,
+      specify an IP address. If the target type is lambda, specify the ARN of
+      the Lambda function. If the target type is alb, specify the ARN of the
+      Application Load Balancer target
+      
+      ... PORT: The port on which the target is
+      listening. If the target group protocol is GENEVE, the supported port is
+      6081. If the target type is alb, the targeted Application Load Balancer
+      must have at least one listener whose port matches the target group port.
+      Not used if the target is a Lambda function
+    Default: ",,"
+
+  Target2:
+    Type: CommaDelimitedList
+    Default: ",,"
+
+  Target3:
+    Type: CommaDelimitedList
+    Default: ",,"
+
+  Target4:
+    Type: CommaDelimitedList
+    Default: ",,"
+
+  Target5:
+    Type: CommaDelimitedList
+    Default: ",,"
+
+  Target6:
+    Type: CommaDelimitedList
+    Default: ",,"
+
+  Target7:
+    Type: CommaDelimitedList
+    Default: ",,"
+
+  Target8:
+    Type: CommaDelimitedList
+    Default: ",,"
+
+  Target9:
+    Type: CommaDelimitedList
+    Default: ",,"
+
+  Target10:
+    Type: CommaDelimitedList
+    Default: ",,"
+
+  MatcherHttpCode:
+    Type: String
+    Description: >-
+      (conditional: only applicable if ProtocolVersion is HTTP/HTTPS) Successful
+      HTTP response for health check. You can specify values between 200 and
+      499, and the default value is 200. You can specify multiple values (for
+      example, "200,202") or a range of values (for example, "200-299"). NOTE:
+      when using shorthand syntax, some values such as commas need to be escaped
+    Default: ""
+
+  MatcherGrpcCode:
+    Type: String
+    Description: >-
+      (conditional: only applicable if ProtocolVersion is GRPC) Successful GRPC
+      response for health check. You can specify values between 0 and 99. You
+      can specify multiple values (for example, "0,1") or arange of values (for
+      example, "0-5"). The default value is 12
+    Default: ""
+
+  HealthCheckEnabled:
+    Type: String
+    Description: >-
+      Indicates whether health checks are enabled. If the target type is lambda,
+      health checks are disabled by default but can be enabled. If the target
+      type is instance, ip, or alb, health checks are always enabled and cannot
+      be disabled
+    Default: true
+    AllowedValues:
+      - true
+      - false
+
+  HealthCheckIntervalSeconds:
+    Type: Number
+    Description: >-
+      The approximate amount of time, in seconds, between health checks of an
+      individual target. If the target group protocol is HTTP or HTTPS, the
+      default is 30 seconds
+    Default: 30
+    MinValue: 5
+    MaxValue: 300
+
+  HealthCheckPath:
+    Type: String
+    Description: >-
+      [HTTP/HTTPS health checks] The destination for health checks on the
+      targets. [HTTP1 or HTTP2 protocol version] The ping path. The default is
+      /. [GRPC protocol version] The path of a custom health check method with
+      the format /package.service/method. The default is /AWS.ALB/healthcheck. 
+    Default: "/health"
+    MinLength: 1
+    MaxLength: 1024
+
+  HealthCheckPort:
+    Type: String
+    Description: >-
+      The port the load balancer uses when performing health checks on targets.
+      If the protocol is HTTP or HTTPS the default is 'traffic-port' which is
+      the port on which each target receives traffic from the load balancer
+    Default: "8080"
+
+  HealthCheckProtocol:
+    Type: String
+    Description: >-
+      The protocol the load balancer uses when performing health checks on
+      targets. For Application Load Balancers, the default is HTTP. The TCP
+      protocol is not supported for health checks if the protocol of the target
+      group is HTTP or HTTPS. The GENEVE, TLS, UDP, and TCP_UDP protocols are
+      not supported for health checks
+    Default: HTTP
+    AllowedValues:
+      - HTTP
+      - HTTPS
+      # Could add more but lots of if this then that I don't want to deal w/ rn
+
+  HealthCheckTimeoutSeconds:
+    Type: Number
+    Description: >-
+      The amount of time, in seconds, during which no response from a target
+      means a failed health check. For target groups with a protocol of HTTP or
+      HTTPS the default is 5 seconds. If the target type is lambda, the default
+      is 30 seconds
+    Default: 5
+    MinValue: 2
+    MaxValue: 120
+
+  HealthyThresholdCount:
+    Type: Number
+    Description: >-
+      The number of consecutive health checks successes required before
+      considering an unhealthy target healthy. For target groups with a protocol
+      of HTTP or HTTPS, the default is 5. If the target type is lambda, the
+      default is 5
+    Default: 5
+    MinValue: 2
+    MaxValue: 10
+
+  UnhealthyThresholdCount:
+    Type: Number
+    Description: >-
+      The number of consecutive health check failures required before
+      considering a target unhealthy
+    Default: 2
+    MinValue: 2
+    MaxValue: 10
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  SpecifyName: !Not [!Equals [!Ref Name, ""]]
+  SpecifyDeregisterDelay: !Not [!Equals [!Ref DeregisterDelay, ""]]
+  SpecifyMatcherHttpCode: !Not [!Equals [!Ref MatcherHttpCode, ""]]
+  SpecifyMatcherGrpcCode: !Not [!Equals [!Ref MatcherGrpcCode, ""]]
+  SpecifyMatcher: !Or [!Condition SpecifyMatcherHttpCode, !Condition SpecifyMatcherGrpcCode]
+
+  SpecifyTarget1: !Not [!Equals [!Select [1, !Ref Target1], ""]]
+  SpecifyTarget2: !Not [!Equals [!Select [1, !Ref Target2], ""]]
+  SpecifyTarget3: !Not [!Equals [!Select [1, !Ref Target3], ""]]
+  SpecifyTarget4: !Not [!Equals [!Select [1, !Ref Target4], ""]]
+  SpecifyTarget5: !Not [!Equals [!Select [1, !Ref Target5], ""]]
+  SpecifyTarget6: !Not [!Equals [!Select [1, !Ref Target6], ""]]
+  SpecifyTarget7: !Not [!Equals [!Select [1, !Ref Target7], ""]]
+  SpecifyTarget8: !Not [!Equals [!Select [1, !Ref Target8], ""]]
+  SpecifyTarget9: !Not [!Equals [!Select [1, !Ref Target9], ""]]
+  SpecifyTarget10: !Not [!Equals [!Select [1, !Ref Target10], ""]]
+
+  SpecifyTarget1AZ: !Not [!Equals [!Select [0, !Ref Target1], ""]]
+  SpecifyTarget2AZ: !Not [!Equals [!Select [0, !Ref Target2], ""]]
+  SpecifyTarget3AZ: !Not [!Equals [!Select [0, !Ref Target3], ""]]
+  SpecifyTarget4AZ: !Not [!Equals [!Select [0, !Ref Target4], ""]]
+  SpecifyTarget5AZ: !Not [!Equals [!Select [0, !Ref Target5], ""]]
+  SpecifyTarget6AZ: !Not [!Equals [!Select [0, !Ref Target6], ""]]
+  SpecifyTarget7AZ: !Not [!Equals [!Select [0, !Ref Target7], ""]]
+  SpecifyTarget8AZ: !Not [!Equals [!Select [0, !Ref Target8], ""]]
+  SpecifyTarget9AZ: !Not [!Equals [!Select [0, !Ref Target9], ""]]
+  SpecifyTarget10AZ: !Not [!Equals [!Select [0, !Ref Target10], ""]]
+
+  SpecifyTarget1Port: !Not [!Equals [!Select [2, !Ref Target1], ""]]
+  SpecifyTarget2Port: !Not [!Equals [!Select [2, !Ref Target2], ""]]
+  SpecifyTarget3Port: !Not [!Equals [!Select [2, !Ref Target3], ""]]
+  SpecifyTarget4Port: !Not [!Equals [!Select [2, !Ref Target4], ""]]
+  SpecifyTarget5Port: !Not [!Equals [!Select [2, !Ref Target5], ""]]
+  SpecifyTarget6Port: !Not [!Equals [!Select [2, !Ref Target6], ""]]
+  SpecifyTarget7Port: !Not [!Equals [!Select [2, !Ref Target7], ""]]
+  SpecifyTarget8Port: !Not [!Equals [!Select [2, !Ref Target8], ""]]
+  SpecifyTarget9Port: !Not [!Equals [!Select [2, !Ref Target9], ""]]
+  SpecifyTarget10Port: !Not [!Equals [!Select [2, !Ref Target10], ""]]
+
+  IsInstanceTarget: !Equals [ !Ref TargetType, "instance"]
+  IsIPTarget: !Equals [ !Ref TargetType, "ip"]
+  IsInstanceOrIPTarget: !Or [!Condition IsInstanceTarget, !Condition IsIPTarget]
+  IsLambdaTarget: !Equals [ !Ref TargetType, "lambda"]
+
+  SpecifyStickiness: !Equals [ !Ref EnableStickiness, true]
+  UseLBCookies: !And
+    - !Condition SpecifyStickiness
+    - !Equals [ !Ref TargetType, "lb_cookie"]
+  UseAppCookies: !And
+  - !Condition SpecifyStickiness
+  - !Equals [ !Ref TargetType, "app_cookie"]
+
+Resources:
+
+  targetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties: 
+      HealthCheckEnabled: !Ref HealthCheckEnabled
+      HealthCheckIntervalSeconds: !Ref HealthCheckIntervalSeconds
+      HealthCheckPath: !Ref HealthCheckPath
+      HealthCheckPort: !Ref HealthCheckPort
+      HealthCheckProtocol: !Ref HealthCheckProtocol
+      HealthCheckTimeoutSeconds: !Ref HealthCheckTimeoutSeconds
+      HealthyThresholdCount: !Ref HealthyThresholdCount
+      IpAddressType: !Ref IpAddressType
+      Matcher: !If
+        - SpecifyMatcher
+        - GrpcCode: !If [ SpecifyMatcherGrpcCode, !Ref MatcherGrpcCode, !Ref "AWS::NoValue" ]
+          HttpCode: !If [ SpecifyMatcherHttpCode, !Ref MatcherHttpCode, !Ref "AWS::NoValue" ]
+        - !Ref "AWS::NoValue"
+      Name: !If [ SpecifyName, !Ref Name, !Ref "AWS::NoValue" ]
+      Port: !Ref Port
+      Protocol: !Ref Protocol
+      ProtocolVersion: !Ref ProtocolVersion
+      TargetGroupAttributes:
+        # all / alb
+        - !If 
+          - SpecifyDeregisterDelay
+          - Key: deregistration_delay.timeout_seconds
+            Value: !Ref DeregisterDelay
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyStickiness
+          - Key: stickiness.enabled
+            Value: !Ref EnableStickiness
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyStickiness
+          - Key: stickiness.type
+            Value: !Ref StickinessType
+          - !Ref "AWS::NoValue"
+        # instance or ip
+        - !If
+          - IsInstanceOrIPTarget
+          - Key: load_balancing.algorithm.type
+            Value: !Ref LoadBalancingAlgorithm
+          - !Ref "AWS::NoValue"
+        - !If
+          - IsInstanceOrIPTarget
+          - Key: slow_start.duration_seconds
+            Value: !Ref SlowStartSeconds
+          - !Ref "AWS::NoValue"
+        - !If
+          - UseAppCookies
+          - Key: stickiness.app_cookie.cookie_name
+            Value: !Ref StickinessAppCookieName
+          - !Ref "AWS::NoValue"
+        - !If
+          - UseAppCookies
+          - Key: stickiness.app_cookie.duration_seconds
+            Value: !Ref StickinessCookieDuration
+          - !Ref "AWS::NoValue"
+        - !If
+          - UseLBCookies
+          - Key: stickiness.lb_cookie.duration_seconds
+            Value: !Ref StickinessCookieDuration
+          - !Ref "AWS::NoValue"
+        # lambda
+        - !If
+          - IsLambdaTarget
+          - Key: lambda.multi_value_headers.enabled
+            Value: !Ref EnableLambdaMultiValueHeaders
+          - !Ref "AWS::NoValue"
+      Targets: 
+        - !If
+          - SpecifyTarget1
+          - AvailabilityZone: !If [ SpecifyTarget1AZ, !Select [0, !Ref Target1], !Ref "AWS::NoValue" ]
+            Id: !Select [1, !Ref Target1]
+            Port: !If [ SpecifyTarget1Port, !Select [2, !Ref Target1], !Ref "AWS::NoValue" ]
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyTarget2
+          - AvailabilityZone: !If [ SpecifyTarget2AZ, !Select [0, !Ref Target2], !Ref "AWS::NoValue" ]
+            Id: !Select [1, !Ref Target2]
+            Port: !If [ SpecifyTarget2Port, !Select [2, !Ref Target2], !Ref "AWS::NoValue" ]
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyTarget3
+          - AvailabilityZone: !If [ SpecifyTarget3AZ, !Select [0, !Ref Target3], !Ref "AWS::NoValue" ]
+            Id: !Select [1, !Ref Target3]
+            Port: !If [ SpecifyTarget3Port, !Select [2, !Ref Target3], !Ref "AWS::NoValue" ]
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyTarget4
+          - AvailabilityZone: !If [ SpecifyTarget4AZ, !Select [0, !Ref Target4], !Ref "AWS::NoValue" ]
+            Id: !Select [1, !Ref Target4]
+            Port: !If [ SpecifyTarget4Port, !Select [2, !Ref Target4], !Ref "AWS::NoValue" ]
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyTarget5
+          - AvailabilityZone: !If [ SpecifyTarget5AZ, !Select [0, !Ref Target5], !Ref "AWS::NoValue" ]
+            Id: !Select [1, !Ref Target5]
+            Port: !If [ SpecifyTarget5Port, !Select [2, !Ref Target5], !Ref "AWS::NoValue" ]
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyTarget6
+          - AvailabilityZone: !If [ SpecifyTarget6AZ, !Select [0, !Ref Target6], !Ref "AWS::NoValue" ]
+            Id: !Select [1, !Ref Target6]
+            Port: !If [ SpecifyTarget6Port, !Select [2, !Ref Target6], !Ref "AWS::NoValue" ]
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyTarget7
+          - AvailabilityZone: !If [ SpecifyTarget7AZ, !Select [0, !Ref Target7], !Ref "AWS::NoValue" ]
+            Id: !Select [1, !Ref Target7]
+            Port: !If [ SpecifyTarget7Port, !Select [2, !Ref Target7], !Ref "AWS::NoValue" ]
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyTarget8
+          - AvailabilityZone: !If [ SpecifyTarget8AZ, !Select [0, !Ref Target8], !Ref "AWS::NoValue" ]
+            Id: !Select [1, !Ref Target8]
+            Port: !If [ SpecifyTarget8Port, !Select [2, !Ref Target8], !Ref "AWS::NoValue" ]
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyTarget9
+          - AvailabilityZone: !If [ SpecifyTarget9AZ, !Select [0, !Ref Target9], !Ref "AWS::NoValue" ]
+            Id: !Select [1, !Ref Target9]
+            Port: !If [ SpecifyTarget9Port, !Select [2, !Ref Target9], !Ref "AWS::NoValue" ]
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyTarget10
+          - AvailabilityZone: !If [ SpecifyTarget10AZ, !Select [0, !Ref Target10], !Ref "AWS::NoValue" ]
+            Id: !Select [1, !Ref Target10]
+            Port: !If [ SpecifyTarget10Port, !Select [2, !Ref Target10], !Ref "AWS::NoValue" ]
+          - !Ref "AWS::NoValue"
+      TargetType: !Ref TargetType
+      UnhealthyThresholdCount: !Ref UnhealthyThresholdCount
+      VpcId: !Ref VpcId
+
+Outputs:
+  targetGroupArn:
+    Description: ARN of the target group
+    Value: !Ref targetGroup
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-targetGroupArn", !Sub "${AWS::StackName}-targetGroupArn"]
+
+  # NOTE: doesn't exist for whatever reason
+  # targetGroupLoadBalancerArn:
+  #   Description: ARN of the load balancer that routes traffic to the target group
+  #   Value: !GetAtt targetGroup.LoadBalancerArns
+  #   Export:
+  #     Name: !If [SpecifyParentStack, !Sub "${ParentStack}-targetGroupLoadBalancerArn", !Sub "${AWS::StackName}-targetGroupLoadBalancerArn"]
+
+  targetGroupFullName:
+    Description: Full name of the target group
+    Value: !GetAtt targetGroup.TargetGroupFullName
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-targetGroupFullName", !Sub "${AWS::StackName}-targetGroupFullName"]
+
+  targetGroupName:
+    Description: Name of the target group
+    Value: !GetAtt targetGroup.TargetGroupName
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-targetGroupName", !Sub "${AWS::StackName}-targetGroupName"]
+  

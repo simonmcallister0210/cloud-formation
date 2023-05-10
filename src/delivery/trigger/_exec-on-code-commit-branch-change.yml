@@ -1,0 +1,86 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Event to trigger pipeline on commit to repo
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: Event Parameters
+        Parameters:
+          - PipelineName
+          - RepositoryName
+          - BranchName
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  PipelineName:
+    Type: String
+    Description: Name of the CodePipeline pipeline to trigger
+    Default: ""
+
+  RepositoryName:
+    Type: String
+    Description: Name of the CodeCommit repository to watch
+    Default: ""
+
+  BranchName:
+    Type: String
+    Description: Name of the CodeCommit repository branch to watch
+    Default: ""
+
+Resources:
+
+  eventRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - events.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/cfn-defined/"
+      Policies:
+        - PolicyName: !Sub "PipelineTriggerForCloudWatchEvents-${PipelineName}"
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: codepipeline:StartPipelineExecution
+                Resource: !Sub "arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${PipelineName}"
+
+  eventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventPattern:
+        source:
+          - aws.codecommit
+        detail-type:
+          - 'CodeCommit Repository State Change'
+        resources:
+          - !Sub "arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:${RepositoryName}"
+        detail:
+          event:
+            - referenceCreated
+            - referenceUpdated
+          referenceType:
+            - branch
+          referenceName:
+            - !Ref BranchName
+      Targets:
+        - Arn: !Sub "arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${PipelineName}"
+          RoleArn: !GetAtt eventRole.Arn
+          Id: !Sub "codepipeline-${PipelineName}"

@@ -1,0 +1,314 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Specifies a listener for an Application Load Balancer
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: Listener Parameters
+        Parameters:
+          - Identifier
+          - LoadBalancerArn
+          - Protocol
+          - Port
+      - Label:
+          default: HTTPS Parameters
+        Parameters:
+          - SslPolicy
+          - Certificates
+      - Label:
+          default: Default Auth Actions
+        Parameters:
+          - RuleDefaultAuthActionType
+          - RuleDefaultAuthActionValues
+      - Label:
+          default: Default Handle Actions
+        Parameters:
+          - RuleDefaultHandleActionType
+          - RuleDefaultHandleActionValues
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  Identifier:
+    Type: String
+    Description: >-
+      A unique identifier to distinguish the listener inside its load balancer.
+      This is useful for Cfn outputs
+
+  LoadBalancerArn:
+    Type: String
+    Description: >-
+      The Amazon Resource Name (ARN) of the load balancer
+
+  Protocol:
+    Type: String
+    Description: The protocol for connections from clients to the load balancer
+    Default: HTTPS
+    AllowedValues:
+      # - GENEVE
+      - HTTP
+      - HTTPS
+
+  Port:
+    Type: Number
+    Description: The port on which the load balancer is listening
+    Default: 443
+    MinValue: 1
+    MaxValue: 65535
+
+  SslPolicy:
+    Type: String
+    Description: >-
+      (conditional: only required for HTTPS listeners) The security policy that
+      defines which protocols and ciphers are supported. Look here for available
+      Application Load Balancer SslPolicies:
+      https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies
+    Default: ""
+
+  Certificate:
+    Type: String
+    Description: >-
+      (conditional: only required for HTTPS listeners) The default SSL server
+      certificate for a secure listener. You must provide exactly one
+      certificate if the listener protocol is HTTPS
+    Default: ""
+
+  RuleDefaultAuthActionType:
+    Type: String
+    Description: The type of action
+    Default: none
+    AllowedValues:
+      - none
+      - authenticate-cognito
+      - authenticate-oidc
+
+  RuleDefaultAuthActionValues:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your action. Specific values depend on the
+      action type.
+      
+      ... If your action is authenticate-cognito, values are:
+      USER_POOL_ARN, USER_POOL_CLIENT_ID, USER_POOL_DOMAIN, [ON_UNAUTH_REQUEST, SCOPE, SESSION_COOKIE_NAME, SESSION_TIMEOUT] .
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-authenticatecognitoconfig.html
+      
+      ... If your action is authenticate-oidc, values are:
+      ISSUER, AUTH_ENDPOINT, TOKEN_ENDPOINT, USER_INFO_ENDPOINT, CLIENT_ID, CLIENT_SECRET, [ON_UNAUTH_REQUEST, SCOPE, SESSION_COOKIE_NAME, SESSION_TIMEOUT, USE_EXISTING_CLIENT_SECRET] .
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-authenticateoidcconfig.html
+    Default: ",,,,,,,,,,"
+
+  RuleDefaultHandleActionType:
+    Type: String
+    Description: The type of action
+    Default: fixed-response
+    AllowedValues:
+      - fixed-response
+      - forward
+      - redirect
+
+  RuleDefaultHandleActionValues:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for you action. Specific values depend on the
+      action type.
+      
+      ... If your action is fixed-response, values are:
+      STATUS_CODE, [CONTENT_TYPE, MESSAGE_BODY] .
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-fixedresponseconfig.html
+      
+      ... If your action is forward, values are:
+      STICKINESS_ENABLED, [*STICKINESS_DURATION_SECS, TARGET_GROUP_ARN_1, WEIGHT_1, TARGET_GROUP_ARN_2, WEIGHT_2, TARGET_GROUP_ARN_3, WEIGHT_3] .
+      NOTE: STICKINESS_DURATION_SECS is required if STICKINESS_ENABLED is true.
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-forwardconfig.html
+      
+      ... If your action is redirect, values are:
+      STATUS_CODE, [PROTOCOL, HOST, PORT, PATH, QUERY] .
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-redirectconfig.html
+    Default: ",,,,,,,"
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  SpecifyHTTPSListener: !Equals [!Ref Protocol, "HTTPS"]
+  # Auth Action
+  SpecifyRuleDefaultAuthAction: !Not [!Equals [!Ref RuleDefaultAuthActionType, "none"]]
+  SpecifyRuleDefaultAuthActionAsAuthenticateCognito: !Equals [!Ref RuleDefaultAuthActionType, "authenticate-cognito"]
+  SpecifyRuleDefaultAuthActionAsAuthenticateOidc: !Equals [!Ref RuleDefaultAuthActionType, "authenticate-oidc"]
+  SpecifyRuleDefaultAuthActionValue1: !Not [!Equals [!Select [0, !Ref RuleDefaultAuthActionValues], ""]]
+  SpecifyRuleDefaultAuthActionValue2: !Not [!Equals [!Select [1, !Ref RuleDefaultAuthActionValues], ""]]
+  SpecifyRuleDefaultAuthActionValue3: !Not [!Equals [!Select [2, !Ref RuleDefaultAuthActionValues], ""]]
+  SpecifyRuleDefaultAuthActionValue4: !Not [!Equals [!Select [3, !Ref RuleDefaultAuthActionValues], ""]]
+  SpecifyRuleDefaultAuthActionValue5: !Not [!Equals [!Select [4, !Ref RuleDefaultAuthActionValues], ""]]
+  SpecifyRuleDefaultAuthActionValue6: !Not [!Equals [!Select [5, !Ref RuleDefaultAuthActionValues], ""]]
+  SpecifyRuleDefaultAuthActionValue7: !Not [!Equals [!Select [6, !Ref RuleDefaultAuthActionValues], ""]]
+  SpecifyRuleDefaultAuthActionValue8: !Not [!Equals [!Select [7, !Ref RuleDefaultAuthActionValues], ""]]
+  SpecifyRuleDefaultAuthActionValue9: !Not [!Equals [!Select [8, !Ref RuleDefaultAuthActionValues], ""]]
+  SpecifyRuleDefaultAuthActionValue10: !Not [!Equals [!Select [9, !Ref RuleDefaultAuthActionValues], ""]]
+  SpecifyRuleDefaultAuthActionValue11: !Not [!Equals [!Select [10, !Ref RuleDefaultAuthActionValues], ""]]
+  # Handle Action
+  SpecifyRuleDefaultHandleActionAsFixedResponse: !Equals [!Ref RuleDefaultHandleActionType, "fixed-response"]
+  SpecifyRuleDefaultHandleActionAsForward: !Equals [!Ref RuleDefaultHandleActionType, "forward"]
+  SpecifyRuleDefaultHandleActionAsRedirect: !Equals [!Ref RuleDefaultHandleActionType, "redirect"]
+  SpecifyRuleDefaultHandleActionValue1: !Not [!Equals [!Select [0, !Ref RuleDefaultHandleActionValues], ""]]
+  SpecifyRuleDefaultHandleActionValue2: !Not [!Equals [!Select [1, !Ref RuleDefaultHandleActionValues], ""]]
+  SpecifyRuleDefaultHandleActionValue3: !Not [!Equals [!Select [2, !Ref RuleDefaultHandleActionValues], ""]]
+  SpecifyRuleDefaultHandleActionValue4: !Not [!Equals [!Select [3, !Ref RuleDefaultHandleActionValues], ""]]
+  SpecifyRuleDefaultHandleActionValue5: !Not [!Equals [!Select [4, !Ref RuleDefaultHandleActionValues], ""]]
+  SpecifyRuleDefaultHandleActionValue6: !Not [!Equals [!Select [5, !Ref RuleDefaultHandleActionValues], ""]]
+  SpecifyRuleDefaultHandleActionValue7: !Not [!Equals [!Select [6, !Ref RuleDefaultHandleActionValues], ""]]
+  SpecifyRuleDefaultHandleActionValue8: !Not [!Equals [!Select [7, !Ref RuleDefaultHandleActionValues], ""]]
+
+Resources:
+
+  listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties: 
+      # NOTE: must specify exactly 1 certificate if protocol is HTTPS
+      Certificates:
+        - !If
+          - SpecifyHTTPSListener
+          - CertificateArn: !Ref Certificate
+          - !Ref "AWS::NoValue"
+      LoadBalancerArn: !Ref LoadBalancerArn
+      Port: !Ref Port
+      Protocol: !Ref Protocol
+      SslPolicy: !If [SpecifyHTTPSListener, !Ref SslPolicy, !Ref "AWS::NoValue"]
+      DefaultActions: 
+        - !If
+          - SpecifyRuleDefaultAuthAction
+          - Type: !Ref RuleDefaultAuthActionType
+            Order: 1
+            AuthenticateCognitoConfig: !If
+              - SpecifyRuleDefaultAuthActionAsAuthenticateCognito
+              - # AuthenticationRequestExtraParams: 
+                #   Key : Value
+                UserPoolArn:      !Select [0, !Ref RuleDefaultAuthActionValues]
+                UserPoolClientId: !Select [1, !Ref RuleDefaultAuthActionValues]
+                UserPoolDomain:   !Select [2, !Ref RuleDefaultAuthActionValues]
+                OnUnauthenticatedRequest: !If
+                  - SpecifyRuleDefaultAuthActionValue4
+                  - !Select [3, !Ref RuleDefaultAuthActionValues]
+                  - !Ref "AWS::NoValue"
+                Scope: !If
+                  - SpecifyRuleDefaultAuthActionValue5
+                  - !Select [4, !Ref RuleDefaultAuthActionValues]
+                  - !Ref "AWS::NoValue"
+                SessionCookieName: !If
+                  - SpecifyRuleDefaultAuthActionValue6
+                  - !Select [5, !Ref RuleDefaultAuthActionValues]
+                  - !Ref "AWS::NoValue"
+                SessionTimeout: !If
+                  - SpecifyRuleDefaultAuthActionValue7
+                  - !Select [6, !Ref RuleDefaultAuthActionValues]
+                  - !Ref "AWS::NoValue"
+              - !Ref "AWS::NoValue"
+            AuthenticateOidcConfig: !If
+              - SpecifyRuleDefaultAuthActionAsAuthenticateOidc
+              - # AuthenticationRequestExtraParams: 
+                #   Key : Value
+                Issuer:                !Select [0, !Ref RuleDefaultAuthActionValues]
+                AuthorizationEndpoint: !Select [1, !Ref RuleDefaultAuthActionValues]
+                TokenEndpoint:         !Select [2, !Ref RuleDefaultAuthActionValues]
+                UserInfoEndpoint:      !Select [3, !Ref RuleDefaultAuthActionValues]
+                ClientId:              !Select [4, !Ref RuleDefaultAuthActionValues]
+                ClientSecret:          !Select [5, !Ref RuleDefaultAuthActionValues]
+                OnUnauthenticatedRequest: !If
+                - SpecifyRuleDefaultAuthActionValue7
+                - !Select [6, !Ref RuleDefaultAuthActionValues]
+                - !Ref "AWS::NoValue"
+                Scope: !If
+                - SpecifyRuleDefaultAuthActionValue8
+                - !Select [7, !Ref RuleDefaultAuthActionValues]
+                - !Ref "AWS::NoValue"
+                SessionCookieName: !If
+                - SpecifyRuleDefaultAuthActionValue9
+                - !Select [8, !Ref RuleDefaultAuthActionValues]
+                - !Ref "AWS::NoValue"
+                SessionTimeout: !If
+                - SpecifyRuleDefaultAuthActionValue10
+                - !Select [9, !Ref RuleDefaultAuthActionValues]
+                - !Ref "AWS::NoValue"
+                UseExistingClientSecret: !If
+                - SpecifyRuleDefaultAuthActionValue11
+                - !Select [10, !Ref RuleDefaultAuthActionValues]
+                - !Ref "AWS::NoValue"
+              - !Ref "AWS::NoValue"
+          - !Ref "AWS::NoValue"
+        - Type: !Ref RuleDefaultHandleActionType
+          Order: 2
+          FixedResponseConfig: !If
+            - SpecifyRuleDefaultHandleActionAsFixedResponse
+            - ContentType: String
+              MessageBody: String
+              StatusCode: String
+            - !Ref "AWS::NoValue"
+          ForwardConfig: !If
+            - SpecifyRuleDefaultHandleActionAsForward
+            - TargetGroupStickinessConfig:
+                Enabled: !Select [0, !Ref RuleDefaultHandleActionValues] 
+                DurationSeconds: !If
+                  - SpecifyRuleDefaultHandleActionValue2
+                  - !Select [1, !Ref RuleDefaultHandleActionValues]
+                  - !Ref "AWS::NoValue"
+              TargetGroups: 
+                - !If
+                  - SpecifyRuleDefaultHandleActionValue3
+                  - TargetGroupArn: !Select [2, !Ref RuleDefaultHandleActionValues]
+                    Weight:         !Select [3, !Ref RuleDefaultHandleActionValues]
+                  - !Ref "AWS::NoValue"
+                - !If
+                  - SpecifyRuleDefaultHandleActionValue5
+                  - TargetGroupArn: !Select [4, !Ref RuleDefaultHandleActionValues]
+                    Weight:         !Select [5, !Ref RuleDefaultHandleActionValues]
+                  - !Ref "AWS::NoValue"
+                - !If
+                  - SpecifyRuleDefaultHandleActionValue7
+                  - TargetGroupArn: !Select [6, !Ref RuleDefaultHandleActionValues]
+                    Weight:         !Select [7, !Ref RuleDefaultHandleActionValues]
+                  - !Ref "AWS::NoValue"
+            - !Ref "AWS::NoValue"
+          RedirectConfig: !If
+            - SpecifyRuleDefaultHandleActionAsRedirect
+            - StatusCode: !Select [0, !Ref RuleDefaultHandleActionValues] 
+              Protocol: !If
+              - SpecifyRuleDefaultHandleActionValue2
+              - !Select [1, !Ref RuleDefaultHandleActionValues]
+              - !Ref "AWS::NoValue"
+              Host: !If
+              - SpecifyRuleDefaultHandleActionValue3
+              - !Select [2, !Ref RuleDefaultHandleActionValues]
+              - !Ref "AWS::NoValue"
+              Port: !If
+              - SpecifyRuleDefaultHandleActionValue4
+              - !Select [3, !Ref RuleDefaultHandleActionValues]
+              - !Ref "AWS::NoValue"
+              Path: !If
+              - SpecifyRuleDefaultHandleActionValue5
+              - !Select [4, !Ref RuleDefaultHandleActionValues]
+              - !Ref "AWS::NoValue"
+              Query: !If
+              - SpecifyRuleDefaultHandleActionValue6
+              - !Select [5, !Ref RuleDefaultHandleActionValues]
+              - !Ref "AWS::NoValue"
+            - !Ref "AWS::NoValue"
+
+Outputs:
+  listenerArn:
+    Value: !GetAtt listener.ListenerArn
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-listenerArn-${Identifier}", !Sub "${AWS::StackName}-listenerArn-${Identifier}"]

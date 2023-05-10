@@ -1,0 +1,110 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  NAT(s) that can be distributed across multiple subnets (i.e. availability
+  zones). Can be either gateways or EC2 instances
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: NAT Parameters
+        Parameters:
+          - VpcId
+          - ConnectivityType
+          - SubnetA
+          - SubnetB
+          - SubnetC
+          - SubnetD
+          - SubnetE
+          - AvailabilityZonePlacement
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: ID of the VPC to associate with the NAT
+
+  ConnectivityType:
+    Type: String
+    Description: >-
+      Indicates whether the NAT gateway supports public or private connectivity
+    Default: public
+    AllowedValues:
+      - private
+      - public
+
+  SubnetA:
+    Type: String
+    Description: >-
+      (optional) The availability zone A subnet to place a NAT in
+    Default: ""
+
+  SubnetB:
+    Type: String
+    Description: >-
+      (optional) The availability zone B subnet to place a NAT in
+    Default: ""
+
+  SubnetC:
+    Type: String
+    Description: >-
+      (optional) The availability zone C subnet to place a NAT in
+    Default: ""
+
+  SubnetD:
+    Type: String
+    Description: >-
+      (optional) The availability zone D subnet to place a NAT in
+    Default: ""
+
+  SubnetE:
+    Type: String
+    Description: >-
+      (optional) The availability zone E subnet to place a NAT in
+    Default: ""
+
+  AvailabilityZonePlacement:
+    Type: String
+    Description: >-
+      The availability zone that the NAT is active in. It's useful to change
+      this value if the current AZ goes down, or if you want to save money and
+      use a single AZ. NOTE: the subnet must be specified for you to move over
+      to it. Setting all will place a NAT on all specified subnets
+    Default: all
+    AllowedValues:
+      - all
+      - a
+      - b
+      - c
+      - d
+      - e
+
+Resources:
+  natGatewayStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/network/nat/_nat-gateway.yml"
+      Parameters:
+        VpcId: !Ref VpcId
+        ConnectivityType: !Ref ConnectivityType
+        SubnetA: !Ref SubnetA
+        SubnetB: !Ref SubnetB
+        SubnetC: !Ref SubnetC
+        SubnetD: !Ref SubnetD
+        SubnetE: !Ref SubnetE
+        AvailabilityZonePlacement: !Ref AvailabilityZonePlacement
+
+  # TODO: add NAT instance template
+
+# Outputs
+  # NOTE: leave empty until we need it

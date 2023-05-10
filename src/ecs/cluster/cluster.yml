@@ -1,0 +1,272 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Amazon Elastic Container Service (Amazon ECS) cluster
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: Cluster Parameters
+        Parameters:
+          - ClusterName
+          - CapacityProviders
+          - ContainerInsights
+      - Label:
+          default: Logging Parameters
+        Parameters:
+          - EnableLogging
+          - Logging
+          - KmsKeyId
+          - CloudWatchEncryptionEnabled
+          - CloudWatchLogGroupName
+          - S3BucketName
+          - S3EncryptionEnabled
+          - S3KeyPrefix
+      - Label:
+          default: Default Capacity Provider Parameters
+        Parameters:
+          - DefaultCapacityProvider1
+          - DefaultCapacityProvider2
+          - DefaultCapacityProvider3
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  ClusterName:
+    Type: String
+    Description: Name of the cluster
+
+  CapacityProviders: 
+    Type: String
+    Description: >-
+      Capacity provider(s) to use for cluster. NOTE: If specifying a capacity
+      provider that uses an Auto Scaling group, the capacity provider must
+      already be created and not already associated with another cluster.
+    Default: NONE
+    AllowedValues:
+      # TODO: add Autoscale and any other
+      - NONE
+      - FARGATE
+      - FARGATE_SPOT
+      - FARGATE,FARGATE_SPOT
+
+  ContainerInsights:
+    Type: String
+    Description: Should we use CloudWatch Container Insights
+    Default: disabled
+    AllowedValues:
+      - enabled
+      - disabled
+
+  EnableLogging:
+    Type: String
+    Default: "no"
+    Description: Should we output logs from the cluster
+    AllowedValues:
+      - "yes"
+      - "no"
+
+  Logging:
+    Type: String
+    Default: NONE
+    Description: >-
+      The log setting to use for redirecting logs for your execute command
+      results. The following log settings are available:
+        - NONE: The execute command session is not logged. 
+        - DEFAULT: The awslogs configuration in the task definition is used. If
+          no logging parameter is specified, it defaults to this value. If no
+          awslogs log driver is configured in the task definition, the output
+          won't be logged. 
+        - OVERRIDE: Specify the logging details as a part of logConfiguration.
+          If the OVERRIDE logging option is specified, the logConfiguration is
+          required
+    AllowedValues:
+      - NONE
+      - DEFAULT
+      - OVERRIDE
+
+  KmsKeyId:
+    Type: String
+    Default: ""
+    Description: >-
+      (optional) Specify an AWS Key Management Service key ID to encrypt the
+      data between the local client and the container 
+
+  CloudWatchEncryptionEnabled:
+    Type: String
+    Default: "no"
+    Description: Whether or not to enable encryption on the CloudWatch logs
+    AllowedValues:
+      - "yes"
+      - "no"
+
+  CloudWatchLogGroupName:
+    Type: String
+    Default: ""
+    Description: >-
+      (optional) The name of the CloudWatch log group to send logs to. NOTE: The
+      CloudWatch log group must already be created
+
+  S3BucketName:
+    Type: String
+    Default: ""
+    Description: >-
+      (optional) The name of the S3 bucket to send logs to. NOTE: The S3 bucket
+      must already be created
+
+  S3EncryptionEnabled:
+    Type: String
+    Default: "no"
+    Description: Whether or not to enable encryption on the CloudWatch logs
+    AllowedValues:
+      - "yes"
+      - "no"
+
+  S3KeyPrefix:
+    Type: String
+    Default: ""
+    Description: (optional) The folder in the S3 bucket to place logs in
+
+  DefaultCapacityProvider1:
+    Type: CommaDelimitedList
+    Default: ",,"
+    Description: >-
+      (optional) Specify default capacity providers in the form of the optional
+      values: provider,base,weight. e.g. FARGATE,2,1 or FARGATE_SPOT,, remember
+      that these values are optional, so you can omit any value you want.
+      Provider is the short name of the capacity provider, Base is how many
+      tasks, at a minimum, to run on the specified capacity provider. Weight is
+      the relative percentage of the total number of tasks launched that should
+      use the specified capacity provider
+
+  DefaultCapacityProvider2:
+    Type: CommaDelimitedList
+    Default: ",,"
+
+  DefaultCapacityProvider3:
+    Type: CommaDelimitedList
+    Default: ",,"
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  # Cluster
+  SpecifyCapacityProvider: !Not [!Equals [!Ref CapacityProviders, "NONE"]]
+  # Logging
+  SpecifyLogging: !Equals [!Ref EnableLogging, "yes"]
+  SpecifyKmsKeyId: !Not [!Equals [!Ref KmsKeyId, ""]]
+  SpecifyCloudWatchEncryption: !Equals [!Ref CloudWatchEncryptionEnabled, "yes"]
+  SpecifyCloudWatchLogGroupName: !Not [!Equals [!Ref CloudWatchLogGroupName, ""]]
+  SpecifyS3BucketName: !Not [!Equals [!Ref S3BucketName, ""]]
+  SpecifyS3Encryption: !Equals [!Ref S3EncryptionEnabled, "yes"]
+  SpecifyS3KeyPrefix: !Not [!Equals [!Ref S3KeyPrefix, ""]]
+  # Default Capacity Providers
+  SpecifyDefaultCapacityProvider1: !Not [!Equals [!Select [0, !Ref DefaultCapacityProvider1], ""]]
+  SpecifyDefaultCapacityProviderBase1: !Not [!Equals [!Select [1, !Ref DefaultCapacityProvider1], ""]]
+  SpecifyDefaultCapacityProviderWeight1: !Not [!Equals [!Select [2, !Ref DefaultCapacityProvider1], ""]]
+
+  SpecifyDefaultCapacityProvider2: !Not [!Equals [!Select [0, !Ref DefaultCapacityProvider2], ""]]
+  SpecifyDefaultCapacityProviderBase2: !Not [!Equals [!Select [1, !Ref DefaultCapacityProvider2], ""]]
+  SpecifyDefaultCapacityProviderWeight2: !Not [!Equals [!Select [2, !Ref DefaultCapacityProvider2], ""]]
+
+  SpecifyDefaultCapacityProvider3: !Not [!Equals [!Select [0, !Ref DefaultCapacityProvider3], ""]]
+  SpecifyDefaultCapacityProviderBase3: !Not [!Equals [!Select [1, !Ref DefaultCapacityProvider3], ""]]
+  SpecifyDefaultCapacityProviderWeight3: !Not [!Equals [!Select [2, !Ref DefaultCapacityProvider3], ""]]
+
+Resources:
+
+  cluster:
+    Type: AWS::ECS::Cluster
+    Properties: 
+      CapacityProviders: !If [ SpecifyCapacityProvider, !Split [",", !Ref CapacityProviders], !Ref "AWS::NoValue" ]
+      ClusterName: !Ref ClusterName
+      ClusterSettings: 
+        - Name: containerInsights
+          Value: !Ref ContainerInsights
+      Configuration: !If
+          - SpecifyLogging
+          - ExecuteCommandConfiguration:
+              KmsKeyId: !If [ SpecifyKmsKeyId, !Ref KmsKeyId, !Ref "AWS::NoValue" ]
+              LogConfiguration: 
+                CloudWatchEncryptionEnabled: !If [ SpecifyCloudWatchEncryption, true, false ]
+                CloudWatchLogGroupName: !If [ SpecifyCloudWatchLogGroupName, !Ref CloudWatchLogGroupName, !Ref "AWS::NoValue" ]
+                S3BucketName: !If [ SpecifyS3BucketName, !Ref S3BucketName, !Ref "AWS::NoValue" ]
+                S3EncryptionEnabled: !If [ SpecifyS3Encryption, true, false ]
+                S3KeyPrefix: !If [ SpecifyS3KeyPrefix, !Ref S3KeyPrefix, !Ref "AWS::NoValue" ]
+              Logging: !Ref Logging
+          - !Ref "AWS::NoValue"
+      DefaultCapacityProviderStrategy: 
+        - !If
+          - SpecifyDefaultCapacityProvider1
+          - CapacityProvider: !If [
+              SpecifyDefaultCapacityProvider1,
+              !Select [0, !Ref DefaultCapacityProvider1],
+              !Ref "AWS::NoValue"
+            ]
+            Base: !If [
+              SpecifyDefaultCapacityProviderBase1,
+              !Select [1, !Ref DefaultCapacityProvider1],
+              !Ref "AWS::NoValue"
+            ]
+            Weight: !If [
+              SpecifyDefaultCapacityProviderWeight1,
+              !Select [2, !Ref DefaultCapacityProvider1],
+              !Ref "AWS::NoValue"
+            ]
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyDefaultCapacityProvider2
+          - CapacityProvider: !If [
+              SpecifyDefaultCapacityProvider2,
+              !Select [0, !Ref DefaultCapacityProvider2],
+              !Ref "AWS::NoValue"
+            ]
+            Base: !If [
+              SpecifyDefaultCapacityProviderBase2,
+              !Select [1, !Ref DefaultCapacityProvider2],
+              !Ref "AWS::NoValue"
+            ]
+            Weight: !If [
+              SpecifyDefaultCapacityProviderWeight2,
+              !Select [2, !Ref DefaultCapacityProvider2],
+              !Ref "AWS::NoValue"
+            ]
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyDefaultCapacityProvider3
+          - CapacityProvider: !If [
+              SpecifyDefaultCapacityProvider3,
+              !Select [0, !Ref DefaultCapacityProvider3],
+              !Ref "AWS::NoValue"
+            ]
+            Base: !If [
+              SpecifyDefaultCapacityProviderBase3,
+              !Select [1, !Ref DefaultCapacityProvider3],
+              !Ref "AWS::NoValue"
+            ]
+            Weight: !If [
+              SpecifyDefaultCapacityProviderWeight3,
+              !Select [2, !Ref DefaultCapacityProvider3],
+              !Ref "AWS::NoValue"
+            ]
+          - !Ref "AWS::NoValue"
+
+Outputs:
+  clusterName:
+    Description: Name of the ECS Cluster
+    Value: !Ref cluster
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-cluster-name", !Sub "${AWS::StackName}-cluster-name"]
+
+  clusterArn:
+    Description: ARN of the ECS Cluster
+    Value: !GetAtt cluster.Arn
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-cluster-arn", !Sub "${AWS::StackName}-cluster-arn"]

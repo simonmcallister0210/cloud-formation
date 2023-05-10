@@ -1,0 +1,357 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  ECS service that runs and maintains the requested number of tasks and
+  associated load balancers
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: Service Parameters
+        Parameters:
+          - Cluster
+          - ServiceName
+          - ContainerName
+          - TaskDefinition
+          - DesiredCount
+          - EnableExecuteCommand
+          - HealthCheckGracePeriodSeconds
+          - PlatformVersion
+          - PropagateTags
+      - Label:
+          default: Capacity Provider Strategy Parameters
+        Parameters:
+          - UseCapacityProviderStrategy
+          - FargateCapacityProviderBase
+          - FargateCapacityProviderWeight
+          - FargateSpotCapacityProviderBase
+          - FargateSpotCapacityProviderWeight
+      - Label:
+          default: Deployment Configuration Parameters
+        Parameters:
+          - UseDeploymentCircuitBreaker
+          - EnableRollbacks
+      - Label:
+          default: Load Balancer Parameters
+        Parameters:
+          - TargetGroupArn
+      - Label:
+          default: Network Parameters
+        Parameters:
+          - ContainerPort
+          - AssignPublicIp
+          - SecurityGroups
+          - Subnets
+      - Label:
+          default: Logging Parameters
+        Parameters:
+          - TaskCloudWatchGroupName
+          - TaskCloudWatchStreamName
+      - Label:
+          default: ECR Parameters
+        Parameters:
+          - ECRRepository
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  # Service
+
+  Cluster:
+    Type: String
+    Description: >-
+      Name of the ECS Cluster stack we want to place our service on
+    Default: ""
+
+  ServiceName:
+    Type: String
+    Description: >-
+      Up to 255 letters (uppercase and lowercase), numbers, underscores, and
+      hyphens are allowed. Service names must be unique within a cluster, but
+      you can have similarly named services in multiple clusters within a Region
+      or across multiple Regions
+
+  ContainerName:
+    Type: String
+    Description: >-
+      The name of the container (as it appears in a container definition) to
+      associate with the load balancer
+
+  TaskDefinition:
+    Type: String
+    Description: >-
+      (condition: A task definition must be specified if the service is using
+      either the ECS or CODE_DEPLOY deployment controllers) The family and
+      revision (family:revision) or full ARN of the task definition to run in
+      your service. The revision is required in order for the resource to
+      stabilize
+    Default: ""
+
+  DesiredCount:
+    Type: Number
+    Description: >-
+      The number of instantiations of the specified task definition to place and
+      keep running on your cluster
+    Default: 1
+    MinValue: 1
+    MaxValue: 10000
+
+  EnableExecuteCommand:
+    Type: String
+    Default: false
+    Description: >-
+      Whether or not the execute command functionality is enabled for the
+      service. If 'yes', the execute command functionality is enabled for all
+      containers in tasks as part of the service
+    AllowedValues:
+      - true
+      - false
+
+  HealthCheckGracePeriodSeconds:
+    Type: Number
+    Description: >-
+      The period of time, in seconds, that the Amazon ECS service scheduler
+      should ignore unhealthy Elastic Load Balancing target health checks after
+      a task has first started. This grace period can prevent the service
+      scheduler from marking tasks as unhealthy and stopping them before they
+      have time to come up. NOTE: specify 0 if you don't want a grace period
+    Default: 30
+    MinValue: 0
+    MaxValue: 2147483647
+
+  PlatformVersion:
+    Type: String
+    Default: "1.4.0"
+    Description: >-
+      The platform version that your tasks in the service are running on
+    AllowedValues:
+      - "LATEST"
+      - "1.4.0"
+
+  PropagateTags:
+    Type: String
+    Default: NONE
+    Description: >-
+      Specifies whether to propagate the tags from the task definition or the
+      service to the tasks in the service. If no value is specified, the tags
+      are not propagated. Tags can only be propagated to the tasks within the
+      service during service creation
+    AllowedValues:
+      - NONE
+      - SERVICE
+      - TASK_DEFINITION
+
+  # Capacity Provider Strategy
+
+  UseCapacityProviderStrategy:
+    Type: String
+    Default: "no"
+    Description: Whether or not to use a Capacity Provider Strategy
+    AllowedValues:
+      - "yes"
+      - "no"
+
+  FargateCapacityProviderBase:
+    Type: Number
+    Description: >-
+      Capacity base for Fargate strategy. The base value designates how many
+      tasks, at a minimum, to run on the specified capacity provider. Only one
+      capacity provider in a capacity provider strategy can have a base defined.
+      If no value is specified, the default value of 0 is used
+    Default: 0
+    MinValue: 0
+    MaxValue: 100000
+
+  FargateCapacityProviderWeight:
+    Type: Number
+    Description: >-
+      Capacity weight for Fargate strategy. The weight value designates the
+      relative percentage of the total number of tasks launched that should use
+      the specified capacity provider. The weight value is taken into
+      consideration after the base value, if defined, is satisfied
+    Default: 0
+    MinValue: 0
+    MaxValue: 1000
+
+  FargateSpotCapacityProviderBase:
+    Type: Number
+    Description: >-
+      Same as FargateCapacityProviderBase, but for Fargate Spot strategy
+    Default: 0
+    MinValue: 0
+    MaxValue: 100000
+
+  FargateSpotCapacityProviderWeight:
+    Type: Number
+    Description: >-
+      Same as FargateCapacityProviderWeight, but for Fargate Spot strategy
+    Default: 0
+    MinValue: 0
+    MaxValue: 1000
+
+  # Deployment Configuration
+
+  UseDeploymentCircuitBreaker:
+    Type: String
+    Default: "yes"
+    Description: >-
+      Whether to enable the deployment circuit breaker logic for the service
+    AllowedValues:
+      - "yes"
+      - "no"
+
+  EnableRollbacks:
+    Type: String
+    Default: true
+    Description: >-
+      Whether to enable Amazon ECS to roll back the service if a service
+      deployment fails. If rollback is enabled, when a service deployment fails,
+      the service is rolled back to the last deployment that completed
+      successfully
+    AllowedValues:
+      - true
+      - false
+
+  # Load Balancer
+
+  TargetGroupArn:
+    Type: String
+    Description: >-
+      The full Amazon Resource Name (ARN) of the Elastic Load Balancing target
+      group or groups associated with a service or task set
+
+  # Network
+
+  ContainerPort:
+    Type: Number
+    Description: >-
+      The port on the container to associate with the load balancer. This port
+      must correspond to a containerPort in the task definition the tasks in the
+      service are using
+
+  AssignPublicIp:
+    Type: String
+    Default: DISABLED
+    Description: >-
+      Whether the task's elastic network interface receives a public IP address
+    AllowedValues:
+      - ENABLED
+      - DISABLED
+
+  SecurityGroups:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Description: >-
+      The security groups associated with the task or service. If you do not
+      specify a security group, the default security group for the VPC is used.
+      There is a limit of 5 security groups
+
+  Subnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: >-
+      The subnets associated with the task or service. There is a limit of 16
+      subnets
+
+  TaskCloudWatchGroupName:
+    Type: String
+    Description: >-
+      (optional) CloudWatch group name to grant task write access to
+    Default: ""
+
+  TaskCloudWatchStreamName:
+    Type: String
+    Description: >-
+      (optional) CloudWatch stream name to grant task write access to
+    Default: ""
+
+  ECRRepository:
+    Type: String
+    Description: >-
+      (optional) The ECR repository to grant service access to. NOTE: Needed if
+      you are pulling an image for your service
+    Default: ""
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  SpecifyTaskDefinition: !Not [!Equals [!Ref TaskDefinition, ""]]
+  SpecifyExecuteCommand: !Equals [!Ref EnableExecuteCommand, true]
+  # Capacity Provider Strategy
+  SpecifyCapacityProviderStrategy: !Equals [!Ref UseCapacityProviderStrategy, "yes"]
+  # Deployment Configuration
+  SpecifyDeploymentCircuitBreaker: !Equals [!Ref UseDeploymentCircuitBreaker, "yes"]
+  SpecifyPropagateTags: !Not [!Equals [!Ref PropagateTags, "NONE"]]
+  SpecifyTaskCloudWatchGroupName: !Not [!Equals [!Ref TaskCloudWatchGroupName, ""]]
+  SpecifyTaskCloudWatchStreamName: !Not [!Equals [!Ref TaskCloudWatchStreamName, ""]]
+  SpecifyECRRepository: !Not [!Equals [!Ref ECRRepository, ""]]
+
+Resources:
+
+  service:
+    Type: AWS::ECS::Service
+    Properties: 
+      CapacityProviderStrategy: 
+        - !If
+          - SpecifyCapacityProviderStrategy
+          - CapacityProvider: FARGATE
+            Base: !Ref FargateCapacityProviderBase
+            Weight: !Ref FargateCapacityProviderWeight
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyCapacityProviderStrategy
+          - CapacityProvider: FARGATE_SPOT
+            Base: !Ref FargateSpotCapacityProviderBase
+            Weight: !Ref FargateSpotCapacityProviderWeight
+          - !Ref "AWS::NoValue"
+      Cluster: !Ref Cluster
+      DeploymentConfiguration: !If
+        - SpecifyDeploymentCircuitBreaker
+        - DeploymentCircuitBreaker: 
+            Enable: true
+            Rollback: !Ref EnableRollbacks
+        - !Ref "AWS::NoValue"
+      DeploymentController: 
+        Type: ECS
+      DesiredCount: !Ref DesiredCount
+      # EnableECSManagedTags: Boolean
+      EnableExecuteCommand: !If [SpecifyExecuteCommand, true, false]
+      HealthCheckGracePeriodSeconds: !Ref HealthCheckGracePeriodSeconds
+      LaunchType: FARGATE
+      LoadBalancers: 
+        - TargetGroupArn: !Ref TargetGroupArn
+          ContainerName: !Ref ContainerName
+          ContainerPort: !Ref ContainerPort
+      NetworkConfiguration: 
+        AwsvpcConfiguration:
+          AssignPublicIp: !Ref AssignPublicIp
+          SecurityGroups: !Ref SecurityGroups
+          Subnets: !Ref Subnets
+      # PlacementStrategies: 
+      #   - PlacementStrategy
+      PlatformVersion: !Ref PlatformVersion
+      PropagateTags: !If [ SpecifyPropagateTags, !Ref PropagateTags, !Ref "AWS::NoValue" ]
+      SchedulingStrategy: REPLICA
+      ServiceName: !Ref ServiceName
+      # ServiceRegistries: 
+      #   - ServiceRegistry
+      TaskDefinition: !If [ SpecifyTaskDefinition, !Ref TaskDefinition, !Ref "AWS::NoValue" ]
+
+Outputs:
+  serviceArn:
+    Description: ARN of the Service
+    Value: !Ref service
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-serviceArn", !Sub "${AWS::StackName}-serviceArn"]
+  
+  serviceName:
+    Description: Name of the Service
+    Value: !GetAtt service.Name
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-serviceName", !Sub "${AWS::StackName}-serviceName"]

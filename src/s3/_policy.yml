@@ -1,0 +1,48 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Applies an Amazon S3 bucket policy to an Amazon S3 bucket
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: Bucket Policy Parameters
+        Parameters:
+          - Bucket
+          - PolicyDocument
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  Bucket:
+    Type: String
+    Description: The name of the Amazon S3 bucket to which the policy applies
+    Default: ""
+
+  PolicyDocument:
+    Type: String
+    Description: >-
+      A policy document containing permissions to add to the specified bucket
+    Default: ""
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+
+Resources:
+
+  bucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: !Ref Bucket
+      PolicyDocument: !Ref PolicyDocument    
+
+# Outputs:
+  # specify when needed

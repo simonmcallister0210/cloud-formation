@@ -1,0 +1,278 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Elastic Load Balancing v2 Application Load Balancer
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: Load Balancer Parameters
+        Parameters:
+          - Name
+          - Scheme
+          - IpAddressType
+          - Subnets
+          - SecurityGroups
+          - IdleTimeoutSeconds
+          - EnableDeletionProtection
+      - Label:
+          default: Routing
+        Parameters:
+          - DesyncMitigationMode
+          - EnableInvalidHeaderFields
+          - EnableXAmazonTLSVersionAndCipherSuite
+          - EnableXForwardedForHeaderClientPort
+          - EnableHTTP2
+          - EnableWAFFailOpen
+      - Label:
+          default: Logging
+        Parameters:
+          - EnableS3AccessLogs
+          - S3AccessLogsBucket
+          - S3AccessLogsBucketPrefix
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  Name:
+    Type: String
+    Description: >-
+      (optional) The name of the load balancer. This name must be unique per
+      region per account, can have a maximum of 32 characters, must contain only
+      alphanumeric characters or hyphens, must not begin or end with a hyphen,
+      and must not begin with "internal-". NOTE: If you don't specify a name,
+      AWS CloudFormation generates a unique physical ID for the load balancer.
+      If you specify a name, you cannot perform updates that require replacement
+      of this resource, but you can perform other updates. To replace the
+      resource, specify a new name
+    Default: ""
+
+  Scheme:
+    Type: String
+    Description: >-
+      The nodes of an Internet-facing load balancer have public IP addresses.
+      The DNS name of an Internet-facing load balancer is publicly resolvable to
+      the public IP addresses of the nodes. Therefore, Internet-facing load
+      balancers can route requests from clients over the internet. The nodes of
+      an internal load balancer have only private IP addresses. The DNS name of
+      an internal load balancer is publicly resolvable to the private IP
+      addresses of the nodes. Therefore, internal load balancers can route
+      requests only from clients with access to the VPC for the load balancer
+    Default: internet-facing
+    AllowedValues:
+      - internal
+      - internet-facing
+  
+  IpAddressType:
+    Type: String
+    Description: >-
+      The IP address type. The possible values are ipv4 (for IPv4 addresses) and
+      dualstack (for IPv4 and IPv6 addresses). NOTE: Internal load balancers
+      must use ipv4. You can’t specify dualstack for a load balancer with a UDP
+      or TCP_UDP listener
+    Default: ipv4
+    AllowedValues:
+      - ipv4
+      - dualstack
+
+  Subnets:
+    Type: CommaDelimitedList
+    Description: >-
+      The IDs of the subnets. NOTE: You can specify only one subnet per
+      Availability Zone. NOTE: You must specify subnets from at least two
+      Availability Zones. When you specify subnets for an existing Application
+      Load Balancer, they replace the previously enabled subnets
+
+  SecurityGroups:
+    Type: CommaDelimitedList
+    Description: (optional) The IDs of the security groups for the load balancer
+
+  IdleTimeoutSeconds:
+    Type: Number
+    Description: >-
+      The idle timeout value, in seconds. The valid range is 1-4000 seconds
+    Default: 60
+    MinValue: 1
+    MaxValue: 4000
+
+  EnableDeletionProtection:
+    Type: String
+    Description: Indicates whether deletion protection is enabled
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  DesyncMitigationMode:
+    Type: String
+    Description: >-
+      Determines how the load balancer handles requests that might pose a
+      security risk to your application
+    Default: defensive
+    AllowedValues:
+      - monitor
+      - defensive
+      - strictest
+
+  EnableInvalidHeaderFields:
+    Type: String
+    Description: >-
+      Indicates whether HTTP headers with invalid header fields are removed by
+      the load balancer
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  EnableXAmazonTLSVersionAndCipherSuite:
+    Type: String
+    Description: >-
+      Indicates whether the two headers
+      (x-amzn-tls-version and x-amzn-tls-cipher-suite), which contain
+      information about the negotiated TLS version and cipher suite, are added
+      to the client request before sending it to the target.
+      The x-amzn-tls-version header has information about the TLS protocol
+      version negotiated with the client, and the x-amzn-tls-cipher-suite header
+      has information about the cipher suite negotiated with the client. Both
+      headers are in OpenSSL format
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  EnableXForwardedForHeaderClientPort:
+    Type: String
+    Description: >-
+      Indicates whether the X-Forwarded-For header should preserve the source
+      port that the client used to connect to the load balancer
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  EnableHTTP2:
+    Type: String
+    Description: Indicates whether HTTP/2 is enabled
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  EnableWAFFailOpen:
+    Type: String
+    Description: >-
+      Indicates whether to allow a WAF-enabled load balancer to route requests
+      to targets if it is unable to forward the request to AWS WAF
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  EnableS3AccessLogs:
+    Type: String
+    Description: Indicates whether access logs are enabled
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  S3AccessLogsBucket:
+    Type: String
+    Description: >-
+      The name of the S3 bucket for the access logs. NOTE: The bucket must exist
+      in the same region as the load balancer and have a bucket policy that
+      grants Elastic Load Balancing permissions to write to the bucket
+    Default: ""
+
+  S3AccessLogsBucketPrefix:
+    Type: String
+    Description: >-
+      The prefix for the location in the S3 bucket for the access logs
+    Default: ""
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  SpecifyName: !Not [!Equals [!Ref Name, ""]]
+  SpecifyS3AccessLogs: !Equals [!Ref EnableS3AccessLogs, true]
+
+Resources:
+  loadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties: 
+      IpAddressType: !Ref IpAddressType
+      LoadBalancerAttributes: 
+        - Key: deletion_protection.enabled
+          Value: !Ref EnableDeletionProtection
+        - Key: access_logs.s3.enabled
+          Value: !Ref EnableS3AccessLogs
+        - !If
+          - SpecifyS3AccessLogs
+          - Key: access_logs.s3.bucket
+            Value: !Ref S3AccessLogsBucket
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyS3AccessLogs
+          - Key: access_logs.s3.prefix
+            Value: !Ref S3AccessLogsBucketPrefix
+          - !Ref "AWS::NoValue"
+        - Key: idle_timeout.timeout_seconds
+          Value: !Ref IdleTimeoutSeconds
+        - Key: routing.http.desync_mitigation_mode
+          Value: !Ref DesyncMitigationMode
+        - Key: routing.http.drop_invalid_header_fields.enabled
+          Value: !Ref EnableInvalidHeaderFields
+        - Key: routing.http.x_amzn_tls_version_and_cipher_suite.enabled
+          Value: !Ref EnableXAmazonTLSVersionAndCipherSuite
+        - Key: routing.http.xff_client_port.enabled
+          Value: !Ref EnableXForwardedForHeaderClientPort
+        - Key: routing.http2.enabled
+          Value: !Ref EnableHTTP2
+        - Key: waf.fail_open.enabled
+          Value: !Ref EnableWAFFailOpen
+      Name: !If [SpecifyName, !Ref Name, !Ref "AWS::NoValue"]
+      Scheme: !Ref Scheme
+      SecurityGroups: !Ref SecurityGroups
+      Subnets: !Ref Subnets
+      Type: application
+
+Outputs:
+  loadBalancerArn:
+    Description: Arn of the load balancer
+    Value: !Ref loadBalancer
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-loadBalancerArn", !Sub "${AWS::StackName}-loadBalancerArn"]
+
+  loadBalancerCanonicalHostedZoneID:
+    Description: >-
+      The ID of the Amazon Route 53 hosted zone associated with the load
+      balancer
+    Value: !GetAtt loadBalancer.CanonicalHostedZoneID
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-loadBalancerCanonicalHostedZoneID", !Sub "${AWS::StackName}-loadBalancerCanonicalHostedZoneID"]
+
+  loadBalancerDNSName:
+    Description: The DNS name for the load balancer
+    Value: !GetAtt loadBalancer.DNSName
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-loadBalancerDNSName", !Sub "${AWS::StackName}-loadBalancerDNSName"]
+
+  loadBalancerFullName:
+    Description: The full name of the load balancer
+    Value: !GetAtt loadBalancer.LoadBalancerFullName
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-loadBalancerFullName", !Sub "${AWS::StackName}-loadBalancerFullName"]
+
+  loadBalancerName:
+    Description: The name of the load balancer
+    Value: !GetAtt loadBalancer.LoadBalancerName
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-loadBalancerName", !Sub "${AWS::StackName}-loadBalancerName"]
+

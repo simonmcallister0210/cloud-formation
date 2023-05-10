@@ -1,0 +1,394 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  CodePipeline pipeline that describes how software changes go through a release
+  process. Specific to CodeCommit source, CodeBuild build, and CodeDeploy deploy
+  with an optional approval step for deployment
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: Pipeline Parameters
+        Parameters:
+          - Name
+          - RestartExecutionOnUpdate
+          - ArtifactStoreLocation
+          - ArtifactStoreEncryptionKeyId
+          - ExecutionTrigger
+      - Label:
+          default: Source Parameters
+        Parameters:
+          - RepositoryName
+          - BranchName
+      - Label:
+          default: Build Parameters
+        Parameters:
+          - BuildProjectName
+          - BuildEnvironmentVariables
+      - Label:
+          default: Deploy Parameters
+        Parameters:
+          - ClusterName
+          - ServiceName
+          - FileName
+          - DeploymentTimeout
+          - ManualApprovalRequired
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  Name:
+    Type: String
+    Description: (optional) Name of the pipeline
+    Default: ""
+
+  RestartExecutionOnUpdate:
+    Type: String
+    Description: >-
+      Indicates whether to rerun the CodePipeline pipeline after you update it
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  ArtifactStoreLocation:
+    Type: String
+    Description: >-
+      The S3 bucket used for storing the artifacts for a pipeline. You can
+      specify the name of an S3 bucket but not a folder in the bucket. A folder
+      to contain the pipeline artifacts is created for you based on the name of
+      the pipeline. You can use any S3 bucket in the same AWS Region as the
+      pipeline to store your pipeline artifacts
+
+  ArtifactStoreEncryptionKeyId:
+    Type: String
+    Description: >-
+      The ID used to identify the key. For an AWS KMS key, you can use the key
+      ID, the key ARN, or the alias ARN
+
+  ExecutionTrigger:
+    Type: String
+    Description: >-
+      The ID used to identify the key. For an AWS KMS key, you can use the key
+      ID, the key ARN, or the alias ARN
+    Default: manual
+    AllowedValues:
+      - manual
+      - polling
+      - on-commit
+
+  RepositoryName:
+    Type: String
+    Description: >-
+      Name of the CodeCommit repo to source from
+
+  BranchName:
+    Type: String
+    Description: >-
+      Name of the branch in the repo to source from
+
+  BuildProjectName:
+    Type: String
+    Description: >-
+      Name of the CodeBuild project to build with
+
+  BuildEnvironmentVariables:
+    Type: String
+    Description: >-
+      (optional) Environment variable to use in CodeBuild. Specified as a JSON
+      array of object, with each object specifying a name, value, and type. e.g:
+      [{"name":"FOOBAR","value":"123","type":"PLAINTEXT"},{"name":"QUUBAR","value":"abc","type":"PLAINTEXT"}]
+      Here 'name' is the environment variable name, 'value' is the value of the
+      environment variable, and 'type' is the type of the environment variable
+      which can either be: PARAMETER_STORE, SECRETS_MANAGER, or PLAINTEXT. NOTE:
+      When using the PARAMETER_STORE or SECRETS_MANAGER type, the VALUE must be
+      the name of a parameter you have already stored in AWS Systems Manager
+      Parameter Store or a secret you have already stored in AWS Secrets Manager
+      respectively
+    Default: ""
+
+  ClusterName:
+    Type: String
+    Description: Name of the ECS Cluster to deploy to
+
+  ServiceName:
+    Type: String
+    Description: Name of the ECS Service to deploy to
+
+  FileName:
+    Type: String
+    Description: >-
+      The name of your image definitions file, the JSON file that describes your
+      service's container name and the image and tag. You use this file for ECS
+      standard deployments
+    Default: "imagedefinitions.json"
+
+  DeploymentTimeout:
+    Type: String
+    Description: The Amazon ECS deployment action timeout in minutes
+    Default: "15"
+
+  ManualApprovalRequired:
+    Type: String
+    Description: Indicates whether manual approval is required before deployment
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  SpecifyName: !Not [!Equals [!Ref Name, ""]]
+  SpecifyRestartExecutionOnUpdate: !Equals [!Ref RestartExecutionOnUpdate, true]
+  SpecifyPollingExecutionTrigger: !Equals [!Ref ExecutionTrigger, polling]
+  SpecifyBuildEnvironmentVariables: !Not [!Equals [!Ref BuildEnvironmentVariables, ""]]
+  SpecifyManualApprovalRequired: !Equals [!Ref ManualApprovalRequired, true]
+
+Resources:
+
+  # Copied from an auto-generated service role from the CodePipeline console
+  pipelineRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "codepipeline.amazonaws.com"
+      Path: "/cfn-defined/"
+      Policies:
+        - PolicyName: !Sub "ServiceRoleForCodePipeline-${Name}"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "iam:PassRole"
+                Resource:
+                  - "*"
+                Condition:
+                  StringEqualsIfExists:
+                    iam.PassedToService:
+                      - "cloudformation.amazonaws.com"
+                      - "elasticbeanstalk.amazonaws.com"
+                      - "ec2.amazonaws.com"
+                      - "ecs-tasks.amazonaws.com"
+              - Effect: "Allow"
+                Action:
+                  - "codecommit:CancelUploadArchive"
+                  - "codecommit:GetBranch"
+                  - "codecommit:GetCommit"
+                  - "codecommit:GetUploadArchiveStatus"
+                  - "codecommit:UploadArchive"
+                Resource:
+                  - "*"
+              - Effect: "Allow"
+                Action:
+                  - "codedeploy:CreateDeployment"
+                  - "codedeploy:GetApplication"
+                  - "codedeploy:GetApplicationRevision"
+                  - "codedeploy:GetDeployment"
+                  - "codedeploy:GetDeploymentConfig"
+                  - "codedeploy:RegisterApplicationRevision"
+                Resource:
+                  - "*"
+              - Effect: "Allow"
+                Action:
+                  - "codestar-connections:UseConnection"
+                Resource:
+                  - "*"
+              - Effect: "Allow"
+                Action:
+                  - "elasticbeanstalk:*"
+                  - "ec2:*"
+                  - "elasticloadbalancing:*"
+                  - "autoscaling:*"
+                  - "cloudwatch:*"
+                  - "s3:*"
+                  - "sns:*"
+                  - "cloudformation:*"
+                  - "rds:*"
+                  - "sqs:*"
+                  - "ecs:*"
+                Resource:
+                  - "*"
+              - Effect: "Allow"
+                Action:
+                  - "lambda:InvokeFunction"
+                  - "lambda:ListFunctions"
+                Resource:
+                  - "*"
+              - Effect: "Allow"
+                Action:
+                  - "opsworks:CreateDeployment"
+                  - "opsworks:DescribeApps"
+                  - "opsworks:DescribeCommands"
+                  - "opsworks:DescribeDeployments"
+                  - "opsworks:DescribeInstances"
+                  - "opsworks:DescribeStacks"
+                  - "opsworks:UpdateApp"
+                  - "opsworks:UpdateStack"
+                Resource:
+                  - "*"
+              - Effect: "Allow"
+                Action:
+                  - "cloudformation:CreateStack"
+                  - "cloudformation:DeleteStack"
+                  - "cloudformation:DescribeStacks"
+                  - "cloudformation:UpdateStack"
+                  - "cloudformation:CreateChangeSet"
+                  - "cloudformation:DeleteChangeSet"
+                  - "cloudformation:DescribeChangeSet"
+                  - "cloudformation:ExecuteChangeSet"
+                  - "cloudformation:SetStackPolicy"
+                  - "cloudformation:ValidateTemplate"
+                Resource:
+                  - "*"
+              - Effect: "Allow"
+                Action:
+                  - "codebuild:BatchGetBuilds"
+                  - "codebuild:StartBuild"
+                  - "codebuild:BatchGetBuildBatches"
+                  - "codebuild:StartBuildBatch"
+                Resource:
+                  - "*"
+              - Effect: "Allow"
+                Action:
+                  - "devicefarm:ListProjects"
+                  - "devicefarm:ListDevicePools"
+                  - "devicefarm:GetRun"
+                  - "devicefarm:GetUpload"
+                  - "devicefarm:CreateUpload"
+                  - "devicefarm:ScheduleRun"
+                Resource:
+                  - "*"
+              - Effect: "Allow"
+                Action:
+                  - "servicecatalog:ListProvisioningArtifacts"
+                  - "servicecatalog:CreateProvisioningArtifact"
+                  - "servicecatalog:DescribeProvisioningArtifact"
+                  - "servicecatalog:DeleteProvisioningArtifact"
+                  - "servicecatalog:UpdateProduct"
+                Resource:
+                  - "*"
+              - Effect: "Allow"
+                Action:
+                  - "cloudformation:ValidateTemplate"
+                Resource:
+                  - "*"
+              - Effect: "Allow"
+                Action:
+                  - "ecr:DescribeImages"
+                Resource:
+                  - "*"
+              - Effect: "Allow"
+                Action:
+                  - "states:DescribeExecution"
+                  - "states:DescribeStateMachine"
+                  - "states:StartExecution"
+                Resource:
+                  - "*"
+              - Effect: "Allow"
+                Action:
+                  - "appconfig:StartDeployment"
+                  - "appconfig:StopDeployment"
+                  - "appconfig:GetDeployment"
+                Resource:
+                  - "*"
+
+  pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties: 
+      ArtifactStore: 
+        EncryptionKey: 
+          Id: !Ref ArtifactStoreEncryptionKeyId
+          Type: KMS # KMS is the only type available at time or writing
+        Location: !Ref ArtifactStoreLocation
+        Type: S3 # S3 is the only type available at time or writing
+      Name: !If [SpecifyName, !Ref Name, !Ref "AWS::NoValue"]
+      RestartExecutionOnUpdate: !If [SpecifyRestartExecutionOnUpdate, true, false]
+      RoleArn: !GetAtt pipelineRole.Arn
+      Stages: 
+        - Name: Source
+          Actions: 
+            - Name: Source
+              ActionTypeId: 
+                Category: Source
+                Owner: AWS
+                Provider: CodeCommit
+                Version: 1
+              Configuration:
+                RepositoryName: !Ref RepositoryName
+                BranchName: !Ref BranchName
+                PollForSourceChanges: !If [SpecifyPollingExecutionTrigger, true, false]
+                OutputArtifactFormat: CODE_ZIP
+              RunOrder: 1
+              Region: !Ref "AWS::Region"
+              OutputArtifacts: 
+                - Name: source
+        - Name: Build
+          Actions: 
+            - Name: Build
+              ActionTypeId: 
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              Configuration:
+                ProjectName: !Ref BuildProjectName
+                BatchEnabled: false
+                EnvironmentVariables: !If
+                  - SpecifyBuildEnvironmentVariables
+                  - !Ref BuildEnvironmentVariables
+                  - !Ref "AWS::NoValue"
+              RunOrder: 2
+              Region: !Ref "AWS::Region"
+              InputArtifacts: 
+                - Name: source
+              OutputArtifacts: 
+                - Name: build
+        - !If
+          - SpecifyManualApprovalRequired
+          - Name: Approval
+            Actions: 
+              - Name: Approval
+                ActionTypeId: 
+                  Category: Approval
+                  Owner: AWS
+                  Provider: Manual
+                  Version: 1
+                RunOrder: 3
+                Region: !Ref "AWS::Region"
+          - !Ref "AWS::NoValue"
+        - Name: Deploy
+          Actions: 
+            - Name: Deploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: ECS
+                Version: 1
+              RunOrder: 4
+              Configuration:
+                ClusterName: !Ref ClusterName
+                ServiceName: !Ref ServiceName
+                FileName: !Ref FileName
+                DeploymentTimeout: !Ref DeploymentTimeout
+              InputArtifacts:
+                - Name: build
+
+
+# Outputs:
+  # add when needed

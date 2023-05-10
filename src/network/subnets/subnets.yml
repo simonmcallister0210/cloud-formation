@@ -1,0 +1,1774 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  A typical layout for a set of subnets spread across availability zones. You
+  can launch multiple of these subnets to create an N-tier network. Use ACLs to
+  control access between subnets
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+          - VPCStack
+      - Label:
+          default: VPC Parameters
+        Parameters:
+          - SubNetworkName
+          - IsPublic
+          - CidrBlock
+          - CidrBlockAzA
+          - CidrBlockAzB
+          - CidrBlockAzC
+          - CidrBlockAzD
+          - CidrBlockAzE
+      - Label:
+          default: Default Routing Parameters
+        Parameters:
+          - DefaultRouting
+          - DefaultRouteLocations
+      - Label:
+          default: ACL Ingress Entries
+        Parameters:
+          - InRule50SourceType
+          - InRule50Source
+          - InRule50
+          - InRule100SourceType
+          - InRule100Source
+          - InRule100
+          - InRule150SourceType
+          - InRule150Source
+          - InRule150
+          - InRule200SourceType
+          - InRule200Source
+          - InRule200
+          - InRule250SourceType
+          - InRule250Source
+          - InRule250
+          - InRule300SourceType
+          - InRule300Source
+          - InRule300
+          - InRule350SourceType
+          - InRule350Source
+          - InRule350
+          - InRule400SourceType
+          - InRule400Source
+          - InRule400
+          - InRule450SourceType
+          - InRule450Source
+          - InRule450
+          - InRule500SourceType
+          - InRule500Source
+          - InRule500
+          - InRule550SourceType
+          - InRule550Source
+          - InRule550
+          - InRule600SourceType
+          - InRule600Source
+          - InRule600
+          - InRule650SourceType
+          - InRule650Source
+          - InRule650
+          - InRule700SourceType
+          - InRule700Source
+          - InRule700
+          - InRule750SourceType
+          - InRule750Source
+          - InRule750
+          - InRule800SourceType
+          - InRule800Source
+          - InRule800
+          - InRule850SourceType
+          - InRule850Source
+          - InRule850
+          - InRule900SourceType
+          - InRule900Source
+          - InRule900
+          - InRule950SourceType
+          - InRule950Source
+          - InRule950
+          - InRule1000SourceType
+          - InRule1000Source
+          - InRule1000
+      - Label:
+          default: ACL Egress Entries
+        Parameters:
+          - OutRule50DestinationType
+          - OutRule50Destination
+          - OutRule50
+          - OutRule100DestinationType
+          - OutRule100Destination
+          - OutRule100
+          - OutRule150DestinationType
+          - OutRule150Destination
+          - OutRule150
+          - OutRule200DestinationType
+          - OutRule200Destination
+          - OutRule200
+          - OutRule250DestinationType
+          - OutRule250Destination
+          - OutRule250
+          - OutRule300DestinationType
+          - OutRule300Destination
+          - OutRule300
+          - OutRule350DestinationType
+          - OutRule350Destination
+          - OutRule350
+          - OutRule400DestinationType
+          - OutRule400Destination
+          - OutRule400
+          - OutRule450DestinationType
+          - OutRule450Destination
+          - OutRule450
+          - OutRule500DestinationType
+          - OutRule500Destination
+          - OutRule500
+          - OutRule550DestinationType
+          - OutRule550Destination
+          - OutRule550
+          - OutRule600DestinationType
+          - OutRule600Destination
+          - OutRule600
+          - OutRule650DestinationType
+          - OutRule650Destination
+          - OutRule650
+          - OutRule700DestinationType
+          - OutRule700Destination
+          - OutRule700
+          - OutRule750DestinationType
+          - OutRule750Destination
+          - OutRule750
+          - OutRule800DestinationType
+          - OutRule800Destination
+          - OutRule800
+          - OutRule850DestinationType
+          - OutRule850Destination
+          - OutRule850
+          - OutRule900DestinationType
+          - OutRule900Destination
+          - OutRule900
+          - OutRule950DestinationType
+          - OutRule950Destination
+          - OutRule950
+          - OutRule1000DestinationType
+          - OutRule1000Destination
+          - OutRule1000
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  VPCStack:
+    Type: String
+    Description: >-
+      The name of the VPC stack with want to associate our subnets with
+
+  SubNetworkName:
+    Type: String
+    Description: >-
+      Name of the sub networks. Will be used to name resources, for example a
+      network name of "test" would generate "test-subnet-a", "test-subnet-b",
+      etc.
+
+  IsPublic:
+    Type: String
+    Description: >-
+      Indicates whether these are public subnets. If they are then they will
+      automatically map public IP address on launch, and reserve the last ACL
+      rule for SSH access via the parent VPCs whitelisted CIDR
+    Default: true
+    AllowedValues:
+      - true
+      - false
+
+  CidrBlock:
+    Type: String
+    Description: >-
+      The CIDR block that contains the subnets. This is used when configuring
+      access via ACLs, subnets, route, etc.
+
+  CidrBlockAzA:
+    Type: String
+    Description: >-
+      The IPv4 CIDR block assigned to the subnet. If you update this property,
+      we create a new subnet, and then delete the existing one. For availability
+      A. Look here to see a visualisation on how CIDRs can be broken down, (try
+      to remain in divisions of 2, if a block is left over skip it):
+      https://www.davidc.net/sites/default/subnets/subnets.html?network=10.0.0.0&mask=16&division=7.31
+
+  CidrBlockAzB:
+    Type: String
+    Description: >-
+      The IPv4 CIDR block assigned to the subnet. If you update this property,
+      we create a new subnet, and then delete the existing one. For availability
+      B
+
+  CidrBlockAzC:
+    Type: String
+    Description: >-
+      (optional) The IPv4 CIDR block assigned to the subnet. If you update this
+      property, we create a new subnet, and then delete the existing one. For
+      availability C
+    Default: ""
+
+  CidrBlockAzD:
+    Type: String
+    Description: >-
+      (optional) The IPv4 CIDR block assigned to the subnet. If you update this
+      property, we create a new subnet, and then delete the existing one. For
+      availability D
+    Default: ""
+
+  CidrBlockAzE:
+    Type: String
+    Description: >-
+      (optional) The IPv4 CIDR block assigned to the subnet. If you update this
+      property, we create a new subnet, and then delete the existing one. For
+      availability E
+    Default: ""
+
+  DefaultRouting:
+    Type: String
+    Description: >-
+      Where should unknown addresses be routed (0.0.0.0/0)? NOTE: if you're
+      a NAT gateway(s) or instance, define them seperately from this template,
+      this will make it easier to swap in and out between configurations
+    Default: none
+    AllowedValues:
+      - none
+      - internet-gateway
+      - nat-gateway
+      - nat-instance
+
+  DefaultRouteLocations:
+    Type: CommaDelimitedList
+    Description: >-
+      Locations where default route should point to. e.g. If it's an internet
+      gateway this is the ID of the gateway, if its a NAT instance then the ID
+      of the instance. NOTE: each item in the list corresponds to the
+      availability zones route table. So if you have NAT gateways inside each
+      availability zone you can point to the local gateways for each subnet e.g.
+      for 5 subnets 5 NATs: id01,id23,id45,id67,id89. However if you're using a
+      single NAT gateway on a single availability zone you should duplicate the
+      ID for each subnet you use e.g. for 3 subnets 1 NAT: id123,id123,id123,,
+    Default: ",,,,"
+
+  # Ingress Rules
+
+  # InRule50
+
+  InRule50SourceType:
+    Type: String
+    Description: >-
+      (optional) The type of the source. Leave as '-' to omit the rule
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule50Source:
+    Type: String
+    Description: >-
+      The source of traffic for ingress rule. If InRule50SourceType is
+      cidr-ipv4 then this value is a IPv4 CIDR .. If InRule50SourceType is
+      cidr-ipv6 then this value is a IPv6 CIDR ..  If InRule50SourceType is
+      stack-import then this value is the name of the subnet stack that exports
+      the IPv4 CIDR used as the source
+    Default: ""
+
+  InRule50:
+    Type: CommaDelimitedList
+    Description: >-
+      Specified as RuleAction (allow | deny), Protocol, PortRangeFrom /
+      IcmpCode, PortRangeTo / IcmpType. e.g. allow,6,80,80 is allowing tcp
+      traffic from port 80 to 80, or deny,1,0,8 is denying icmp request ping
+      traffic
+    Default: ",,,"
+
+  # InRule100
+
+  InRule100SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule100Source:
+    Type: String
+    Default: ""
+
+  InRule100:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule150
+
+  InRule150SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule150Source:
+    Type: String
+    Default: ""
+
+  InRule150:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule200
+
+  InRule200SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule200Source:
+    Type: String
+    Default: ""
+
+  InRule200:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule250
+
+  InRule250SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule250Source:
+    Type: String
+    Default: ""
+
+  InRule250:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule300
+
+  InRule300SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule300Source:
+    Type: String
+    Default: ""
+
+  InRule300:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule350
+
+  InRule350SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule350Source:
+    Type: String
+    Default: ""
+
+  InRule350:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule400
+
+  InRule400SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule400Source:
+    Type: String
+    Default: ""
+
+  InRule400:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule450
+
+  InRule450SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule450Source:
+    Type: String
+    Default: ""
+
+  InRule450:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule500
+
+  InRule500SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule500Source:
+    Type: String
+    Default: ""
+
+  InRule500:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule550
+
+  InRule550SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule550Source:
+    Type: String
+    Default: ""
+
+  InRule550:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule600
+
+  InRule600SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule600Source:
+    Type: String
+    Default: ""
+
+  InRule600:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule650
+
+  InRule650SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule650Source:
+    Type: String
+    Default: ""
+
+  InRule650:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule700
+
+  InRule700SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule700Source:
+    Type: String
+    Default: ""
+
+  InRule700:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule750
+
+  InRule750SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule750Source:
+    Type: String
+    Default: ""
+
+  InRule750:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule800
+
+  InRule800SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule800Source:
+    Type: String
+    Default: ""
+
+  InRule800:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule850
+
+  InRule850SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule850Source:
+    Type: String
+    Default: ""
+
+  InRule850:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule900
+
+  InRule900SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule900Source:
+    Type: String
+    Default: ""
+
+  InRule900:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule950
+
+  InRule950SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule950Source:
+    Type: String
+    Default: ""
+
+  InRule950:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # InRule1000
+
+  InRule1000SourceType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  InRule1000Source:
+    Type: String
+    Default: ""
+
+  InRule1000:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # Egress Rules
+
+  # OutRule50
+
+  OutRule50DestinationType:
+    Type: String
+    Description: 
+      (optional) The type of the destination. Leave as '-' to omit the rule
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule50Destination:
+    Type: String
+    Description: >-
+      (optional) The destination of traffic for egress rule. If
+      OutRule50DestinationType is cidr-ipv4 then this value is a IPv4 CIDR
+      .. If OutRule50DestinationType is cidr-ipv6 then this value is a IPv6
+      CIDR ..  If OutRule50DestinationType is stack-import then this value
+      is the name of the subnet stack that exports the IPv4 CIDR used as the
+      destination
+    Default: ""
+
+  OutRule50:
+    Type: CommaDelimitedList
+    Description: >-
+      Specified as RuleAction (allow | deny), Protocol, PortRangeFrom /
+      IcmpCode, PortRangeTo / IcmpType. e.g. allow,6,80,80 is allowing tcp
+      traffic from port 80 to 80, or deny,1,0,8 is denying icmp request ping
+      traffic
+    Default: ",,,"
+
+  # OutRule100
+
+  OutRule100DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule100Destination:
+    Type: String
+    Default: ""
+
+  OutRule100:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule150
+
+  OutRule150DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule150Destination:
+    Type: String
+    Default: ""
+
+  OutRule150:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule200
+
+  OutRule200DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule200Destination:
+    Type: String
+    Default: ""
+
+  OutRule200:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule250
+
+  OutRule250DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule250Destination:
+    Type: String
+    Default: ""
+
+  OutRule250:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule300
+
+  OutRule300DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule300Destination:
+    Type: String
+    Default: ""
+
+  OutRule300:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule350
+
+  OutRule350DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule350Destination:
+    Type: String
+    Default: ""
+
+  OutRule350:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule400
+
+  OutRule400DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule400Destination:
+    Type: String
+    Default: ""
+
+  OutRule400:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule450
+
+  OutRule450DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule450Destination:
+    Type: String
+    Default: ""
+
+  OutRule450:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule500
+
+  OutRule500DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule500Destination:
+    Type: String
+    Default: ""
+
+  OutRule500:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule550
+
+  OutRule550DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule550Destination:
+    Type: String
+    Default: ""
+
+  OutRule550:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule600
+
+  OutRule600DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule600Destination:
+    Type: String
+    Default: ""
+
+  OutRule600:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule650
+
+  OutRule650DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule650Destination:
+    Type: String
+    Default: ""
+
+  OutRule650:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule700
+
+  OutRule700DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule700Destination:
+    Type: String
+    Default: ""
+
+  OutRule700:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule750
+
+  OutRule750DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule750Destination:
+    Type: String
+    Default: ""
+
+  OutRule750:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule800
+
+  OutRule800DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule800Destination:
+    Type: String
+    Default: ""
+
+  OutRule800:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule850
+
+  OutRule850DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule850Destination:
+    Type: String
+    Default: ""
+
+  OutRule850:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule900
+
+  OutRule900DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule900Destination:
+    Type: String
+    Default: ""
+
+  OutRule900:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule950
+
+  OutRule950DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule950Destination:
+    Type: String
+    Default: ""
+
+  OutRule950:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+  # OutRule1000
+
+  OutRule1000DestinationType:
+    Type: String
+    Default: "-"
+    AllowedValues:
+      - "-"
+      - cidr-ipv4
+      - cidr-ipv6
+      - stack-import
+
+  OutRule1000Destination:
+    Type: String
+    Default: ""
+
+  OutRule1000:
+    Type: CommaDelimitedList
+    Default: ",,,"
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  SpecifyPublic: !Equals [!Ref IsPublic, true]
+  SpecifyCidrBlockAzC: !Not [!Equals [!Ref CidrBlockAzC, ""]]
+  SpecifyCidrBlockAzD: !Not [!Equals [!Ref CidrBlockAzD, ""]]
+  SpecifyCidrBlockAzE: !Not [!Equals [!Ref CidrBlockAzE, ""]]
+  SpecifyDefaultRouting: !Not [!Equals [!Ref DefaultRouting, "none"]]
+  SpecifyInternetGatewayRoute: !Equals [!Ref DefaultRouting, "internet-gateway"]
+  SpecifyNATGatewayRoute: !Equals [!Ref DefaultRouting, "nat-gateway"]
+  SpecifyNATInstanceRoute: !Equals [!Ref DefaultRouting, "nat-instance"]
+  SpecifyDefaultRouteForSubnetC: !And
+    - !Condition SpecifyDefaultRouting
+    - !Condition SpecifyCidrBlockAzC
+  SpecifyDefaultRouteForSubnetD: !And
+    - !Condition SpecifyDefaultRouting
+    - !Condition SpecifyCidrBlockAzD
+  SpecifyDefaultRouteForSubnetE: !And
+    - !Condition SpecifyDefaultRouting
+    - !Condition SpecifyCidrBlockAzE
+
+  SpecifyInRule50SourceTypeAsStack: !Equals [!Ref InRule50SourceType, "stack-import"]
+  SpecifyInRule100SourceTypeAsStack: !Equals [!Ref InRule100SourceType, "stack-import"]
+  SpecifyInRule150SourceTypeAsStack: !Equals [!Ref InRule150SourceType, "stack-import"]
+  SpecifyInRule200SourceTypeAsStack: !Equals [!Ref InRule200SourceType, "stack-import"]
+  SpecifyInRule250SourceTypeAsStack: !Equals [!Ref InRule250SourceType, "stack-import"]
+  SpecifyInRule300SourceTypeAsStack: !Equals [!Ref InRule300SourceType, "stack-import"]
+  SpecifyInRule350SourceTypeAsStack: !Equals [!Ref InRule350SourceType, "stack-import"]
+  SpecifyInRule400SourceTypeAsStack: !Equals [!Ref InRule400SourceType, "stack-import"]
+  SpecifyInRule450SourceTypeAsStack: !Equals [!Ref InRule450SourceType, "stack-import"]
+  SpecifyInRule500SourceTypeAsStack: !Equals [!Ref InRule500SourceType, "stack-import"]
+  SpecifyInRule550SourceTypeAsStack: !Equals [!Ref InRule550SourceType, "stack-import"]
+  SpecifyInRule600SourceTypeAsStack: !Equals [!Ref InRule600SourceType, "stack-import"]
+  SpecifyInRule650SourceTypeAsStack: !Equals [!Ref InRule650SourceType, "stack-import"]
+  SpecifyInRule700SourceTypeAsStack: !Equals [!Ref InRule700SourceType, "stack-import"]
+  SpecifyInRule750SourceTypeAsStack: !Equals [!Ref InRule750SourceType, "stack-import"]
+  SpecifyInRule800SourceTypeAsStack: !Equals [!Ref InRule800SourceType, "stack-import"]
+  SpecifyInRule850SourceTypeAsStack: !Equals [!Ref InRule850SourceType, "stack-import"]
+  SpecifyInRule900SourceTypeAsStack: !Equals [!Ref InRule900SourceType, "stack-import"]
+  SpecifyInRule950SourceTypeAsStack: !Equals [!Ref InRule950SourceType, "stack-import"]
+  SpecifyInRule1000SourceTypeAsStack: !Equals [!Ref InRule1000SourceType, "stack-import"]
+
+  SpecifyOutRule50DestinationTypeAsStack: !Equals [!Ref OutRule50DestinationType, "stack-import"]
+  SpecifyOutRule100DestinationTypeAsStack: !Equals [!Ref OutRule100DestinationType, "stack-import"]
+  SpecifyOutRule150DestinationTypeAsStack: !Equals [!Ref OutRule150DestinationType, "stack-import"]
+  SpecifyOutRule200DestinationTypeAsStack: !Equals [!Ref OutRule200DestinationType, "stack-import"]
+  SpecifyOutRule250DestinationTypeAsStack: !Equals [!Ref OutRule250DestinationType, "stack-import"]
+  SpecifyOutRule300DestinationTypeAsStack: !Equals [!Ref OutRule300DestinationType, "stack-import"]
+  SpecifyOutRule350DestinationTypeAsStack: !Equals [!Ref OutRule350DestinationType, "stack-import"]
+  SpecifyOutRule400DestinationTypeAsStack: !Equals [!Ref OutRule400DestinationType, "stack-import"]
+  SpecifyOutRule450DestinationTypeAsStack: !Equals [!Ref OutRule450DestinationType, "stack-import"]
+  SpecifyOutRule500DestinationTypeAsStack: !Equals [!Ref OutRule500DestinationType, "stack-import"]
+  SpecifyOutRule550DestinationTypeAsStack: !Equals [!Ref OutRule550DestinationType, "stack-import"]
+  SpecifyOutRule600DestinationTypeAsStack: !Equals [!Ref OutRule600DestinationType, "stack-import"]
+  SpecifyOutRule650DestinationTypeAsStack: !Equals [!Ref OutRule650DestinationType, "stack-import"]
+  SpecifyOutRule700DestinationTypeAsStack: !Equals [!Ref OutRule700DestinationType, "stack-import"]
+  SpecifyOutRule750DestinationTypeAsStack: !Equals [!Ref OutRule750DestinationType, "stack-import"]
+  SpecifyOutRule800DestinationTypeAsStack: !Equals [!Ref OutRule800DestinationType, "stack-import"]
+  SpecifyOutRule850DestinationTypeAsStack: !Equals [!Ref OutRule850DestinationType, "stack-import"]
+  SpecifyOutRule900DestinationTypeAsStack: !Equals [!Ref OutRule900DestinationType, "stack-import"]
+  SpecifyOutRule950DestinationTypeAsStack: !Equals [!Ref OutRule950DestinationType, "stack-import"]
+  SpecifyOutRule1000DestinationTypeAsStack: !Equals [!Ref OutRule1000DestinationType, "stack-import"]
+
+Resources:
+
+  ### Subnets ##################################################################
+
+  subnetStackA:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/network/subnets/_subnet.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        VpcId:
+          Fn::ImportValue:
+            !Sub "${VPCStack}-vpcId"
+        SubNetworkName: !Ref SubNetworkName
+        SubNetworkSuffix: a
+        MapPublicIpOnLaunch: !If [SpecifyPublic, true, false]
+        CidrBlock: !Ref CidrBlockAzA
+        AvailabilityZone: !Select 
+          - 0
+          - Fn::GetAZs: !Ref 'AWS::Region'
+
+  subnetStackB:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/network/subnets/_subnet.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        VpcId:
+          Fn::ImportValue:
+            !Sub "${VPCStack}-vpcId"
+        SubNetworkName: !Ref SubNetworkName
+        SubNetworkSuffix: b
+        MapPublicIpOnLaunch: !If [SpecifyPublic, true, false]
+        CidrBlock: !Ref CidrBlockAzB
+        AvailabilityZone: !Select 
+          - 1
+          - Fn::GetAZs: !Ref 'AWS::Region'
+
+  subnetStackC:
+    Condition: SpecifyCidrBlockAzC
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/network/subnets/_subnet.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        VpcId:
+          Fn::ImportValue:
+            !Sub "${VPCStack}-vpcId"
+        SubNetworkName: !Ref SubNetworkName
+        SubNetworkSuffix: c
+        MapPublicIpOnLaunch: !If [SpecifyPublic, true, false]
+        CidrBlock: !Ref CidrBlockAzC
+        AvailabilityZone: !Select 
+          - 2
+          - Fn::GetAZs: !Ref 'AWS::Region'
+
+  subnetStackD:
+    Condition: SpecifyCidrBlockAzD
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/network/subnets/_subnet.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        VpcId:
+          Fn::ImportValue:
+            !Sub "${VPCStack}-vpcId"
+        SubNetworkName: !Ref SubNetworkName
+        SubNetworkSuffix: d
+        MapPublicIpOnLaunch: !If [SpecifyPublic, true, false]
+        CidrBlock: !Ref CidrBlockAzD
+        AvailabilityZone: !Select 
+          - 3
+          - Fn::GetAZs: !Ref 'AWS::Region'
+
+  subnetStackE:
+    Condition: SpecifyCidrBlockAzE
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/network/subnets/_subnet.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        VpcId:
+          Fn::ImportValue:
+            !Sub "${VPCStack}-vpcId"
+        SubNetworkName: !Ref SubNetworkName
+        SubNetworkSuffix: e
+        MapPublicIpOnLaunch: !If [SpecifyPublic, true, false]
+        CidrBlock: !Ref CidrBlockAzE
+        AvailabilityZone: !Select 
+          - 4
+          - Fn::GetAZs: !Ref 'AWS::Region'
+
+  ### Route Tables #############################################################
+
+  routeTableStackA:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/network/subnets/_route-table.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        VpcId:
+          Fn::ImportValue:
+            !Sub "${VPCStack}-vpcId"
+        SubnetId: !GetAtt subnetStackA.Outputs.subnetId
+        RouteTableName: !Ref SubNetworkName
+        RouteTableSuffix: a
+
+  routeTableStackB:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/network/subnets/_route-table.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        VpcId:
+          Fn::ImportValue:
+            !Sub "${VPCStack}-vpcId"
+        SubnetId: !GetAtt subnetStackB.Outputs.subnetId
+        RouteTableName: !Ref SubNetworkName
+        RouteTableSuffix: b
+
+  routeTableStackC:
+    Condition: SpecifyCidrBlockAzC
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/network/subnets/_route-table.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        VpcId:
+          Fn::ImportValue:
+            !Sub "${VPCStack}-vpcId"
+        SubnetId: !GetAtt subnetStackC.Outputs.subnetId
+        RouteTableName: !Ref SubNetworkName
+        RouteTableSuffix: c
+
+  routeTableStackD:
+    Condition: SpecifyCidrBlockAzD
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/network/subnets/_route-table.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        VpcId:
+          Fn::ImportValue:
+            !Sub "${VPCStack}-vpcId"
+        SubnetId: !GetAtt subnetStackD.Outputs.subnetId
+        RouteTableName: !Ref SubNetworkName
+        RouteTableSuffix: d
+
+  routeTableStackE:
+    Condition: SpecifyCidrBlockAzE
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/network/subnets/_route-table.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        VpcId:
+          Fn::ImportValue:
+            !Sub "${VPCStack}-vpcId"
+        SubnetId: !GetAtt subnetStackE.Outputs.subnetId
+        RouteTableName: !Ref SubNetworkName
+        RouteTableSuffix: e
+
+  ### Default Routes ###########################################################
+
+  defaultRouteA:
+    Condition: SpecifyDefaultRouting
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !If
+        - SpecifyInternetGatewayRoute
+        - Fn::ImportValue:
+            !Sub "${VPCStack}-internetGatewayId"
+        - !Ref "AWS::NoValue"
+      NatGatewayId: !If
+        - SpecifyNATGatewayRoute
+        - !Select [0, !Ref DefaultRouteLocations]
+        - !Ref "AWS::NoValue"
+      RouteTableId: !GetAtt routeTableStackA.Outputs.RouteTableId
+
+  defaultRouteB:
+    Condition: SpecifyDefaultRouting
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !If
+        - SpecifyInternetGatewayRoute
+        - Fn::ImportValue:
+            !Sub "${VPCStack}-internetGatewayId"
+        - !Ref "AWS::NoValue"
+      NatGatewayId: !If
+        - SpecifyNATGatewayRoute
+        - !Select [1, !Ref DefaultRouteLocations]
+        - !Ref "AWS::NoValue"
+      RouteTableId: !GetAtt routeTableStackB.Outputs.RouteTableId
+
+  defaultRouteC:
+    Condition: SpecifyDefaultRouteForSubnetC
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !If
+        - SpecifyInternetGatewayRoute
+        - Fn::ImportValue:
+            !Sub "${VPCStack}-internetGatewayId"
+        - !Ref "AWS::NoValue"
+      NatGatewayId: !If
+        - SpecifyNATGatewayRoute
+        - !Select [2, !Ref DefaultRouteLocations]
+        - !Ref "AWS::NoValue"
+      RouteTableId: !GetAtt routeTableStackC.Outputs.RouteTableId
+
+  defaultRouteD:
+    Condition: SpecifyDefaultRouteForSubnetD
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !If
+        - SpecifyInternetGatewayRoute
+        - Fn::ImportValue:
+            !Sub "${VPCStack}-internetGatewayId"
+        - !Ref "AWS::NoValue"
+      NatGatewayId: !If
+        - SpecifyNATGatewayRoute
+        - !Select [3, !Ref DefaultRouteLocations]
+        - !Ref "AWS::NoValue"
+      RouteTableId: !GetAtt routeTableStackD.Outputs.RouteTableId
+
+  defaultRouteE:
+    Condition: SpecifyDefaultRouteForSubnetE
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !If
+        - SpecifyInternetGatewayRoute
+        - Fn::ImportValue:
+            !Sub "${VPCStack}-internetGatewayId"
+        - !Ref "AWS::NoValue"
+      NatGatewayId: !If
+        - SpecifyNATGatewayRoute
+        - !Select [4, !Ref DefaultRouteLocations]
+        - !Ref "AWS::NoValue"
+      RouteTableId: !GetAtt routeTableStackE.Outputs.RouteTableId
+
+  ### ACLs #####################################################################
+
+  aclStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/network/subnets/_acl.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        VpcId:
+          Fn::ImportValue:
+            !Sub "${VPCStack}-vpcId"
+        AclName: !Ref SubNetworkName
+
+        # ACL Ingress Rules
+
+        # InRule50
+        InRule50SourceType: !If [SpecifyInRule50SourceTypeAsStack, cidr-ipv4, !Ref InRule50SourceType]
+        InRule50Source: !If
+          - SpecifyInRule50SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule50Source}-cidrBlock"
+          - !Ref InRule50Source
+        InRule50: !Join [',', !Ref InRule50]
+        
+        # InRule100
+        InRule100SourceType: !If [SpecifyInRule100SourceTypeAsStack, cidr-ipv4, !Ref InRule100SourceType]
+        InRule100Source: !If
+          - SpecifyInRule100SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule100Source}-cidrBlock"
+          - !Ref InRule100Source
+        InRule100: !Join [',', !Ref InRule100]
+        
+        # InRule150
+        InRule150SourceType: !If [SpecifyInRule150SourceTypeAsStack, cidr-ipv4, !Ref InRule150SourceType]
+        InRule150Source: !If
+          - SpecifyInRule150SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule150Source}-cidrBlock"
+          - !Ref InRule150Source
+        InRule150: !Join [',', !Ref InRule150]
+        
+        # InRule200
+        InRule200SourceType: !If [SpecifyInRule200SourceTypeAsStack, cidr-ipv4, !Ref InRule200SourceType]
+        InRule200Source: !If
+          - SpecifyInRule200SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule200Source}-cidrBlock"
+          - !Ref InRule200Source
+        InRule200: !Join [',', !Ref InRule200]
+        
+        # InRule250
+        InRule250SourceType: !If [SpecifyInRule250SourceTypeAsStack, cidr-ipv4, !Ref InRule250SourceType]
+        InRule250Source: !If
+          - SpecifyInRule250SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule250Source}-cidrBlock"
+          - !Ref InRule250Source
+        InRule250: !Join [',', !Ref InRule250]
+        
+        # InRule300
+        InRule300SourceType: !If [SpecifyInRule300SourceTypeAsStack, cidr-ipv4, !Ref InRule300SourceType]
+        InRule300Source: !If
+          - SpecifyInRule300SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule300Source}-cidrBlock"
+          - !Ref InRule300Source
+        InRule300: !Join [',', !Ref InRule300]
+        
+        # InRule350
+        InRule350SourceType: !If [SpecifyInRule350SourceTypeAsStack, cidr-ipv4, !Ref InRule350SourceType]
+        InRule350Source: !If
+          - SpecifyInRule350SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule350Source}-cidrBlock"
+          - !Ref InRule350Source
+        InRule350: !Join [',', !Ref InRule350]
+        
+        # InRule400
+        InRule400SourceType: !If [SpecifyInRule400SourceTypeAsStack, cidr-ipv4, !Ref InRule400SourceType]
+        InRule400Source: !If
+          - SpecifyInRule400SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule400Source}-cidrBlock"
+          - !Ref InRule400Source
+        InRule400: !Join [',', !Ref InRule400]
+        
+        # InRule450
+        InRule450SourceType: !If [SpecifyInRule450SourceTypeAsStack, cidr-ipv4, !Ref InRule450SourceType]
+        InRule450Source: !If
+          - SpecifyInRule450SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule450Source}-cidrBlock"
+          - !Ref InRule450Source
+        InRule450: !Join [',', !Ref InRule450]
+        
+        # InRule500
+        InRule500SourceType: !If [SpecifyInRule500SourceTypeAsStack, cidr-ipv4, !Ref InRule500SourceType]
+        InRule500Source: !If
+          - SpecifyInRule500SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule500Source}-cidrBlock"
+          - !Ref InRule500Source
+        InRule500: !Join [',', !Ref InRule500]
+        
+        # InRule550
+        InRule550SourceType: !If [SpecifyInRule550SourceTypeAsStack, cidr-ipv4, !Ref InRule550SourceType]
+        InRule550Source: !If
+          - SpecifyInRule550SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule550Source}-cidrBlock"
+          - !Ref InRule550Source
+        InRule550: !Join [',', !Ref InRule550]
+        
+        # InRule600
+        InRule600SourceType: !If [SpecifyInRule600SourceTypeAsStack, cidr-ipv4, !Ref InRule600SourceType]
+        InRule600Source: !If
+          - SpecifyInRule600SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule600Source}-cidrBlock"
+          - !Ref InRule600Source
+        InRule600: !Join [',', !Ref InRule600]
+        
+        # InRule650
+        InRule650SourceType: !If [SpecifyInRule650SourceTypeAsStack, cidr-ipv4, !Ref InRule650SourceType]
+        InRule650Source: !If
+          - SpecifyInRule650SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule650Source}-cidrBlock"
+          - !Ref InRule650Source
+        InRule650: !Join [',', !Ref InRule650]
+        
+        # InRule700
+        InRule700SourceType: !If [SpecifyInRule700SourceTypeAsStack, cidr-ipv4, !Ref InRule700SourceType]
+        InRule700Source: !If
+          - SpecifyInRule700SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule700Source}-cidrBlock"
+          - !Ref InRule700Source
+        InRule700: !Join [',', !Ref InRule700]
+        
+        # InRule750
+        InRule750SourceType: !If [SpecifyInRule750SourceTypeAsStack, cidr-ipv4, !Ref InRule750SourceType]
+        InRule750Source: !If
+          - SpecifyInRule750SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule750Source}-cidrBlock"
+          - !Ref InRule750Source
+        InRule750: !Join [',', !Ref InRule750]
+        
+        # InRule800
+        InRule800SourceType: !If [SpecifyInRule800SourceTypeAsStack, cidr-ipv4, !Ref InRule800SourceType]
+        InRule800Source: !If
+          - SpecifyInRule800SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule800Source}-cidrBlock"
+          - !Ref InRule800Source
+        InRule800: !Join [',', !Ref InRule800]
+        
+        # InRule850
+        InRule850SourceType: !If [SpecifyInRule850SourceTypeAsStack, cidr-ipv4, !Ref InRule850SourceType]
+        InRule850Source: !If
+          - SpecifyInRule850SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule850Source}-cidrBlock"
+          - !Ref InRule850Source
+        InRule850: !Join [',', !Ref InRule850]
+        
+        # InRule900
+        InRule900SourceType: !If [SpecifyInRule900SourceTypeAsStack, cidr-ipv4, !Ref InRule900SourceType]
+        InRule900Source: !If
+          - SpecifyInRule900SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule900Source}-cidrBlock"
+          - !Ref InRule900Source
+        InRule900: !Join [',', !Ref InRule900]
+        
+        # InRule950
+        InRule950SourceType: !If [SpecifyInRule950SourceTypeAsStack, cidr-ipv4, !Ref InRule950SourceType]
+        InRule950Source: !If
+          - SpecifyInRule950SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule950Source}-cidrBlock"
+          - !Ref InRule950Source
+        InRule950: !Join [',', !Ref InRule950]
+        
+        # InRule1000
+        InRule1000SourceType: !If [SpecifyInRule1000SourceTypeAsStack, cidr-ipv4, !Ref InRule1000SourceType]
+        InRule1000Source: !If
+          - SpecifyInRule1000SourceTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${InRule1000Source}-cidrBlock"
+          - !Ref InRule1000Source
+        InRule1000: !Join [',', !Ref InRule1000]
+
+        # ACL Egress Rules
+
+        # OutRule50
+        OutRule50DestinationType: !If [SpecifyOutRule50DestinationTypeAsStack, cidr-ipv4, !Ref OutRule50DestinationType]
+        OutRule50Destination: !If
+          - SpecifyOutRule50DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule50Destination}-cidrBlock"
+          - !Ref OutRule50Destination
+        OutRule50: !Join [',', !Ref OutRule50]
+        
+        # OutRule100
+        OutRule100DestinationType: !If [SpecifyOutRule100DestinationTypeAsStack, cidr-ipv4, !Ref OutRule100DestinationType]
+        OutRule100Destination: !If
+          - SpecifyOutRule100DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule100Destination}-cidrBlock"
+          - !Ref OutRule100Destination
+        OutRule100: !Join [',', !Ref OutRule100]
+        
+        # OutRule150
+        OutRule150DestinationType: !If [SpecifyOutRule150DestinationTypeAsStack, cidr-ipv4, !Ref OutRule150DestinationType]
+        OutRule150Destination: !If
+          - SpecifyOutRule150DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule150Destination}-cidrBlock"
+          - !Ref OutRule150Destination
+        OutRule150: !Join [',', !Ref OutRule150]
+        
+        # OutRule200
+        OutRule200DestinationType: !If [SpecifyOutRule200DestinationTypeAsStack, cidr-ipv4, !Ref OutRule200DestinationType]
+        OutRule200Destination: !If
+          - SpecifyOutRule200DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule200Destination}-cidrBlock"
+          - !Ref OutRule200Destination
+        OutRule200: !Join [',', !Ref OutRule200]
+        
+        # OutRule250
+        OutRule250DestinationType: !If [SpecifyOutRule250DestinationTypeAsStack, cidr-ipv4, !Ref OutRule250DestinationType]
+        OutRule250Destination: !If
+          - SpecifyOutRule250DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule250Destination}-cidrBlock"
+          - !Ref OutRule250Destination
+        OutRule250: !Join [',', !Ref OutRule250]
+        
+        # OutRule300
+        OutRule300DestinationType: !If [SpecifyOutRule300DestinationTypeAsStack, cidr-ipv4, !Ref OutRule300DestinationType]
+        OutRule300Destination: !If
+          - SpecifyOutRule300DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule300Destination}-cidrBlock"
+          - !Ref OutRule300Destination
+        OutRule300: !Join [',', !Ref OutRule300]
+        
+        # OutRule350
+        OutRule350DestinationType: !If [SpecifyOutRule350DestinationTypeAsStack, cidr-ipv4, !Ref OutRule350DestinationType]
+        OutRule350Destination: !If
+          - SpecifyOutRule350DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule350Destination}-cidrBlock"
+          - !Ref OutRule350Destination
+        OutRule350: !Join [',', !Ref OutRule350]
+        
+        # OutRule400
+        OutRule400DestinationType: !If [SpecifyOutRule400DestinationTypeAsStack, cidr-ipv4, !Ref OutRule400DestinationType]
+        OutRule400Destination: !If
+          - SpecifyOutRule400DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule400Destination}-cidrBlock"
+          - !Ref OutRule400Destination
+        OutRule400: !Join [',', !Ref OutRule400]
+        
+        # OutRule450
+        OutRule450DestinationType: !If [SpecifyOutRule450DestinationTypeAsStack, cidr-ipv4, !Ref OutRule450DestinationType]
+        OutRule450Destination: !If
+          - SpecifyOutRule450DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule450Destination}-cidrBlock"
+          - !Ref OutRule450Destination
+        OutRule450: !Join [',', !Ref OutRule450]
+        
+        # OutRule500
+        OutRule500DestinationType: !If [SpecifyOutRule500DestinationTypeAsStack, cidr-ipv4, !Ref OutRule500DestinationType]
+        OutRule500Destination: !If
+          - SpecifyOutRule500DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule500Destination}-cidrBlock"
+          - !Ref OutRule500Destination
+        OutRule500: !Join [',', !Ref OutRule500]
+        
+        # OutRule550
+        OutRule550DestinationType: !If [SpecifyOutRule550DestinationTypeAsStack, cidr-ipv4, !Ref OutRule550DestinationType]
+        OutRule550Destination: !If
+          - SpecifyOutRule550DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule550Destination}-cidrBlock"
+          - !Ref OutRule550Destination
+        OutRule550: !Join [',', !Ref OutRule550]
+        
+        # OutRule600
+        OutRule600DestinationType: !If [SpecifyOutRule600DestinationTypeAsStack, cidr-ipv4, !Ref OutRule600DestinationType]
+        OutRule600Destination: !If
+          - SpecifyOutRule600DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule600Destination}-cidrBlock"
+          - !Ref OutRule600Destination
+        OutRule600: !Join [',', !Ref OutRule600]
+        
+        # OutRule650
+        OutRule650DestinationType: !If [SpecifyOutRule650DestinationTypeAsStack, cidr-ipv4, !Ref OutRule650DestinationType]
+        OutRule650Destination: !If
+          - SpecifyOutRule650DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule650Destination}-cidrBlock"
+          - !Ref OutRule650Destination
+        OutRule650: !Join [',', !Ref OutRule650]
+        
+        # OutRule700
+        OutRule700DestinationType: !If [SpecifyOutRule700DestinationTypeAsStack, cidr-ipv4, !Ref OutRule700DestinationType]
+        OutRule700Destination: !If
+          - SpecifyOutRule700DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule700Destination}-cidrBlock"
+          - !Ref OutRule700Destination
+        OutRule700: !Join [',', !Ref OutRule700]
+        
+        # OutRule750
+        OutRule750DestinationType: !If [SpecifyOutRule750DestinationTypeAsStack, cidr-ipv4, !Ref OutRule750DestinationType]
+        OutRule750Destination: !If
+          - SpecifyOutRule750DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule750Destination}-cidrBlock"
+          - !Ref OutRule750Destination
+        OutRule750: !Join [',', !Ref OutRule750]
+        
+        # OutRule800
+        OutRule800DestinationType: !If [SpecifyOutRule800DestinationTypeAsStack, cidr-ipv4, !Ref OutRule800DestinationType]
+        OutRule800Destination: !If
+          - SpecifyOutRule800DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule800Destination}-cidrBlock"
+          - !Ref OutRule800Destination
+        OutRule800: !Join [',', !Ref OutRule800]
+        
+        # OutRule850
+        OutRule850DestinationType: !If [SpecifyOutRule850DestinationTypeAsStack, cidr-ipv4, !Ref OutRule850DestinationType]
+        OutRule850Destination: !If
+          - SpecifyOutRule850DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule850Destination}-cidrBlock"
+          - !Ref OutRule850Destination
+        OutRule850: !Join [',', !Ref OutRule850]
+        
+        # OutRule900
+        OutRule900DestinationType: !If [SpecifyOutRule900DestinationTypeAsStack, cidr-ipv4, !Ref OutRule900DestinationType]
+        OutRule900Destination: !If
+          - SpecifyOutRule900DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule900Destination}-cidrBlock"
+          - !Ref OutRule900Destination
+        OutRule900: !Join [',', !Ref OutRule900]
+        
+        # OutRule950
+        OutRule950DestinationType: !If [SpecifyOutRule950DestinationTypeAsStack, cidr-ipv4, !Ref OutRule950DestinationType]
+        OutRule950Destination: !If
+          - SpecifyOutRule950DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule950Destination}-cidrBlock"
+          - !Ref OutRule950Destination
+        OutRule950: !Join [',', !Ref OutRule950]
+        
+        # OutRule1000
+        OutRule1000DestinationType: !If [SpecifyOutRule1000DestinationTypeAsStack, cidr-ipv4, !Ref OutRule1000DestinationType]
+        OutRule1000Destination: !If
+          - SpecifyOutRule1000DestinationTypeAsStack
+          - Fn::ImportValue:
+              !Sub "${OutRule1000Destination}-cidrBlock"
+          - !Ref OutRule1000Destination
+        OutRule1000: !Join [',', !Ref OutRule1000]
+
+  ### ACL Associations #########################################################
+
+  subnetAAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties: 
+      NetworkAclId: !GetAtt aclStack.Outputs.aclId
+      SubnetId: !GetAtt subnetStackA.Outputs.subnetId
+
+  subnetBAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties: 
+      NetworkAclId: !GetAtt aclStack.Outputs.aclId
+      SubnetId: !GetAtt subnetStackB.Outputs.subnetId
+
+  subnetCAclAssociation:
+    Condition: SpecifyCidrBlockAzC
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties: 
+      NetworkAclId: !GetAtt aclStack.Outputs.aclId
+      SubnetId: !GetAtt subnetStackC.Outputs.subnetId
+
+  subnetDAclAssociation:
+    Condition: SpecifyCidrBlockAzD
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties: 
+      NetworkAclId: !GetAtt aclStack.Outputs.aclId
+      SubnetId: !GetAtt subnetStackD.Outputs.subnetId
+
+  subnetEAclAssociation:
+    Condition: SpecifyCidrBlockAzE
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties: 
+      NetworkAclId: !GetAtt aclStack.Outputs.aclId
+      SubnetId: !GetAtt subnetStackE.Outputs.subnetId
+
+Outputs:
+  cidrBlock:
+    Value: !Ref CidrBlock
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-cidrBlock", !Sub "${AWS::StackName}-cidrBlock"]

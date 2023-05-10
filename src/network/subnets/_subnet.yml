@@ -1,0 +1,97 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Specifies a subnet for a VPC
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: Subnet Parameters
+        Parameters:
+          - VpcId
+          - SubNetworkName
+          - SubNetworkSuffix
+          - MapPublicIpOnLaunch
+          - CidrBlock
+          - AvailabilityZone
+      - Label:
+          default: ACL Parameters
+        Parameters:
+          - NetworkAclId
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: Name of the parent stack. (used for exports)
+
+  VpcId:
+    Type: String
+    Description: ID of the VPC to associate with the subnets
+
+  SubNetworkName:
+    Type: String
+    Description: >-
+      Name of the sub network. Will be used to name resources, for example a
+      network name of "test" would generate "test-subnet-xyz", etc.
+
+  SubNetworkSuffix:
+    Type: String
+    Description: >-
+      Suffix of the sub network. Will be used to name resources, for example a
+      suffix of "a" would generate "xyz-subnet-a", etc. Useful for denoting AZ
+
+  MapPublicIpOnLaunch:
+    Type: String
+    Description: >-
+      Indicates whether instances launched in this subnet receive a public IPv4
+      address
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  # Mask  Hosts    Visualisation
+  # /18   (16382)  https://www.davidc.net/sites/default/subnets/subnets.html?network=10.0.0.0&mask=16&division=7.31
+  # /19   (8190)   https://www.davidc.net/sites/default/subnets/subnets.html?network=10.0.0.0&mask=16&division=15.7231
+  # /20   (4094)   https://www.davidc.net/sites/default/subnets/subnets.html?network=10.0.0.0&mask=16&division=31.f4627231
+  # /21   (2046)   https://www.davidc.net/sites/default/subnets/subnets.html?network=10.0.0.0&mask=16&division=63.f9c4e462f4627231
+  # /22   (1022)   https://www.davidc.net/sites/default/subnets/subnets.html?network=10.0.0.0&mask=16&division=127.f399c9c4e9c4e462f9c4e462f4627231
+
+  CidrBlock:
+    Type: String
+    Description: >-
+      The IPv4 CIDR block assigned to the subnet. If you update this property,
+      we create a new subnet, and then delete the existing one
+
+  AvailabilityZone:
+    Type: String
+    Description: >-
+      The availability zone to place the subnet on
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+
+Resources:
+
+  subnet:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: !Ref AvailabilityZone
+      CidrBlock: !Ref CidrBlock
+      MapPublicIpOnLaunch: !Ref MapPublicIpOnLaunch
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub "${SubNetworkName}-subnet-${SubNetworkSuffix}"
+
+Outputs:
+  subnetId:
+    Value: !Ref subnet
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-subnetId-${AvailabilityZone}", !Sub "${AWS::StackName}-subnetId-${AvailabilityZone}"]
+

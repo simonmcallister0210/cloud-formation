@@ -1,0 +1,3056 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Elastic Load Balancing v2 Application Load Balancer
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: Load Balancer Parameters
+        Parameters:
+          - Name
+          - Scheme
+          - IpAddressType
+          - Subnets
+          - SecurityGroups
+          - IdleTimeoutSeconds
+          - EnableDeletionProtection
+      - Label:
+          default: Routing
+        Parameters:
+          - DesyncMitigationMode
+          - EnableInvalidHeaderFields
+          - EnableXAmazonTLSVersionAndCipherSuite
+          - EnableXForwardedForHeaderClientPort
+          - EnableHTTP2
+          - EnableWAFFailOpen
+      - Label:
+          default: Logging
+        Parameters:
+          - EnableS3AccessLogs
+          - S3AccessLogsBucket
+          - S3AccessLogsBucketPrefix
+      - Label:
+          default: Listener 1 Parameters
+        Parameters:
+          - Listener1Protocol
+          - Listener1Port
+      - Label:
+          default: Listener 1 HTTPS Parameters
+        Parameters:
+          - Listener1SslPolicy
+          - Listener1Certificate
+      - Label:
+          default: Listener 1 Default Auth Actions
+        Parameters:
+          - Listener1RuleDefaultAuthActionType
+          - Listener1RuleDefaultAuthActionValues
+      - Label:
+          default: Listener 1 Default Handle Actions
+        Parameters:
+          - Listener1RuleDefaultHandleActionType
+          - Listener1RuleDefaultHandleActionValues
+      - Label:
+          default: Listener 1 Rule 1 Condition 1
+        Parameters:
+          - Listener1Rule1Condition1Field
+          - Listener1Rule1Condition1Values
+          - Listener1Rule1Condition1HttpHeaderName
+      - Label:
+          default: Listener 1 Rule 1 Condition 2
+        Parameters:
+          - Listener1Rule1Condition2Field
+          - Listener1Rule1Condition2Values
+          - Listener1Rule1Condition2HttpHeaderName
+      - Label:
+          default: Listener 1 Rule 1 Condition 3
+        Parameters:
+          - Listener1Rule1Condition3Field
+          - Listener1Rule1Condition3Values
+          - Listener1Rule1Condition3HttpHeaderName
+      - Label:
+          default: Listener 1 Rule 1 Condition 4
+        Parameters:
+          - Listener1Rule1Condition4Field
+          - Listener1Rule1Condition4Values
+          - Listener1Rule1Condition4HttpHeaderName
+      - Label:
+          default: Listener 1 Rule 2 Condition 1
+        Parameters:
+          - Listener1Rule2Condition1Field
+          - Listener1Rule2Condition1Values
+          - Listener1Rule2Condition1HttpHeaderName
+      - Label:
+          default: Listener 1 Rule 2 Condition 2
+        Parameters:
+          - Listener1Rule2Condition2Field
+          - Listener1Rule2Condition2Values
+          - Listener1Rule2Condition2HttpHeaderName
+      - Label:
+          default: Listener 1 Rule 2 Condition 3
+        Parameters:
+          - Listener1Rule2Condition3Field
+          - Listener1Rule2Condition3Values
+          - Listener1Rule2Condition3HttpHeaderName
+      - Label:
+          default: Listener 1 Rule 2 Condition 4
+        Parameters:
+          - Listener1Rule2Condition4Field
+          - Listener1Rule2Condition4Values
+          - Listener1Rule2Condition4HttpHeaderName
+      - Label:
+          default: Listener 1 Rule 3 Condition 1
+        Parameters:
+          - Listener1Rule3Condition1Field
+          - Listener1Rule3Condition1Values
+          - Listener1Rule3Condition1HttpHeaderName
+      - Label:
+          default: Listener 1 Rule 3 Condition 2
+        Parameters:
+          - Listener1Rule3Condition2Field
+          - Listener1Rule3Condition2Values
+          - Listener1Rule3Condition2HttpHeaderName
+      - Label:
+          default: Listener 1 Rule 3 Condition 3
+        Parameters:
+          - Listener1Rule3Condition3Field
+          - Listener1Rule3Condition3Values
+          - Listener1Rule3Condition3HttpHeaderName
+      - Label:
+          default: Listener 1 Rule 3 Condition 4
+        Parameters:
+          - Listener1Rule3Condition4Field
+          - Listener1Rule3Condition4Values
+          - Listener1Rule3Condition4HttpHeaderName
+      - Label:
+          default: Listener 2 Parameters
+        Parameters:
+          - Listener2Protocol
+          - Listener2Port
+      - Label:
+          default: Listener 2 HTTPS Parameters
+        Parameters:
+          - Listener2SslPolicy
+          - Listener2Certificate
+      - Label:
+          default: Listener 2 Default Auth Actions
+        Parameters:
+          - Listener2RuleDefaultAuthActionType
+          - Listener2RuleDefaultAuthActionValues
+      - Label:
+          default: Listener 2 Default Handle Actions
+        Parameters:
+          - Listener2RuleDefaultHandleActionType
+          - Listener2RuleDefaultHandleActionValues
+      - Label:
+          default: Listener 2 Rule 1 Condition 1
+        Parameters:
+          - Listener2Rule1Condition1Field
+          - Listener2Rule1Condition1Values
+          - Listener2Rule1Condition1HttpHeaderName
+      - Label:
+          default: Listener 2 Rule 1 Condition 2
+        Parameters:
+          - Listener2Rule1Condition2Field
+          - Listener2Rule1Condition2Values
+          - Listener2Rule1Condition2HttpHeaderName
+      - Label:
+          default: Listener 2 Rule 1 Condition 3
+        Parameters:
+          - Listener2Rule1Condition3Field
+          - Listener2Rule1Condition3Values
+          - Listener2Rule1Condition3HttpHeaderName
+      - Label:
+          default: Listener 2 Rule 1 Condition 4
+        Parameters:
+          - Listener2Rule1Condition4Field
+          - Listener2Rule1Condition4Values
+          - Listener2Rule1Condition4HttpHeaderName
+      - Label:
+          default: Listener 2 Rule 2 Condition 1
+        Parameters:
+          - Listener2Rule2Condition1Field
+          - Listener2Rule2Condition1Values
+          - Listener2Rule2Condition1HttpHeaderName
+      - Label:
+          default: Listener 2 Rule 2 Condition 2
+        Parameters:
+          - Listener2Rule2Condition2Field
+          - Listener2Rule2Condition2Values
+          - Listener2Rule2Condition2HttpHeaderName
+      - Label:
+          default: Listener 2 Rule 2 Condition 3
+        Parameters:
+          - Listener2Rule2Condition3Field
+          - Listener2Rule2Condition3Values
+          - Listener2Rule2Condition3HttpHeaderName
+      - Label:
+          default: Listener 2 Rule 2 Condition 4
+        Parameters:
+          - Listener2Rule2Condition4Field
+          - Listener2Rule2Condition4Values
+          - Listener2Rule2Condition4HttpHeaderName
+      - Label:
+          default: Listener 2 Rule 3 Condition 1
+        Parameters:
+          - Listener2Rule3Condition1Field
+          - Listener2Rule3Condition1Values
+          - Listener2Rule3Condition1HttpHeaderName
+      - Label:
+          default: Listener 2 Rule 3 Condition 2
+        Parameters:
+          - Listener2Rule3Condition2Field
+          - Listener2Rule3Condition2Values
+          - Listener2Rule3Condition2HttpHeaderName
+      - Label:
+          default: Listener 2 Rule 3 Condition 3
+        Parameters:
+          - Listener2Rule3Condition3Field
+          - Listener2Rule3Condition3Values
+          - Listener2Rule3Condition3HttpHeaderName
+      - Label:
+          default: Listener 2 Rule 3 Condition 4
+        Parameters:
+          - Listener2Rule3Condition4Field
+          - Listener2Rule3Condition4Values
+          - Listener2Rule3Condition4HttpHeaderName
+      - Label:
+          default: Listener 3 Parameters
+        Parameters:
+          - Listener3Protocol
+          - Listener3Port
+      - Label:
+          default: Listener 3 HTTPS Parameters
+        Parameters:
+          - Listener3SslPolicy
+          - Listener3Certificate
+      - Label:
+          default: Listener 3 Default Auth Actions
+        Parameters:
+          - Listener3RuleDefaultAuthActionType
+          - Listener3RuleDefaultAuthActionValues
+      - Label:
+          default: Listener 3 Default Handle Actions
+        Parameters:
+          - Listener3RuleDefaultHandleActionType
+          - Listener3RuleDefaultHandleActionValues
+      - Label:
+          default: Listener 3 Rule 1 Condition 1
+        Parameters:
+          - Listener3Rule1Condition1Field
+          - Listener3Rule1Condition1Values
+          - Listener3Rule1Condition1HttpHeaderName
+      - Label:
+          default: Listener 3 Rule 1 Condition 2
+        Parameters:
+          - Listener3Rule1Condition2Field
+          - Listener3Rule1Condition2Values
+          - Listener3Rule1Condition2HttpHeaderName
+      - Label:
+          default: Listener 3 Rule 1 Condition 3
+        Parameters:
+          - Listener3Rule1Condition3Field
+          - Listener3Rule1Condition3Values
+          - Listener3Rule1Condition3HttpHeaderName
+      - Label:
+          default: Listener 3 Rule 1 Condition 4
+        Parameters:
+          - Listener3Rule1Condition4Field
+          - Listener3Rule1Condition4Values
+          - Listener3Rule1Condition4HttpHeaderName
+      - Label:
+          default: Listener 3 Rule 2 Condition 1
+        Parameters:
+          - Listener3Rule2Condition1Field
+          - Listener3Rule2Condition1Values
+          - Listener3Rule2Condition1HttpHeaderName
+      - Label:
+          default: Listener 3 Rule 2 Condition 2
+        Parameters:
+          - Listener3Rule2Condition2Field
+          - Listener3Rule2Condition2Values
+          - Listener3Rule2Condition2HttpHeaderName
+      - Label:
+          default: Listener 3 Rule 2 Condition 3
+        Parameters:
+          - Listener3Rule2Condition3Field
+          - Listener3Rule2Condition3Values
+          - Listener3Rule2Condition3HttpHeaderName
+      - Label:
+          default: Listener 3 Rule 2 Condition 4
+        Parameters:
+          - Listener3Rule2Condition4Field
+          - Listener3Rule2Condition4Values
+          - Listener3Rule2Condition4HttpHeaderName
+      - Label:
+          default: Listener 3 Rule 3 Condition 1
+        Parameters:
+          - Listener3Rule3Condition1Field
+          - Listener3Rule3Condition1Values
+          - Listener3Rule3Condition1HttpHeaderName
+      - Label:
+          default: Listener 3 Rule 3 Condition 2
+        Parameters:
+          - Listener3Rule3Condition2Field
+          - Listener3Rule3Condition2Values
+          - Listener3Rule3Condition2HttpHeaderName
+      - Label:
+          default: Listener 3 Rule 3 Condition 3
+        Parameters:
+          - Listener3Rule3Condition3Field
+          - Listener3Rule3Condition3Values
+          - Listener3Rule3Condition3HttpHeaderName
+      - Label:
+          default: Listener 3 Rule 3 Condition 4
+        Parameters:
+          - Listener3Rule3Condition4Field
+          - Listener3Rule3Condition4Values
+          - Listener3Rule3Condition4HttpHeaderName
+      - Label:
+          default: Listener 4 Parameters
+        Parameters:
+          - Listener4Protocol
+          - Listener4Port
+      - Label:
+          default: Listener 4 HTTPS Parameters
+        Parameters:
+          - Listener4SslPolicy
+          - Listener4Certificate
+      - Label:
+          default: Listener 4 Default Auth Actions
+        Parameters:
+          - Listener4RuleDefaultAuthActionType
+          - Listener4RuleDefaultAuthActionValues
+      - Label:
+          default: Listener 4 Default Handle Actions
+        Parameters:
+          - Listener4RuleDefaultHandleActionType
+          - Listener4RuleDefaultHandleActionValues
+      - Label:
+          default: Listener 4 Rule 1 Condition 1
+        Parameters:
+          - Listener4Rule1Condition1Field
+          - Listener4Rule1Condition1Values
+          - Listener4Rule1Condition1HttpHeaderName
+      - Label:
+          default: Listener 4 Rule 1 Condition 2
+        Parameters:
+          - Listener4Rule1Condition2Field
+          - Listener4Rule1Condition2Values
+          - Listener4Rule1Condition2HttpHeaderName
+      - Label:
+          default: Listener 4 Rule 1 Condition 3
+        Parameters:
+          - Listener4Rule1Condition3Field
+          - Listener4Rule1Condition3Values
+          - Listener4Rule1Condition3HttpHeaderName
+      - Label:
+          default: Listener 4 Rule 1 Condition 4
+        Parameters:
+          - Listener4Rule1Condition4Field
+          - Listener4Rule1Condition4Values
+          - Listener4Rule1Condition4HttpHeaderName
+      - Label:
+          default: Listener 4 Rule 2 Condition 1
+        Parameters:
+          - Listener4Rule2Condition1Field
+          - Listener4Rule2Condition1Values
+          - Listener4Rule2Condition1HttpHeaderName
+      - Label:
+          default: Listener 4 Rule 2 Condition 2
+        Parameters:
+          - Listener4Rule2Condition2Field
+          - Listener4Rule2Condition2Values
+          - Listener4Rule2Condition2HttpHeaderName
+      - Label:
+          default: Listener 4 Rule 2 Condition 3
+        Parameters:
+          - Listener4Rule2Condition3Field
+          - Listener4Rule2Condition3Values
+          - Listener4Rule2Condition3HttpHeaderName
+      - Label:
+          default: Listener 4 Rule 2 Condition 4
+        Parameters:
+          - Listener4Rule2Condition4Field
+          - Listener4Rule2Condition4Values
+          - Listener4Rule2Condition4HttpHeaderName
+      - Label:
+          default: Listener 4 Rule 3 Condition 1
+        Parameters:
+          - Listener4Rule3Condition1Field
+          - Listener4Rule3Condition1Values
+          - Listener4Rule3Condition1HttpHeaderName
+      - Label:
+          default: Listener 4 Rule 3 Condition 2
+        Parameters:
+          - Listener4Rule3Condition2Field
+          - Listener4Rule3Condition2Values
+          - Listener4Rule3Condition2HttpHeaderName
+      - Label:
+          default: Listener 4 Rule 3 Condition 3
+        Parameters:
+          - Listener4Rule3Condition3Field
+          - Listener4Rule3Condition3Values
+          - Listener4Rule3Condition3HttpHeaderName
+      - Label:
+          default: Listener 4 Rule 3 Condition 4
+        Parameters:
+          - Listener4Rule3Condition4Field
+          - Listener4Rule3Condition4Values
+          - Listener4Rule3Condition4HttpHeaderName
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  ### Load Balancer Params #####################################################
+
+  Name:
+    Type: String
+    Description: >-
+      (optional) The name of the load balancer. This name must be unique per
+      region per account, can have a maximum of 32 characters, must contain only
+      alphanumeric characters or hyphens, must not begin or end with a hyphen,
+      and must not begin with "internal-". NOTE: If you don't specify a name,
+      AWS CloudFormation generates a unique physical ID for the load balancer.
+      If you specify a name, you cannot perform updates that require replacement
+      of this resource, but you can perform other updates. To replace the
+      resource, specify a new name
+    Default: ""
+
+  Scheme:
+    Type: String
+    Description: >-
+      The nodes of an Internet-facing load balancer have public IP addresses.
+      The DNS name of an Internet-facing load balancer is publicly resolvable to
+      the public IP addresses of the nodes. Therefore, Internet-facing load
+      balancers can route requests from clients over the internet. The nodes of
+      an internal load balancer have only private IP addresses. The DNS name of
+      an internal load balancer is publicly resolvable to the private IP
+      addresses of the nodes. Therefore, internal load balancers can route
+      requests only from clients with access to the VPC for the load balancer
+    Default: internet-facing
+    AllowedValues:
+      - internal
+      - internet-facing
+  
+  IpAddressType:
+    Type: String
+    Description: >-
+      The IP address type. The possible values are ipv4 (for IPv4 addresses) and
+      dualstack (for IPv4 and IPv6 addresses). NOTE: Internal load balancers
+      must use ipv4. You can’t specify dualstack for a load balancer with a UDP
+      or TCP_UDP listener
+    Default: ipv4
+    AllowedValues:
+      - ipv4
+      - dualstack
+
+  Subnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: >-
+      The IDs of the subnets. NOTE: You can specify only one subnet per
+      Availability Zone. NOTE: You must specify subnets from at least two
+      Availability Zones. When you specify subnets for an existing Application
+      Load Balancer, they replace the previously enabled subnets
+
+  SecurityGroups:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Description: (optional) The IDs of the security groups for the load balancer
+
+  IdleTimeoutSeconds:
+    Type: Number
+    Description: >-
+      The idle timeout value, in seconds. The valid range is 1-4000 seconds
+    Default: 60
+    MinValue: 1
+    MaxValue: 4000
+
+  EnableDeletionProtection:
+    Type: String
+    Description: Indicates whether deletion protection is enabled
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  DesyncMitigationMode:
+    Type: String
+    Description: >-
+      Determines how the load balancer handles requests that might pose a
+      security risk to your application
+    Default: defensive
+    AllowedValues:
+      - monitor
+      - defensive
+      - strictest
+
+  EnableInvalidHeaderFields:
+    Type: String
+    Description: >-
+      Indicates whether HTTP headers with invalid header fields are removed by
+      the load balancer
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  EnableXAmazonTLSVersionAndCipherSuite:
+    Type: String
+    Description: >-
+      Indicates whether the two headers
+      (x-amzn-tls-version and x-amzn-tls-cipher-suite), which contain
+      information about the negotiated TLS version and cipher suite, are added
+      to the client request before sending it to the target.
+      The x-amzn-tls-version header has information about the TLS protocol
+      version negotiated with the client, and the x-amzn-tls-cipher-suite header
+      has information about the cipher suite negotiated with the client. Both
+      headers are in OpenSSL format
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  EnableXForwardedForHeaderClientPort:
+    Type: String
+    Description: >-
+      Indicates whether the X-Forwarded-For header should preserve the source
+      port that the client used to connect to the load balancer
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  EnableHTTP2:
+    Type: String
+    Description: Indicates whether HTTP/2 is enabled
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  EnableWAFFailOpen:
+    Type: String
+    Description: >-
+      Indicates whether to allow a WAF-enabled load balancer to route requests
+      to targets if it is unable to forward the request to AWS WAF
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  EnableS3AccessLogs:
+    Type: String
+    Description: Indicates whether access logs are enabled
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  S3AccessLogsBucket:
+    Type: String
+    Description: >-
+      The name of the S3 bucket for the access logs. NOTE: The bucket must exist
+      in the same region as the load balancer and have a bucket policy that
+      grants Elastic Load Balancing permissions to write to the bucket
+    Default: ""
+
+  S3AccessLogsBucketPrefix:
+    Type: String
+    Description: >-
+      The prefix for the location in the S3 bucket for the access logs
+    Default: ""
+
+  ### Listener 1 Params ########################################################
+
+  Listener1Protocol:
+    Type: String
+    Description: The protocol for connections from clients to the load balancer
+    Default: none
+    AllowedValues:
+      # - GENEVE
+      - none
+      - HTTP
+      - HTTPS
+
+  Listener1Port:
+    Type: Number
+    Description: The port on which the load balancer is listening
+    Default: 443
+    MinValue: 1
+    MaxValue: 65535
+
+  Listener1SslPolicy:
+    Type: String
+    Description: >-
+      (conditional: only required for HTTPS listeners) The security policy that
+      defines which protocols and ciphers are supported. Look here for available
+      Application Load Balancer SslPolicies:
+      https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies
+    Default: ""
+
+  Listener1Certificate:
+    Type: String
+    Description: >-
+      (conditional: only required for HTTPS listeners) The default SSL server
+      certificate for a secure listener. You must provide exactly one
+      certificate if the listener protocol is HTTPS
+    Default: ""
+
+  Listener1RuleDefaultAuthActionType:
+    Type: String
+    Description: The type of action
+    Default: none
+    AllowedValues:
+      - none
+      - authenticate-cognito
+      - authenticate-oidc
+
+  Listener1RuleDefaultAuthActionValues:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your action. Specific values depend on the
+      action type.
+      
+      ... If your action is authenticate-cognito, values are:
+      USER_POOL_ARN, USER_POOL_CLIENT_ID, USER_POOL_DOMAIN, [ON_UNAUTH_REQUEST, SCOPE, SESSION_COOKIE_NAME, SESSION_TIMEOUT] .
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-authenticatecognitoconfig.html
+      
+      ... If your action is authenticate-oidc, values are:
+      ISSUER, AUTH_ENDPOINT, TOKEN_ENDPOINT, USER_INFO_ENDPOINT, CLIENT_ID, CLIENT_SECRET, [ON_UNAUTH_REQUEST, SCOPE, SESSION_COOKIE_NAME, SESSION_TIMEOUT, USE_EXISTING_CLIENT_SECRET] .
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-authenticateoidcconfig.html
+    Default: ",,,,,,,,,,"
+
+  Listener1RuleDefaultHandleActionType:
+    Type: String
+    Description: The type of action
+    Default: fixed-response
+    AllowedValues:
+      - fixed-response
+      - forward
+      - redirect
+
+  Listener1RuleDefaultHandleActionValues:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your action. Specific values depend on the
+      action type.
+      
+      ... If your action is fixed-response, values are:
+      STATUS_CODE, [CONTENT_TYPE, MESSAGE_BODY] . e.g: 404,text/plain,not found,,,,,
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-fixedresponseconfig.html
+      
+      ... If your action is forward, values are:
+      STICKINESS_ENABLED, [STICKINESS_DURATION_SECS, TARGET_GROUP_ARN_1, WEIGHT_1, TARGET_GROUP_ARN_2, WEIGHT_2, TARGET_GROUP_ARN_3, WEIGHT_3] . e.g: false,,arn-123,9,arn-456,1,,
+      NOTE: WEIGHT_N is requied if TARGET_GROUP_N is specified. NOTE: STICKINESS_DURATION_SECS is required if STICKINESS_ENABLED is true. Look here to see
+      what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-forwardconfig.html
+      
+      ... If your action is redirect, values are:
+      HTTP_301 | HTTP_302, [PROTOCOL, HOST, PORT, PATH, QUERY] . e.g.: HTTP_301,HTTPS,#{host},443,/#{path},#{query},,
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-redirectconfig.html
+    Default: ",,,,,,,"
+
+  ### Listener 1 Rule 1 Params #####################################
+
+  Listener1Rule1Condition1Field:
+    Type: String
+    Description: The field in the HTTP request to check against
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener1Rule1Condition1Values:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your condition. Specific values depend on
+      the condition field. NOTE: only one value needs to satisfy the condition.
+      If you need multiple values to be satisfied, specify multiple conditions
+      
+      ... If your condition is host-header, values are one or more host names.
+      The maximum size of each name is 128 characters. The comparison is case
+      insensitive. The following wildcard characters are supported: * (matches 0
+      or more characters) and ? (matches exactly 1 character). Can contain the
+      characters: A-z, a-z, 0-9, -, ., * (matches 0 or more characters), ?
+      (matches exactly 1 character). e.g: *.google.com, www.bing.com
+      
+      ... If your condition is http-header, values are one or more strings to
+      compare against the value of the HTTP header. The maximum size of each
+      string is 128 characters. The comparison strings are case insensitive. The
+      following wildcard characters are supported: * (matches 0 or more
+      characters) and ? (matches exactly 1 character). If the same header
+      appears multiple times in the request, we search them in order until a
+      match is found. e.g: if header is Sec-CH-UA-Platform then values might be
+      "Android", "Chrome OS", "iOS"
+      
+      ... If your condition is http-request-method, values are the name of the
+      request method. The maximum size is 40 characters. The allowed characters
+      are A-Z, hyphen (-), and underscore (_). The comparison is case sensitive.
+      Wildcards are not supported; therefore, the method name must be an exact
+      match. We recommend that you route GET and HEAD requests in the same way,
+      because the response to a HEAD request may be cached. e.g.: GET, HEAD,
+      POST
+      
+      ... If your condition is path-pattern, values are one or more path
+      patterns to compare against the request URL. The maximum size of each
+      string is 128 characters. The comparison is case sensitive. The following
+      wildcard characters are supported: * (matches 0 or more characters) and ?
+      (matches exactly 1 character). The path pattern is compared only to the
+      path of the URL, not to its query string. Can contain the characters: A-Z,
+      a-z, 0-9, _, -, ., $, /, ~, ", ', @, :, +, & (using &amp;), * (matches 0
+      or more characters), ? (matches exactly 1 character). e.g.: /football/*,
+      /Football/*, /soccer/*, /Soccer/*
+      
+      ... If your condition is query-string, values are *ONE* key value pair, in
+      respectively. The maximum size of each string is 128 characters. The
+      comparison is case insensitive. The following wildcard characters are
+      supported: * (matches 0 or more characters) and ? (matches exactly 1
+      character). To search for a literal '*' or '?' character in a query string
+      you must escape these characters in Values using a '\' character. e.g:
+      region, europe
+      
+      ... If your condition is source-ip, values are one or more source IP
+      addresses, in CIDR format. You can use both IPv4 and IPv6 addresses.
+      Wildcards are not supported. This condition is not satisfied by the
+      addresses in the X-Forwarded-For header. e.g. 12.34.56.78/32,
+      11.22.33.44/24
+    Default: ",,,,"
+  
+  Listener1Rule1Condition1HttpHeaderName:
+    Type: String
+    Description: >-
+      (conditional: only specify if Field is http-header) The name of the HTTP
+      header field. The maximum size is 40 characters. The header name is case
+      insensitive. The allowed characters are specified by RFC 7230. Wildcards are
+      not supported
+    Default: ""
+
+  Listener1Rule1Condition2Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+
+  Listener1Rule1Condition2Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+
+  Listener1Rule1Condition2HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener1Rule1Condition3Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener1Rule1Condition3Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener1Rule1Condition3HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener1Rule1Condition4Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener1Rule1Condition4Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener1Rule1Condition4HttpHeaderName:
+    Type: String
+    Default: ""
+
+  ### Listener 1 Rule 2 Params #####################################
+
+  Listener1Rule2Condition1Field:
+    Type: String
+    Description: The field in the HTTP request to check against
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener1Rule2Condition1Values:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your condition. Specific values depend on
+      the condition field. NOTE: only one value needs to satisfy the condition.
+      If you need multiple values to be satisfied, specify multiple conditions
+      
+      ... If your condition is host-header, values are one or more host names.
+      The maximum size of each name is 128 characters. The comparison is case
+      insensitive. The following wildcard characters are supported: * (matches 0
+      or more characters) and ? (matches exactly 1 character). Can contain the
+      characters: A-z, a-z, 0-9, -, ., * (matches 0 or more characters), ?
+      (matches exactly 1 character). e.g: *.google.com, www.bing.com
+      
+      ... If your condition is http-header, values are one or more strings to
+      compare against the value of the HTTP header. The maximum size of each
+      string is 128 characters. The comparison strings are case insensitive. The
+      following wildcard characters are supported: * (matches 0 or more
+      characters) and ? (matches exactly 1 character). If the same header
+      appears multiple times in the request, we search them in order until a
+      match is found. e.g: if header is Sec-CH-UA-Platform then values might be
+      "Android", "Chrome OS", "iOS"
+      
+      ... If your condition is http-request-method, values are the name of the
+      request method. The maximum size is 40 characters. The allowed characters
+      are A-Z, hyphen (-), and underscore (_). The comparison is case sensitive.
+      Wildcards are not supported; therefore, the method name must be an exact
+      match. We recommend that you route GET and HEAD requests in the same way,
+      because the response to a HEAD request may be cached. e.g.: GET, HEAD,
+      POST
+      
+      ... If your condition is path-pattern, values are one or more path
+      patterns to compare against the request URL. The maximum size of each
+      string is 128 characters. The comparison is case sensitive. The following
+      wildcard characters are supported: * (matches 0 or more characters) and ?
+      (matches exactly 1 character). The path pattern is compared only to the
+      path of the URL, not to its query string. Can contain the characters: A-Z,
+      a-z, 0-9, _, -, ., $, /, ~, ", ', @, :, +, & (using &amp;), * (matches 0
+      or more characters), ? (matches exactly 1 character). e.g.: /football/*,
+      /Football/*, /soccer/*, /Soccer/*
+      
+      ... If your condition is query-string, values are *ONE* key value pair, in
+      respectively. The maximum size of each string is 128 characters. The
+      comparison is case insensitive. The following wildcard characters are
+      supported: * (matches 0 or more characters) and ? (matches exactly 1
+      character). To search for a literal '*' or '?' character in a query string
+      you must escape these characters in Values using a '\' character. e.g:
+      region, europe
+      
+      ... If your condition is source-ip, values are one or more source IP
+      addresses, in CIDR format. You can use both IPv4 and IPv6 addresses.
+      Wildcards are not supported. This condition is not satisfied by the
+      addresses in the X-Forwarded-For header. e.g. 12.34.56.78/32,
+      11.22.33.44/24
+    Default: ",,,,"
+  
+  Listener1Rule2Condition1HttpHeaderName:
+    Type: String
+    Description: >-
+      (conditional: only specify if Field is http-header) The name of the HTTP
+      header field. The maximum size is 40 characters. The header name is case
+      insensitive. The allowed characters are specified by RFC 7230. Wildcards are
+      not supported
+    Default: ""
+
+  Listener1Rule2Condition2Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+
+  Listener1Rule2Condition2Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+
+  Listener1Rule2Condition2HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener1Rule2Condition3Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener1Rule2Condition3Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener1Rule2Condition3HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener1Rule2Condition4Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener1Rule2Condition4Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener1Rule2Condition4HttpHeaderName:
+    Type: String
+    Default: ""
+
+  ### Listener 1 Rule 3 Params #####################################
+
+  Listener1Rule3Condition1Field:
+    Type: String
+    Description: The field in the HTTP request to check against
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener1Rule3Condition1Values:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your condition. Specific values depend on
+      the condition field. NOTE: only one value needs to satisfy the condition.
+      If you need multiple values to be satisfied, specify multiple conditions
+      
+      ... If your condition is host-header, values are one or more host names.
+      The maximum size of each name is 128 characters. The comparison is case
+      insensitive. The following wildcard characters are supported: * (matches 0
+      or more characters) and ? (matches exactly 1 character). Can contain the
+      characters: A-z, a-z, 0-9, -, ., * (matches 0 or more characters), ?
+      (matches exactly 1 character). e.g: *.google.com, www.bing.com
+      
+      ... If your condition is http-header, values are one or more strings to
+      compare against the value of the HTTP header. The maximum size of each
+      string is 128 characters. The comparison strings are case insensitive. The
+      following wildcard characters are supported: * (matches 0 or more
+      characters) and ? (matches exactly 1 character). If the same header
+      appears multiple times in the request, we search them in order until a
+      match is found. e.g: if header is Sec-CH-UA-Platform then values might be
+      "Android", "Chrome OS", "iOS"
+      
+      ... If your condition is http-request-method, values are the name of the
+      request method. The maximum size is 40 characters. The allowed characters
+      are A-Z, hyphen (-), and underscore (_). The comparison is case sensitive.
+      Wildcards are not supported; therefore, the method name must be an exact
+      match. We recommend that you route GET and HEAD requests in the same way,
+      because the response to a HEAD request may be cached. e.g.: GET, HEAD,
+      POST
+      
+      ... If your condition is path-pattern, values are one or more path
+      patterns to compare against the request URL. The maximum size of each
+      string is 128 characters. The comparison is case sensitive. The following
+      wildcard characters are supported: * (matches 0 or more characters) and ?
+      (matches exactly 1 character). The path pattern is compared only to the
+      path of the URL, not to its query string. Can contain the characters: A-Z,
+      a-z, 0-9, _, -, ., $, /, ~, ", ', @, :, +, & (using &amp;), * (matches 0
+      or more characters), ? (matches exactly 1 character). e.g.: /football/*,
+      /Football/*, /soccer/*, /Soccer/*
+      
+      ... If your condition is query-string, values are *ONE* key value pair, in
+      respectively. The maximum size of each string is 128 characters. The
+      comparison is case insensitive. The following wildcard characters are
+      supported: * (matches 0 or more characters) and ? (matches exactly 1
+      character). To search for a literal '*' or '?' character in a query string
+      you must escape these characters in Values using a '\' character. e.g:
+      region, europe
+      
+      ... If your condition is source-ip, values are one or more source IP
+      addresses, in CIDR format. You can use both IPv4 and IPv6 addresses.
+      Wildcards are not supported. This condition is not satisfied by the
+      addresses in the X-Forwarded-For header. e.g. 12.34.56.78/32,
+      11.22.33.44/24
+    Default: ",,,,"
+  
+  Listener1Rule3Condition1HttpHeaderName:
+    Type: String
+    Description: >-
+      (conditional: only specify if Field is http-header) The name of the HTTP
+      header field. The maximum size is 40 characters. The header name is case
+      insensitive. The allowed characters are specified by RFC 7230. Wildcards are
+      not supported
+    Default: ""
+
+  Listener1Rule3Condition2Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+
+  Listener1Rule3Condition2Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+
+  Listener1Rule3Condition2HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener1Rule3Condition3Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener1Rule3Condition3Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener1Rule3Condition3HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener1Rule3Condition4Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener1Rule3Condition4Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener1Rule3Condition4HttpHeaderName:
+    Type: String
+    Default: ""
+
+  ### Listener 2 Params ########################################################
+
+  Listener2Protocol:
+    Type: String
+    Description: The protocol for connections from clients to the load balancer
+    Default: none
+    AllowedValues:
+      # - GENEVE
+      - none
+      - HTTP
+      - HTTPS
+
+  Listener2Port:
+    Type: Number
+    Description: The port on which the load balancer is listening
+    Default: 443
+    MinValue: 1
+    MaxValue: 65535
+
+  Listener2SslPolicy:
+    Type: String
+    Description: >-
+      (conditional: only required for HTTPS listeners) The security policy that
+      defines which protocols and ciphers are supported. Look here for available
+      Application Load Balancer SslPolicies:
+      https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies
+    Default: ""
+
+  Listener2Certificate:
+    Type: String
+    Description: >-
+      (conditional: only required for HTTPS listeners) The default SSL server
+      certificate for a secure listener. You must provide exactly one
+      certificate if the listener protocol is HTTPS
+    Default: ""
+
+  Listener2RuleDefaultAuthActionType:
+    Type: String
+    Description: The type of action
+    Default: none
+    AllowedValues:
+      - none
+      - authenticate-cognito
+      - authenticate-oidc
+
+  Listener2RuleDefaultAuthActionValues:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your action. Specific values depend on the
+      action type.
+      
+      ... If your action is authenticate-cognito, values are:
+      USER_POOL_ARN, USER_POOL_CLIENT_ID, USER_POOL_DOMAIN, [ON_UNAUTH_REQUEST, SCOPE, SESSION_COOKIE_NAME, SESSION_TIMEOUT] .
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-authenticatecognitoconfig.html
+      
+      ... If your action is authenticate-oidc, values are:
+      ISSUER, AUTH_ENDPOINT, TOKEN_ENDPOINT, USER_INFO_ENDPOINT, CLIENT_ID, CLIENT_SECRET, [ON_UNAUTH_REQUEST, SCOPE, SESSION_COOKIE_NAME, SESSION_TIMEOUT, USE_EXISTING_CLIENT_SECRET] .
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-authenticateoidcconfig.html
+    Default: ",,,,,,,,,,"
+
+  Listener2RuleDefaultHandleActionType:
+    Type: String
+    Description: The type of action
+    Default: fixed-response
+    AllowedValues:
+      - fixed-response
+      - forward
+      - redirect
+
+  Listener2RuleDefaultHandleActionValues:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your action. Specific values depend on the
+      action type.
+      
+      ... If your action is fixed-response, values are:
+      STATUS_CODE, [CONTENT_TYPE, MESSAGE_BODY] . e.g: 404,text/plain,not found,,,,,
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-fixedresponseconfig.html
+      
+      ... If your action is forward, values are:
+      STICKINESS_ENABLED, [STICKINESS_DURATION_SECS, TARGET_GROUP_ARN_1, WEIGHT_1, TARGET_GROUP_ARN_2, WEIGHT_2, TARGET_GROUP_ARN_3, WEIGHT_3] . e.g: false,,arn-123,9,arn-456,1,,
+      NOTE: WEIGHT_N is requied if TARGET_GROUP_N is specified. NOTE: STICKINESS_DURATION_SECS is required if STICKINESS_ENABLED is true. Look here to see
+      what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-forwardconfig.html
+      
+      ... If your action is redirect, values are:
+      HTTP_301 | HTTP_302, [PROTOCOL, HOST, PORT, PATH, QUERY] . e.g.: HTTP_301,HTTPS,#{host},443,/#{path},#{query},,
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-redirectconfig.html
+    Default: ",,,,,,,"
+
+  ### Listener 2 Rule 1 Params #####################################
+
+  Listener2Rule1Condition1Field:
+    Type: String
+    Description: The field in the HTTP request to check against
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener2Rule1Condition1Values:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your condition. Specific values depend on
+      the condition field. NOTE: only one value needs to satisfy the condition.
+      If you need multiple values to be satisfied, specify multiple conditions
+      
+      ... If your condition is host-header, values are one or more host names.
+      The maximum size of each name is 128 characters. The comparison is case
+      insensitive. The following wildcard characters are supported: * (matches 0
+      or more characters) and ? (matches exactly 1 character). Can contain the
+      characters: A-z, a-z, 0-9, -, ., * (matches 0 or more characters), ?
+      (matches exactly 1 character). e.g: *.google.com, www.bing.com
+      
+      ... If your condition is http-header, values are one or more strings to
+      compare against the value of the HTTP header. The maximum size of each
+      string is 128 characters. The comparison strings are case insensitive. The
+      following wildcard characters are supported: * (matches 0 or more
+      characters) and ? (matches exactly 1 character). If the same header
+      appears multiple times in the request, we search them in order until a
+      match is found. e.g: if header is Sec-CH-UA-Platform then values might be
+      "Android", "Chrome OS", "iOS"
+      
+      ... If your condition is http-request-method, values are the name of the
+      request method. The maximum size is 40 characters. The allowed characters
+      are A-Z, hyphen (-), and underscore (_). The comparison is case sensitive.
+      Wildcards are not supported; therefore, the method name must be an exact
+      match. We recommend that you route GET and HEAD requests in the same way,
+      because the response to a HEAD request may be cached. e.g.: GET, HEAD,
+      POST
+      
+      ... If your condition is path-pattern, values are one or more path
+      patterns to compare against the request URL. The maximum size of each
+      string is 128 characters. The comparison is case sensitive. The following
+      wildcard characters are supported: * (matches 0 or more characters) and ?
+      (matches exactly 1 character). The path pattern is compared only to the
+      path of the URL, not to its query string. Can contain the characters: A-Z,
+      a-z, 0-9, _, -, ., $, /, ~, ", ', @, :, +, & (using &amp;), * (matches 0
+      or more characters), ? (matches exactly 1 character). e.g.: /football/*,
+      /Football/*, /soccer/*, /Soccer/*
+      
+      ... If your condition is query-string, values are *ONE* key value pair, in
+      respectively. The maximum size of each string is 128 characters. The
+      comparison is case insensitive. The following wildcard characters are
+      supported: * (matches 0 or more characters) and ? (matches exactly 1
+      character). To search for a literal '*' or '?' character in a query string
+      you must escape these characters in Values using a '\' character. e.g:
+      region, europe
+      
+      ... If your condition is source-ip, values are one or more source IP
+      addresses, in CIDR format. You can use both IPv4 and IPv6 addresses.
+      Wildcards are not supported. This condition is not satisfied by the
+      addresses in the X-Forwarded-For header. e.g. 12.34.56.78/32,
+      11.22.33.44/24
+    Default: ",,,,"
+  
+  Listener2Rule1Condition1HttpHeaderName:
+    Type: String
+    Description: >-
+      (conditional: only specify if Field is http-header) The name of the HTTP
+      header field. The maximum size is 40 characters. The header name is case
+      insensitive. The allowed characters are specified by RFC 7230. Wildcards are
+      not supported
+    Default: ""
+
+  Listener2Rule1Condition2Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+
+  Listener2Rule1Condition2Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+
+  Listener2Rule1Condition2HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener2Rule1Condition3Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener2Rule1Condition3Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener2Rule1Condition3HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener2Rule1Condition4Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener2Rule1Condition4Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener2Rule1Condition4HttpHeaderName:
+    Type: String
+    Default: ""
+
+  ### Listener 2 Rule 2 Params #####################################
+
+  Listener2Rule2Condition1Field:
+    Type: String
+    Description: The field in the HTTP request to check against
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener2Rule2Condition1Values:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your condition. Specific values depend on
+      the condition field. NOTE: only one value needs to satisfy the condition.
+      If you need multiple values to be satisfied, specify multiple conditions
+      
+      ... If your condition is host-header, values are one or more host names.
+      The maximum size of each name is 128 characters. The comparison is case
+      insensitive. The following wildcard characters are supported: * (matches 0
+      or more characters) and ? (matches exactly 1 character). Can contain the
+      characters: A-z, a-z, 0-9, -, ., * (matches 0 or more characters), ?
+      (matches exactly 1 character). e.g: *.google.com, www.bing.com
+      
+      ... If your condition is http-header, values are one or more strings to
+      compare against the value of the HTTP header. The maximum size of each
+      string is 128 characters. The comparison strings are case insensitive. The
+      following wildcard characters are supported: * (matches 0 or more
+      characters) and ? (matches exactly 1 character). If the same header
+      appears multiple times in the request, we search them in order until a
+      match is found. e.g: if header is Sec-CH-UA-Platform then values might be
+      "Android", "Chrome OS", "iOS"
+      
+      ... If your condition is http-request-method, values are the name of the
+      request method. The maximum size is 40 characters. The allowed characters
+      are A-Z, hyphen (-), and underscore (_). The comparison is case sensitive.
+      Wildcards are not supported; therefore, the method name must be an exact
+      match. We recommend that you route GET and HEAD requests in the same way,
+      because the response to a HEAD request may be cached. e.g.: GET, HEAD,
+      POST
+      
+      ... If your condition is path-pattern, values are one or more path
+      patterns to compare against the request URL. The maximum size of each
+      string is 128 characters. The comparison is case sensitive. The following
+      wildcard characters are supported: * (matches 0 or more characters) and ?
+      (matches exactly 1 character). The path pattern is compared only to the
+      path of the URL, not to its query string. Can contain the characters: A-Z,
+      a-z, 0-9, _, -, ., $, /, ~, ", ', @, :, +, & (using &amp;), * (matches 0
+      or more characters), ? (matches exactly 1 character). e.g.: /football/*,
+      /Football/*, /soccer/*, /Soccer/*
+      
+      ... If your condition is query-string, values are *ONE* key value pair, in
+      respectively. The maximum size of each string is 128 characters. The
+      comparison is case insensitive. The following wildcard characters are
+      supported: * (matches 0 or more characters) and ? (matches exactly 1
+      character). To search for a literal '*' or '?' character in a query string
+      you must escape these characters in Values using a '\' character. e.g:
+      region, europe
+      
+      ... If your condition is source-ip, values are one or more source IP
+      addresses, in CIDR format. You can use both IPv4 and IPv6 addresses.
+      Wildcards are not supported. This condition is not satisfied by the
+      addresses in the X-Forwarded-For header. e.g. 12.34.56.78/32,
+      11.22.33.44/24
+    Default: ",,,,"
+  
+  Listener2Rule2Condition1HttpHeaderName:
+    Type: String
+    Description: >-
+      (conditional: only specify if Field is http-header) The name of the HTTP
+      header field. The maximum size is 40 characters. The header name is case
+      insensitive. The allowed characters are specified by RFC 7230. Wildcards are
+      not supported
+    Default: ""
+
+  Listener2Rule2Condition2Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+
+  Listener2Rule2Condition2Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+
+  Listener2Rule2Condition2HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener2Rule2Condition3Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener2Rule2Condition3Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener2Rule2Condition3HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener2Rule2Condition4Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener2Rule2Condition4Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener2Rule2Condition4HttpHeaderName:
+    Type: String
+    Default: ""
+
+  ### Listener 2 Rule 3 Params #####################################
+
+  Listener2Rule3Condition1Field:
+    Type: String
+    Description: The field in the HTTP request to check against
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener2Rule3Condition1Values:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your condition. Specific values depend on
+      the condition field. NOTE: only one value needs to satisfy the condition.
+      If you need multiple values to be satisfied, specify multiple conditions
+      
+      ... If your condition is host-header, values are one or more host names.
+      The maximum size of each name is 128 characters. The comparison is case
+      insensitive. The following wildcard characters are supported: * (matches 0
+      or more characters) and ? (matches exactly 1 character). Can contain the
+      characters: A-z, a-z, 0-9, -, ., * (matches 0 or more characters), ?
+      (matches exactly 1 character). e.g: *.google.com, www.bing.com
+      
+      ... If your condition is http-header, values are one or more strings to
+      compare against the value of the HTTP header. The maximum size of each
+      string is 128 characters. The comparison strings are case insensitive. The
+      following wildcard characters are supported: * (matches 0 or more
+      characters) and ? (matches exactly 1 character). If the same header
+      appears multiple times in the request, we search them in order until a
+      match is found. e.g: if header is Sec-CH-UA-Platform then values might be
+      "Android", "Chrome OS", "iOS"
+      
+      ... If your condition is http-request-method, values are the name of the
+      request method. The maximum size is 40 characters. The allowed characters
+      are A-Z, hyphen (-), and underscore (_). The comparison is case sensitive.
+      Wildcards are not supported; therefore, the method name must be an exact
+      match. We recommend that you route GET and HEAD requests in the same way,
+      because the response to a HEAD request may be cached. e.g.: GET, HEAD,
+      POST
+      
+      ... If your condition is path-pattern, values are one or more path
+      patterns to compare against the request URL. The maximum size of each
+      string is 128 characters. The comparison is case sensitive. The following
+      wildcard characters are supported: * (matches 0 or more characters) and ?
+      (matches exactly 1 character). The path pattern is compared only to the
+      path of the URL, not to its query string. Can contain the characters: A-Z,
+      a-z, 0-9, _, -, ., $, /, ~, ", ', @, :, +, & (using &amp;), * (matches 0
+      or more characters), ? (matches exactly 1 character). e.g.: /football/*,
+      /Football/*, /soccer/*, /Soccer/*
+      
+      ... If your condition is query-string, values are *ONE* key value pair, in
+      respectively. The maximum size of each string is 128 characters. The
+      comparison is case insensitive. The following wildcard characters are
+      supported: * (matches 0 or more characters) and ? (matches exactly 1
+      character). To search for a literal '*' or '?' character in a query string
+      you must escape these characters in Values using a '\' character. e.g:
+      region, europe
+      
+      ... If your condition is source-ip, values are one or more source IP
+      addresses, in CIDR format. You can use both IPv4 and IPv6 addresses.
+      Wildcards are not supported. This condition is not satisfied by the
+      addresses in the X-Forwarded-For header. e.g. 12.34.56.78/32,
+      11.22.33.44/24
+    Default: ",,,,"
+  
+  Listener2Rule3Condition1HttpHeaderName:
+    Type: String
+    Description: >-
+      (conditional: only specify if Field is http-header) The name of the HTTP
+      header field. The maximum size is 40 characters. The header name is case
+      insensitive. The allowed characters are specified by RFC 7230. Wildcards are
+      not supported
+    Default: ""
+
+  Listener2Rule3Condition2Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+
+  Listener2Rule3Condition2Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+
+  Listener2Rule3Condition2HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener2Rule3Condition3Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener2Rule3Condition3Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener2Rule3Condition3HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener2Rule3Condition4Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener2Rule3Condition4Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener2Rule3Condition4HttpHeaderName:
+    Type: String
+    Default: ""
+
+  ### Listener 3 Params ########################################################
+
+  Listener3Protocol:
+    Type: String
+    Description: The protocol for connections from clients to the load balancer
+    Default: none
+    AllowedValues:
+      # - GENEVE
+      - none
+      - HTTP
+      - HTTPS
+
+  Listener3Port:
+    Type: Number
+    Description: The port on which the load balancer is listening
+    Default: 443
+    MinValue: 1
+    MaxValue: 65535
+
+  Listener3SslPolicy:
+    Type: String
+    Description: >-
+      (conditional: only required for HTTPS listeners) The security policy that
+      defines which protocols and ciphers are supported. Look here for available
+      Application Load Balancer SslPolicies:
+      https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies
+    Default: ""
+
+  Listener3Certificate:
+    Type: String
+    Description: >-
+      (conditional: only required for HTTPS listeners) The default SSL server
+      certificate for a secure listener. You must provide exactly one
+      certificate if the listener protocol is HTTPS
+    Default: ""
+
+  Listener3RuleDefaultAuthActionType:
+    Type: String
+    Description: The type of action
+    Default: none
+    AllowedValues:
+      - none
+      - authenticate-cognito
+      - authenticate-oidc
+
+  Listener3RuleDefaultAuthActionValues:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your action. Specific values depend on the
+      action type.
+      
+      ... If your action is authenticate-cognito, values are:
+      USER_POOL_ARN, USER_POOL_CLIENT_ID, USER_POOL_DOMAIN, [ON_UNAUTH_REQUEST, SCOPE, SESSION_COOKIE_NAME, SESSION_TIMEOUT] .
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-authenticatecognitoconfig.html
+      
+      ... If your action is authenticate-oidc, values are:
+      ISSUER, AUTH_ENDPOINT, TOKEN_ENDPOINT, USER_INFO_ENDPOINT, CLIENT_ID, CLIENT_SECRET, [ON_UNAUTH_REQUEST, SCOPE, SESSION_COOKIE_NAME, SESSION_TIMEOUT, USE_EXISTING_CLIENT_SECRET] .
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-authenticateoidcconfig.html
+    Default: ",,,,,,,,,,"
+
+  Listener3RuleDefaultHandleActionType:
+    Type: String
+    Description: The type of action
+    Default: fixed-response
+    AllowedValues:
+      - fixed-response
+      - forward
+      - redirect
+
+  Listener3RuleDefaultHandleActionValues:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your action. Specific values depend on the
+      action type.
+      
+      ... If your action is fixed-response, values are:
+      STATUS_CODE, [CONTENT_TYPE, MESSAGE_BODY] . e.g: 404,text/plain,not found,,,,,
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-fixedresponseconfig.html
+      
+      ... If your action is forward, values are:
+      STICKINESS_ENABLED, [STICKINESS_DURATION_SECS, TARGET_GROUP_ARN_1, WEIGHT_1, TARGET_GROUP_ARN_2, WEIGHT_2, TARGET_GROUP_ARN_3, WEIGHT_3] . e.g: false,,arn-123,9,arn-456,1,,
+      NOTE: WEIGHT_N is requied if TARGET_GROUP_N is specified. NOTE: STICKINESS_DURATION_SECS is required if STICKINESS_ENABLED is true. Look here to see
+      what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-forwardconfig.html
+      
+      ... If your action is redirect, values are:
+      HTTP_301 | HTTP_302, [PROTOCOL, HOST, PORT, PATH, QUERY] . e.g.: HTTP_301,HTTPS,#{host},443,/#{path},#{query},,
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-redirectconfig.html
+    Default: ",,,,,,,"
+
+  ### Listener 3 Rule 1 Params #####################################
+
+  Listener3Rule1Condition1Field:
+    Type: String
+    Description: The field in the HTTP request to check against
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener3Rule1Condition1Values:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your condition. Specific values depend on
+      the condition field. NOTE: only one value needs to satisfy the condition.
+      If you need multiple values to be satisfied, specify multiple conditions
+      
+      ... If your condition is host-header, values are one or more host names.
+      The maximum size of each name is 128 characters. The comparison is case
+      insensitive. The following wildcard characters are supported: * (matches 0
+      or more characters) and ? (matches exactly 1 character). Can contain the
+      characters: A-z, a-z, 0-9, -, ., * (matches 0 or more characters), ?
+      (matches exactly 1 character). e.g: *.google.com, www.bing.com
+      
+      ... If your condition is http-header, values are one or more strings to
+      compare against the value of the HTTP header. The maximum size of each
+      string is 128 characters. The comparison strings are case insensitive. The
+      following wildcard characters are supported: * (matches 0 or more
+      characters) and ? (matches exactly 1 character). If the same header
+      appears multiple times in the request, we search them in order until a
+      match is found. e.g: if header is Sec-CH-UA-Platform then values might be
+      "Android", "Chrome OS", "iOS"
+      
+      ... If your condition is http-request-method, values are the name of the
+      request method. The maximum size is 40 characters. The allowed characters
+      are A-Z, hyphen (-), and underscore (_). The comparison is case sensitive.
+      Wildcards are not supported; therefore, the method name must be an exact
+      match. We recommend that you route GET and HEAD requests in the same way,
+      because the response to a HEAD request may be cached. e.g.: GET, HEAD,
+      POST
+      
+      ... If your condition is path-pattern, values are one or more path
+      patterns to compare against the request URL. The maximum size of each
+      string is 128 characters. The comparison is case sensitive. The following
+      wildcard characters are supported: * (matches 0 or more characters) and ?
+      (matches exactly 1 character). The path pattern is compared only to the
+      path of the URL, not to its query string. Can contain the characters: A-Z,
+      a-z, 0-9, _, -, ., $, /, ~, ", ', @, :, +, & (using &amp;), * (matches 0
+      or more characters), ? (matches exactly 1 character). e.g.: /football/*,
+      /Football/*, /soccer/*, /Soccer/*
+      
+      ... If your condition is query-string, values are *ONE* key value pair, in
+      respectively. The maximum size of each string is 128 characters. The
+      comparison is case insensitive. The following wildcard characters are
+      supported: * (matches 0 or more characters) and ? (matches exactly 1
+      character). To search for a literal '*' or '?' character in a query string
+      you must escape these characters in Values using a '\' character. e.g:
+      region, europe
+      
+      ... If your condition is source-ip, values are one or more source IP
+      addresses, in CIDR format. You can use both IPv4 and IPv6 addresses.
+      Wildcards are not supported. This condition is not satisfied by the
+      addresses in the X-Forwarded-For header. e.g. 12.34.56.78/32,
+      11.22.33.44/24
+    Default: ",,,,"
+  
+  Listener3Rule1Condition1HttpHeaderName:
+    Type: String
+    Description: >-
+      (conditional: only specify if Field is http-header) The name of the HTTP
+      header field. The maximum size is 40 characters. The header name is case
+      insensitive. The allowed characters are specified by RFC 7230. Wildcards are
+      not supported
+    Default: ""
+
+  Listener3Rule1Condition2Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+
+  Listener3Rule1Condition2Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+
+  Listener3Rule1Condition2HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener3Rule1Condition3Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener3Rule1Condition3Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener3Rule1Condition3HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener3Rule1Condition4Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener3Rule1Condition4Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener3Rule1Condition4HttpHeaderName:
+    Type: String
+    Default: ""
+
+  ### Listener 3 Rule 2 Params #####################################
+
+  Listener3Rule2Condition1Field:
+    Type: String
+    Description: The field in the HTTP request to check against
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener3Rule2Condition1Values:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your condition. Specific values depend on
+      the condition field. NOTE: only one value needs to satisfy the condition.
+      If you need multiple values to be satisfied, specify multiple conditions
+      
+      ... If your condition is host-header, values are one or more host names.
+      The maximum size of each name is 128 characters. The comparison is case
+      insensitive. The following wildcard characters are supported: * (matches 0
+      or more characters) and ? (matches exactly 1 character). Can contain the
+      characters: A-z, a-z, 0-9, -, ., * (matches 0 or more characters), ?
+      (matches exactly 1 character). e.g: *.google.com, www.bing.com
+      
+      ... If your condition is http-header, values are one or more strings to
+      compare against the value of the HTTP header. The maximum size of each
+      string is 128 characters. The comparison strings are case insensitive. The
+      following wildcard characters are supported: * (matches 0 or more
+      characters) and ? (matches exactly 1 character). If the same header
+      appears multiple times in the request, we search them in order until a
+      match is found. e.g: if header is Sec-CH-UA-Platform then values might be
+      "Android", "Chrome OS", "iOS"
+      
+      ... If your condition is http-request-method, values are the name of the
+      request method. The maximum size is 40 characters. The allowed characters
+      are A-Z, hyphen (-), and underscore (_). The comparison is case sensitive.
+      Wildcards are not supported; therefore, the method name must be an exact
+      match. We recommend that you route GET and HEAD requests in the same way,
+      because the response to a HEAD request may be cached. e.g.: GET, HEAD,
+      POST
+      
+      ... If your condition is path-pattern, values are one or more path
+      patterns to compare against the request URL. The maximum size of each
+      string is 128 characters. The comparison is case sensitive. The following
+      wildcard characters are supported: * (matches 0 or more characters) and ?
+      (matches exactly 1 character). The path pattern is compared only to the
+      path of the URL, not to its query string. Can contain the characters: A-Z,
+      a-z, 0-9, _, -, ., $, /, ~, ", ', @, :, +, & (using &amp;), * (matches 0
+      or more characters), ? (matches exactly 1 character). e.g.: /football/*,
+      /Football/*, /soccer/*, /Soccer/*
+      
+      ... If your condition is query-string, values are *ONE* key value pair, in
+      respectively. The maximum size of each string is 128 characters. The
+      comparison is case insensitive. The following wildcard characters are
+      supported: * (matches 0 or more characters) and ? (matches exactly 1
+      character). To search for a literal '*' or '?' character in a query string
+      you must escape these characters in Values using a '\' character. e.g:
+      region, europe
+      
+      ... If your condition is source-ip, values are one or more source IP
+      addresses, in CIDR format. You can use both IPv4 and IPv6 addresses.
+      Wildcards are not supported. This condition is not satisfied by the
+      addresses in the X-Forwarded-For header. e.g. 12.34.56.78/32,
+      11.22.33.44/24
+    Default: ",,,,"
+  
+  Listener3Rule2Condition1HttpHeaderName:
+    Type: String
+    Description: >-
+      (conditional: only specify if Field is http-header) The name of the HTTP
+      header field. The maximum size is 40 characters. The header name is case
+      insensitive. The allowed characters are specified by RFC 7230. Wildcards are
+      not supported
+    Default: ""
+
+  Listener3Rule2Condition2Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+
+  Listener3Rule2Condition2Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+
+  Listener3Rule2Condition2HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener3Rule2Condition3Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener3Rule2Condition3Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener3Rule2Condition3HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener3Rule2Condition4Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener3Rule2Condition4Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener3Rule2Condition4HttpHeaderName:
+    Type: String
+    Default: ""
+
+  ### Listener 3 Rule 3 Params #####################################
+
+  Listener3Rule3Condition1Field:
+    Type: String
+    Description: The field in the HTTP request to check against
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener3Rule3Condition1Values:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your condition. Specific values depend on
+      the condition field. NOTE: only one value needs to satisfy the condition.
+      If you need multiple values to be satisfied, specify multiple conditions
+      
+      ... If your condition is host-header, values are one or more host names.
+      The maximum size of each name is 128 characters. The comparison is case
+      insensitive. The following wildcard characters are supported: * (matches 0
+      or more characters) and ? (matches exactly 1 character). Can contain the
+      characters: A-z, a-z, 0-9, -, ., * (matches 0 or more characters), ?
+      (matches exactly 1 character). e.g: *.google.com, www.bing.com
+      
+      ... If your condition is http-header, values are one or more strings to
+      compare against the value of the HTTP header. The maximum size of each
+      string is 128 characters. The comparison strings are case insensitive. The
+      following wildcard characters are supported: * (matches 0 or more
+      characters) and ? (matches exactly 1 character). If the same header
+      appears multiple times in the request, we search them in order until a
+      match is found. e.g: if header is Sec-CH-UA-Platform then values might be
+      "Android", "Chrome OS", "iOS"
+      
+      ... If your condition is http-request-method, values are the name of the
+      request method. The maximum size is 40 characters. The allowed characters
+      are A-Z, hyphen (-), and underscore (_). The comparison is case sensitive.
+      Wildcards are not supported; therefore, the method name must be an exact
+      match. We recommend that you route GET and HEAD requests in the same way,
+      because the response to a HEAD request may be cached. e.g.: GET, HEAD,
+      POST
+      
+      ... If your condition is path-pattern, values are one or more path
+      patterns to compare against the request URL. The maximum size of each
+      string is 128 characters. The comparison is case sensitive. The following
+      wildcard characters are supported: * (matches 0 or more characters) and ?
+      (matches exactly 1 character). The path pattern is compared only to the
+      path of the URL, not to its query string. Can contain the characters: A-Z,
+      a-z, 0-9, _, -, ., $, /, ~, ", ', @, :, +, & (using &amp;), * (matches 0
+      or more characters), ? (matches exactly 1 character). e.g.: /football/*,
+      /Football/*, /soccer/*, /Soccer/*
+      
+      ... If your condition is query-string, values are *ONE* key value pair, in
+      respectively. The maximum size of each string is 128 characters. The
+      comparison is case insensitive. The following wildcard characters are
+      supported: * (matches 0 or more characters) and ? (matches exactly 1
+      character). To search for a literal '*' or '?' character in a query string
+      you must escape these characters in Values using a '\' character. e.g:
+      region, europe
+      
+      ... If your condition is source-ip, values are one or more source IP
+      addresses, in CIDR format. You can use both IPv4 and IPv6 addresses.
+      Wildcards are not supported. This condition is not satisfied by the
+      addresses in the X-Forwarded-For header. e.g. 12.34.56.78/32,
+      11.22.33.44/24
+    Default: ",,,,"
+  
+  Listener3Rule3Condition1HttpHeaderName:
+    Type: String
+    Description: >-
+      (conditional: only specify if Field is http-header) The name of the HTTP
+      header field. The maximum size is 40 characters. The header name is case
+      insensitive. The allowed characters are specified by RFC 7230. Wildcards are
+      not supported
+    Default: ""
+
+  Listener3Rule3Condition2Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+
+  Listener3Rule3Condition2Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+
+  Listener3Rule3Condition2HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener3Rule3Condition3Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener3Rule3Condition3Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener3Rule3Condition3HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener3Rule3Condition4Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener3Rule3Condition4Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener3Rule3Condition4HttpHeaderName:
+    Type: String
+    Default: ""
+
+  ### Listener 4 Params ########################################################
+
+  Listener4Protocol:
+    Type: String
+    Description: The protocol for connections from clients to the load balancer
+    Default: none
+    AllowedValues:
+      # - GENEVE
+      - none
+      - HTTP
+      - HTTPS
+
+  Listener4Port:
+    Type: Number
+    Description: The port on which the load balancer is listening
+    Default: 443
+    MinValue: 1
+    MaxValue: 65535
+
+  Listener4SslPolicy:
+    Type: String
+    Description: >-
+      (conditional: only required for HTTPS listeners) The security policy that
+      defines which protocols and ciphers are supported. Look here for available
+      Application Load Balancer SslPolicies:
+      https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies
+    Default: ""
+
+  Listener4Certificate:
+    Type: String
+    Description: >-
+      (conditional: only required for HTTPS listeners) The default SSL server
+      certificate for a secure listener. You must provide exactly one
+      certificate if the listener protocol is HTTPS
+    Default: ""
+
+  Listener4RuleDefaultAuthActionType:
+    Type: String
+    Description: The type of action
+    Default: none
+    AllowedValues:
+      - none
+      - authenticate-cognito
+      - authenticate-oidc
+
+  Listener4RuleDefaultAuthActionValues:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your action. Specific values depend on the
+      action type.
+      
+      ... If your action is authenticate-cognito, values are:
+      USER_POOL_ARN, USER_POOL_CLIENT_ID, USER_POOL_DOMAIN, [ON_UNAUTH_REQUEST, SCOPE, SESSION_COOKIE_NAME, SESSION_TIMEOUT] .
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-authenticatecognitoconfig.html
+      
+      ... If your action is authenticate-oidc, values are:
+      ISSUER, AUTH_ENDPOINT, TOKEN_ENDPOINT, USER_INFO_ENDPOINT, CLIENT_ID, CLIENT_SECRET, [ON_UNAUTH_REQUEST, SCOPE, SESSION_COOKIE_NAME, SESSION_TIMEOUT, USE_EXISTING_CLIENT_SECRET] .
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-authenticateoidcconfig.html
+    Default: ",,,,,,,,,,"
+
+  Listener4RuleDefaultHandleActionType:
+    Type: String
+    Description: The type of action
+    Default: fixed-response
+    AllowedValues:
+      - fixed-response
+      - forward
+      - redirect
+
+  Listener4RuleDefaultHandleActionValues:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your action. Specific values depend on the
+      action type.
+      
+      ... If your action is fixed-response, values are:
+      STATUS_CODE, [CONTENT_TYPE, MESSAGE_BODY] . e.g: 404,text/plain,not found,,,,,
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-fixedresponseconfig.html
+      
+      ... If your action is forward, values are:
+      STICKINESS_ENABLED, [STICKINESS_DURATION_SECS, TARGET_GROUP_ARN_1, WEIGHT_1, TARGET_GROUP_ARN_2, WEIGHT_2, TARGET_GROUP_ARN_3, WEIGHT_3] . e.g: false,,arn-123,9,arn-456,1,,
+      NOTE: WEIGHT_N is requied if TARGET_GROUP_N is specified. NOTE: STICKINESS_DURATION_SECS is required if STICKINESS_ENABLED is true. Look here to see
+      what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-forwardconfig.html
+      
+      ... If your action is redirect, values are:
+      HTTP_301 | HTTP_302, [PROTOCOL, HOST, PORT, PATH, QUERY] . e.g.: HTTP_301,HTTPS,#{host},443,/#{path},#{query},,
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-redirectconfig.html
+    Default: ",,,,,,,"
+
+  ### Listener 4 Rule 1 Params #####################################
+
+  Listener4Rule1Condition1Field:
+    Type: String
+    Description: The field in the HTTP request to check against
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener4Rule1Condition1Values:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your condition. Specific values depend on
+      the condition field. NOTE: only one value needs to satisfy the condition.
+      If you need multiple values to be satisfied, specify multiple conditions
+      
+      ... If your condition is host-header, values are one or more host names.
+      The maximum size of each name is 128 characters. The comparison is case
+      insensitive. The following wildcard characters are supported: * (matches 0
+      or more characters) and ? (matches exactly 1 character). Can contain the
+      characters: A-z, a-z, 0-9, -, ., * (matches 0 or more characters), ?
+      (matches exactly 1 character). e.g: *.google.com, www.bing.com
+      
+      ... If your condition is http-header, values are one or more strings to
+      compare against the value of the HTTP header. The maximum size of each
+      string is 128 characters. The comparison strings are case insensitive. The
+      following wildcard characters are supported: * (matches 0 or more
+      characters) and ? (matches exactly 1 character). If the same header
+      appears multiple times in the request, we search them in order until a
+      match is found. e.g: if header is Sec-CH-UA-Platform then values might be
+      "Android", "Chrome OS", "iOS"
+      
+      ... If your condition is http-request-method, values are the name of the
+      request method. The maximum size is 40 characters. The allowed characters
+      are A-Z, hyphen (-), and underscore (_). The comparison is case sensitive.
+      Wildcards are not supported; therefore, the method name must be an exact
+      match. We recommend that you route GET and HEAD requests in the same way,
+      because the response to a HEAD request may be cached. e.g.: GET, HEAD,
+      POST
+      
+      ... If your condition is path-pattern, values are one or more path
+      patterns to compare against the request URL. The maximum size of each
+      string is 128 characters. The comparison is case sensitive. The following
+      wildcard characters are supported: * (matches 0 or more characters) and ?
+      (matches exactly 1 character). The path pattern is compared only to the
+      path of the URL, not to its query string. Can contain the characters: A-Z,
+      a-z, 0-9, _, -, ., $, /, ~, ", ', @, :, +, & (using &amp;), * (matches 0
+      or more characters), ? (matches exactly 1 character). e.g.: /football/*,
+      /Football/*, /soccer/*, /Soccer/*
+      
+      ... If your condition is query-string, values are *ONE* key value pair, in
+      respectively. The maximum size of each string is 128 characters. The
+      comparison is case insensitive. The following wildcard characters are
+      supported: * (matches 0 or more characters) and ? (matches exactly 1
+      character). To search for a literal '*' or '?' character in a query string
+      you must escape these characters in Values using a '\' character. e.g:
+      region, europe
+      
+      ... If your condition is source-ip, values are one or more source IP
+      addresses, in CIDR format. You can use both IPv4 and IPv6 addresses.
+      Wildcards are not supported. This condition is not satisfied by the
+      addresses in the X-Forwarded-For header. e.g. 12.34.56.78/32,
+      11.22.33.44/24
+    Default: ",,,,"
+  
+  Listener4Rule1Condition1HttpHeaderName:
+    Type: String
+    Description: >-
+      (conditional: only specify if Field is http-header) The name of the HTTP
+      header field. The maximum size is 40 characters. The header name is case
+      insensitive. The allowed characters are specified by RFC 7230. Wildcards are
+      not supported
+    Default: ""
+
+  Listener4Rule1Condition2Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+
+  Listener4Rule1Condition2Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+
+  Listener4Rule1Condition2HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener4Rule1Condition3Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener4Rule1Condition3Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener4Rule1Condition3HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener4Rule1Condition4Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener4Rule1Condition4Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener4Rule1Condition4HttpHeaderName:
+    Type: String
+    Default: ""
+
+  ### Listener 4 Rule 2 Params #####################################
+
+  Listener4Rule2Condition1Field:
+    Type: String
+    Description: The field in the HTTP request to check against
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener4Rule2Condition1Values:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your condition. Specific values depend on
+      the condition field. NOTE: only one value needs to satisfy the condition.
+      If you need multiple values to be satisfied, specify multiple conditions
+      
+      ... If your condition is host-header, values are one or more host names.
+      The maximum size of each name is 128 characters. The comparison is case
+      insensitive. The following wildcard characters are supported: * (matches 0
+      or more characters) and ? (matches exactly 1 character). Can contain the
+      characters: A-z, a-z, 0-9, -, ., * (matches 0 or more characters), ?
+      (matches exactly 1 character). e.g: *.google.com, www.bing.com
+      
+      ... If your condition is http-header, values are one or more strings to
+      compare against the value of the HTTP header. The maximum size of each
+      string is 128 characters. The comparison strings are case insensitive. The
+      following wildcard characters are supported: * (matches 0 or more
+      characters) and ? (matches exactly 1 character). If the same header
+      appears multiple times in the request, we search them in order until a
+      match is found. e.g: if header is Sec-CH-UA-Platform then values might be
+      "Android", "Chrome OS", "iOS"
+      
+      ... If your condition is http-request-method, values are the name of the
+      request method. The maximum size is 40 characters. The allowed characters
+      are A-Z, hyphen (-), and underscore (_). The comparison is case sensitive.
+      Wildcards are not supported; therefore, the method name must be an exact
+      match. We recommend that you route GET and HEAD requests in the same way,
+      because the response to a HEAD request may be cached. e.g.: GET, HEAD,
+      POST
+      
+      ... If your condition is path-pattern, values are one or more path
+      patterns to compare against the request URL. The maximum size of each
+      string is 128 characters. The comparison is case sensitive. The following
+      wildcard characters are supported: * (matches 0 or more characters) and ?
+      (matches exactly 1 character). The path pattern is compared only to the
+      path of the URL, not to its query string. Can contain the characters: A-Z,
+      a-z, 0-9, _, -, ., $, /, ~, ", ', @, :, +, & (using &amp;), * (matches 0
+      or more characters), ? (matches exactly 1 character). e.g.: /football/*,
+      /Football/*, /soccer/*, /Soccer/*
+      
+      ... If your condition is query-string, values are *ONE* key value pair, in
+      respectively. The maximum size of each string is 128 characters. The
+      comparison is case insensitive. The following wildcard characters are
+      supported: * (matches 0 or more characters) and ? (matches exactly 1
+      character). To search for a literal '*' or '?' character in a query string
+      you must escape these characters in Values using a '\' character. e.g:
+      region, europe
+      
+      ... If your condition is source-ip, values are one or more source IP
+      addresses, in CIDR format. You can use both IPv4 and IPv6 addresses.
+      Wildcards are not supported. This condition is not satisfied by the
+      addresses in the X-Forwarded-For header. e.g. 12.34.56.78/32,
+      11.22.33.44/24
+    Default: ",,,,"
+  
+  Listener4Rule2Condition1HttpHeaderName:
+    Type: String
+    Description: >-
+      (conditional: only specify if Field is http-header) The name of the HTTP
+      header field. The maximum size is 40 characters. The header name is case
+      insensitive. The allowed characters are specified by RFC 7230. Wildcards are
+      not supported
+    Default: ""
+
+  Listener4Rule2Condition2Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+
+  Listener4Rule2Condition2Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+
+  Listener4Rule2Condition2HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener4Rule2Condition3Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener4Rule2Condition3Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener4Rule2Condition3HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener4Rule2Condition4Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener4Rule2Condition4Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener4Rule2Condition4HttpHeaderName:
+    Type: String
+    Default: ""
+
+  ### Listener 4 Rule 3 Params #####################################
+
+  Listener4Rule3Condition1Field:
+    Type: String
+    Description: The field in the HTTP request to check against
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener4Rule3Condition1Values:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your condition. Specific values depend on
+      the condition field. NOTE: only one value needs to satisfy the condition.
+      If you need multiple values to be satisfied, specify multiple conditions
+      
+      ... If your condition is host-header, values are one or more host names.
+      The maximum size of each name is 128 characters. The comparison is case
+      insensitive. The following wildcard characters are supported: * (matches 0
+      or more characters) and ? (matches exactly 1 character). Can contain the
+      characters: A-z, a-z, 0-9, -, ., * (matches 0 or more characters), ?
+      (matches exactly 1 character). e.g: *.google.com, www.bing.com
+      
+      ... If your condition is http-header, values are one or more strings to
+      compare against the value of the HTTP header. The maximum size of each
+      string is 128 characters. The comparison strings are case insensitive. The
+      following wildcard characters are supported: * (matches 0 or more
+      characters) and ? (matches exactly 1 character). If the same header
+      appears multiple times in the request, we search them in order until a
+      match is found. e.g: if header is Sec-CH-UA-Platform then values might be
+      "Android", "Chrome OS", "iOS"
+      
+      ... If your condition is http-request-method, values are the name of the
+      request method. The maximum size is 40 characters. The allowed characters
+      are A-Z, hyphen (-), and underscore (_). The comparison is case sensitive.
+      Wildcards are not supported; therefore, the method name must be an exact
+      match. We recommend that you route GET and HEAD requests in the same way,
+      because the response to a HEAD request may be cached. e.g.: GET, HEAD,
+      POST
+      
+      ... If your condition is path-pattern, values are one or more path
+      patterns to compare against the request URL. The maximum size of each
+      string is 128 characters. The comparison is case sensitive. The following
+      wildcard characters are supported: * (matches 0 or more characters) and ?
+      (matches exactly 1 character). The path pattern is compared only to the
+      path of the URL, not to its query string. Can contain the characters: A-Z,
+      a-z, 0-9, _, -, ., $, /, ~, ", ', @, :, +, & (using &amp;), * (matches 0
+      or more characters), ? (matches exactly 1 character). e.g.: /football/*,
+      /Football/*, /soccer/*, /Soccer/*
+      
+      ... If your condition is query-string, values are *ONE* key value pair, in
+      respectively. The maximum size of each string is 128 characters. The
+      comparison is case insensitive. The following wildcard characters are
+      supported: * (matches 0 or more characters) and ? (matches exactly 1
+      character). To search for a literal '*' or '?' character in a query string
+      you must escape these characters in Values using a '\' character. e.g:
+      region, europe
+      
+      ... If your condition is source-ip, values are one or more source IP
+      addresses, in CIDR format. You can use both IPv4 and IPv6 addresses.
+      Wildcards are not supported. This condition is not satisfied by the
+      addresses in the X-Forwarded-For header. e.g. 12.34.56.78/32,
+      11.22.33.44/24
+    Default: ",,,,"
+  
+  Listener4Rule3Condition1HttpHeaderName:
+    Type: String
+    Description: >-
+      (conditional: only specify if Field is http-header) The name of the HTTP
+      header field. The maximum size is 40 characters. The header name is case
+      insensitive. The allowed characters are specified by RFC 7230. Wildcards are
+      not supported
+    Default: ""
+
+  Listener4Rule3Condition2Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+
+  Listener4Rule3Condition2Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+
+  Listener4Rule3Condition2HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener4Rule3Condition3Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener4Rule3Condition3Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener4Rule3Condition3HttpHeaderName:
+    Type: String
+    Default: ""
+
+  Listener4Rule3Condition4Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  Listener4Rule3Condition4Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  Listener4Rule3Condition4HttpHeaderName:
+    Type: String
+    Default: ""
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  SpecifyListener1: !Not [!Equals [!Ref Listener1Protocol, none]]
+  SpecifyListener2: !Not [!Equals [!Ref Listener2Protocol, none]]
+  SpecifyListener3: !Not [!Equals [!Ref Listener3Protocol, none]]
+  SpecifyListener4: !Not [!Equals [!Ref Listener4Protocol, none]]
+
+  SpecifyListener1Rule1: !Or
+    - !Not [!Equals [!Ref Listener1Rule1Condition1Field, none]]
+    - !Not [!Equals [!Ref Listener1Rule1Condition2Field, none]]
+    - !Not [!Equals [!Ref Listener1Rule1Condition3Field, none]]
+    - !Not [!Equals [!Ref Listener1Rule1Condition4Field, none]]
+  SpecifyListener1Rule2: !Or
+    - !Not [!Equals [!Ref Listener1Rule2Condition1Field, none]]
+    - !Not [!Equals [!Ref Listener1Rule2Condition2Field, none]]
+    - !Not [!Equals [!Ref Listener1Rule2Condition3Field, none]]
+    - !Not [!Equals [!Ref Listener1Rule2Condition4Field, none]]
+  SpecifyListener1Rule3: !Or
+    - !Not [!Equals [!Ref Listener1Rule3Condition1Field, none]]
+    - !Not [!Equals [!Ref Listener1Rule3Condition2Field, none]]
+    - !Not [!Equals [!Ref Listener1Rule3Condition3Field, none]]
+    - !Not [!Equals [!Ref Listener1Rule3Condition4Field, none]]
+
+  SpecifyListener2Rule1: !Or
+    - !Not [!Equals [!Ref Listener2Rule1Condition1Field, none]]
+    - !Not [!Equals [!Ref Listener2Rule1Condition2Field, none]]
+    - !Not [!Equals [!Ref Listener2Rule1Condition3Field, none]]
+    - !Not [!Equals [!Ref Listener2Rule1Condition4Field, none]]
+  SpecifyListener2Rule2: !Or
+    - !Not [!Equals [!Ref Listener2Rule2Condition1Field, none]]
+    - !Not [!Equals [!Ref Listener2Rule2Condition2Field, none]]
+    - !Not [!Equals [!Ref Listener2Rule2Condition3Field, none]]
+    - !Not [!Equals [!Ref Listener2Rule2Condition4Field, none]]
+  SpecifyListener2Rule3: !Or
+    - !Not [!Equals [!Ref Listener2Rule3Condition1Field, none]]
+    - !Not [!Equals [!Ref Listener2Rule3Condition2Field, none]]
+    - !Not [!Equals [!Ref Listener2Rule3Condition3Field, none]]
+    - !Not [!Equals [!Ref Listener2Rule3Condition4Field, none]]
+
+  SpecifyListener3Rule1: !Or
+    - !Not [!Equals [!Ref Listener3Rule1Condition1Field, none]]
+    - !Not [!Equals [!Ref Listener3Rule1Condition2Field, none]]
+    - !Not [!Equals [!Ref Listener3Rule1Condition3Field, none]]
+    - !Not [!Equals [!Ref Listener3Rule1Condition4Field, none]]
+  SpecifyListener3Rule2: !Or
+    - !Not [!Equals [!Ref Listener3Rule2Condition1Field, none]]
+    - !Not [!Equals [!Ref Listener3Rule2Condition2Field, none]]
+    - !Not [!Equals [!Ref Listener3Rule2Condition3Field, none]]
+    - !Not [!Equals [!Ref Listener3Rule2Condition4Field, none]]
+  SpecifyListener3Rule3: !Or
+    - !Not [!Equals [!Ref Listener3Rule3Condition1Field, none]]
+    - !Not [!Equals [!Ref Listener3Rule3Condition2Field, none]]
+    - !Not [!Equals [!Ref Listener3Rule3Condition3Field, none]]
+    - !Not [!Equals [!Ref Listener3Rule3Condition4Field, none]]
+
+  SpecifyListener4Rule1: !Or
+    - !Not [!Equals [!Ref Listener4Rule1Condition1Field, none]]
+    - !Not [!Equals [!Ref Listener4Rule1Condition2Field, none]]
+    - !Not [!Equals [!Ref Listener4Rule1Condition3Field, none]]
+    - !Not [!Equals [!Ref Listener4Rule1Condition4Field, none]]
+  SpecifyListener4Rule2: !Or
+    - !Not [!Equals [!Ref Listener4Rule2Condition1Field, none]]
+    - !Not [!Equals [!Ref Listener4Rule2Condition2Field, none]]
+    - !Not [!Equals [!Ref Listener4Rule2Condition3Field, none]]
+    - !Not [!Equals [!Ref Listener4Rule2Condition4Field, none]]
+  SpecifyListener4Rule3: !Or
+    - !Not [!Equals [!Ref Listener4Rule3Condition1Field, none]]
+    - !Not [!Equals [!Ref Listener4Rule3Condition2Field, none]]
+    - !Not [!Equals [!Ref Listener4Rule3Condition3Field, none]]
+    - !Not [!Equals [!Ref Listener4Rule3Condition4Field, none]]
+
+Resources:
+  loadBalancerStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/load-balancing/application/load-balancer/_load-balancer.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        Name: !Ref Name
+        Scheme: !Ref Scheme
+        IpAddressType: !Ref IpAddressType
+        Subnets: !Join [",", !Ref Subnets]
+        SecurityGroups: !Join [",", !Ref SecurityGroups]
+        IdleTimeoutSeconds: !Ref IdleTimeoutSeconds
+        EnableDeletionProtection: !Ref EnableDeletionProtection
+        DesyncMitigationMode: !Ref DesyncMitigationMode
+        EnableInvalidHeaderFields: !Ref EnableInvalidHeaderFields
+        EnableXAmazonTLSVersionAndCipherSuite: !Ref EnableXAmazonTLSVersionAndCipherSuite
+        EnableXForwardedForHeaderClientPort: !Ref EnableXForwardedForHeaderClientPort
+        EnableHTTP2: !Ref EnableHTTP2
+        EnableWAFFailOpen: !Ref EnableWAFFailOpen
+        EnableS3AccessLogs: !Ref EnableS3AccessLogs
+        S3AccessLogsBucket: !Ref S3AccessLogsBucket
+        S3AccessLogsBucketPrefix: !Ref S3AccessLogsBucketPrefix
+
+  listener1Stack:
+    Condition: SpecifyListener1
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/load-balancing/application/load-balancer/_listener.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        Identifier: "1"
+        LoadBalancerArn: !GetAtt loadBalancerStack.Outputs.loadBalancerArn
+        Protocol: !Ref Listener1Protocol
+        Port: !Ref Listener1Port
+        SslPolicy: !Ref Listener1SslPolicy
+        Certificate: !Ref Listener1Certificate
+        RuleDefaultAuthActionType: !Ref Listener1RuleDefaultAuthActionType
+        RuleDefaultAuthActionValues: !Join [",", !Ref Listener1RuleDefaultAuthActionValues]
+        RuleDefaultHandleActionType: !Ref Listener1RuleDefaultHandleActionType
+        RuleDefaultHandleActionValues: !Join [",", !Ref Listener1RuleDefaultHandleActionValues]
+
+  listener1Rule1Stack:
+    Condition: SpecifyListener1Rule1
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/load-balancing/application/load-balancer/_listener-rule.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        ListenerArn: !GetAtt listener1Stack.Outputs.listenerArn
+        Priority: 1
+        RuleCondition1Field: !Ref Listener1Rule1Condition1Field
+        RuleCondition1Values: !Join [",", !Ref Listener1Rule1Condition1Values]
+        RuleCondition1HttpHeaderName: !Ref Listener1Rule1Condition1HttpHeaderName
+        RuleCondition2Field: !Ref Listener1Rule1Condition2Field
+        RuleCondition2Values: !Join [",", !Ref Listener1Rule1Condition2Values]
+        RuleCondition2HttpHeaderName: !Ref Listener1Rule1Condition2HttpHeaderName
+        RuleCondition3Field: !Ref Listener1Rule1Condition3Field
+        RuleCondition3Values: !Join [",", !Ref Listener1Rule1Condition3Values]
+        RuleCondition3HttpHeaderName: !Ref Listener1Rule1Condition3HttpHeaderName
+        RuleCondition4Field: !Ref Listener1Rule1Condition4Field
+        RuleCondition4Values: !Join [",", !Ref Listener1Rule1Condition4Values]
+        RuleCondition4HttpHeaderName: !Ref Listener1Rule1Condition4HttpHeaderName
+
+  listener1Rule2Stack:
+    Condition: SpecifyListener1Rule2
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/load-balancing/application/load-balancer/_listener-rule.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        ListenerArn: !GetAtt listener1Stack.Outputs.listenerArn
+        Priority: 2
+        RuleCondition1Field: !Ref Listener1Rule2Condition1Field
+        RuleCondition1Values: !Join [",", !Ref Listener1Rule2Condition1Values]
+        RuleCondition1HttpHeaderName: !Ref Listener1Rule2Condition1HttpHeaderName
+        RuleCondition2Field: !Ref Listener1Rule2Condition2Field
+        RuleCondition2Values: !Join [",", !Ref Listener1Rule2Condition2Values]
+        RuleCondition2HttpHeaderName: !Ref Listener1Rule2Condition2HttpHeaderName
+        RuleCondition3Field: !Ref Listener1Rule2Condition3Field
+        RuleCondition3Values: !Join [",", !Ref Listener1Rule2Condition3Values]
+        RuleCondition3HttpHeaderName: !Ref Listener1Rule2Condition3HttpHeaderName
+        RuleCondition4Field: !Ref Listener1Rule2Condition4Field
+        RuleCondition4Values: !Join [",", !Ref Listener1Rule2Condition4Values]
+        RuleCondition4HttpHeaderName: !Ref Listener1Rule2Condition4HttpHeaderName
+
+  listener1Rule3Stack:
+    Condition: SpecifyListener1Rule3
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/load-balancing/application/load-balancer/_listener-rule.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        ListenerArn: !GetAtt listener1Stack.Outputs.listenerArn
+        Priority: 3
+        RuleCondition1Field: !Ref Listener1Rule3Condition1Field
+        RuleCondition1Values: !Join [",", !Ref Listener1Rule3Condition1Values]
+        RuleCondition1HttpHeaderName: !Ref Listener1Rule3Condition1HttpHeaderName
+        RuleCondition2Field: !Ref Listener1Rule3Condition2Field
+        RuleCondition2Values: !Join [",", !Ref Listener1Rule3Condition2Values]
+        RuleCondition2HttpHeaderName: !Ref Listener1Rule3Condition2HttpHeaderName
+        RuleCondition3Field: !Ref Listener1Rule3Condition3Field
+        RuleCondition3Values: !Join [",", !Ref Listener1Rule3Condition3Values]
+        RuleCondition3HttpHeaderName: !Ref Listener1Rule3Condition3HttpHeaderName
+        RuleCondition4Field: !Ref Listener1Rule3Condition4Field
+        RuleCondition4Values: !Join [",", !Ref Listener1Rule3Condition4Values]
+        RuleCondition4HttpHeaderName: !Ref Listener1Rule3Condition4HttpHeaderName
+
+  listener2Stack:
+    Condition: SpecifyListener2
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/load-balancing/application/load-balancer/_listener.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        Identifier: "2"
+        LoadBalancerArn: !GetAtt loadBalancerStack.Outputs.loadBalancerArn
+        Protocol: !Ref Listener2Protocol
+        Port: !Ref Listener2Port
+        SslPolicy: !Ref Listener2SslPolicy
+        Certificate: !Ref Listener2Certificate
+        RuleDefaultAuthActionType: !Ref Listener2RuleDefaultAuthActionType
+        RuleDefaultAuthActionValues: !Join [",", !Ref Listener2RuleDefaultAuthActionValues]
+        RuleDefaultHandleActionType: !Ref Listener2RuleDefaultHandleActionType
+        RuleDefaultHandleActionValues: !Join [",", !Ref Listener2RuleDefaultHandleActionValues]
+
+  listener2Rule1Stack:
+    Condition: SpecifyListener2Rule1
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/load-balancing/application/load-balancer/_listener-rule.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        ListenerArn: !GetAtt listener2Stack.Outputs.listenerArn
+        Priority: 1
+        RuleCondition1Field: !Ref Listener2Rule1Condition1Field
+        RuleCondition1Values: !Join [",", !Ref Listener2Rule1Condition1Values]
+        RuleCondition1HttpHeaderName: !Ref Listener2Rule1Condition1HttpHeaderName
+        RuleCondition2Field: !Ref Listener2Rule1Condition2Field
+        RuleCondition2Values: !Join [",", !Ref Listener2Rule1Condition2Values]
+        RuleCondition2HttpHeaderName: !Ref Listener2Rule1Condition2HttpHeaderName
+        RuleCondition3Field: !Ref Listener2Rule1Condition3Field
+        RuleCondition3Values: !Join [",", !Ref Listener2Rule1Condition3Values]
+        RuleCondition3HttpHeaderName: !Ref Listener2Rule1Condition3HttpHeaderName
+        RuleCondition4Field: !Ref Listener2Rule1Condition4Field
+        RuleCondition4Values: !Join [",", !Ref Listener2Rule1Condition4Values]
+        RuleCondition4HttpHeaderName: !Ref Listener2Rule1Condition4HttpHeaderName
+
+  listener2Rule2Stack:
+    Condition: SpecifyListener2Rule2
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/load-balancing/application/load-balancer/_listener-rule.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        ListenerArn: !GetAtt listener2Stack.Outputs.listenerArn
+        Priority: 2
+        RuleCondition1Field: !Ref Listener2Rule2Condition1Field
+        RuleCondition1Values: !Join [",", !Ref Listener2Rule2Condition1Values]
+        RuleCondition1HttpHeaderName: !Ref Listener2Rule2Condition1HttpHeaderName
+        RuleCondition2Field: !Ref Listener2Rule2Condition2Field
+        RuleCondition2Values: !Join [",", !Ref Listener2Rule2Condition2Values]
+        RuleCondition2HttpHeaderName: !Ref Listener2Rule2Condition2HttpHeaderName
+        RuleCondition3Field: !Ref Listener2Rule2Condition3Field
+        RuleCondition3Values: !Join [",", !Ref Listener2Rule2Condition3Values]
+        RuleCondition3HttpHeaderName: !Ref Listener2Rule2Condition3HttpHeaderName
+        RuleCondition4Field: !Ref Listener2Rule2Condition4Field
+        RuleCondition4Values: !Join [",", !Ref Listener2Rule2Condition4Values]
+        RuleCondition4HttpHeaderName: !Ref Listener2Rule2Condition4HttpHeaderName
+
+  listener2Rule3Stack:
+    Condition: SpecifyListener2Rule3
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/load-balancing/application/load-balancer/_listener-rule.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        ListenerArn: !GetAtt listener2Stack.Outputs.listenerArn
+        Priority: 3
+        RuleCondition1Field: !Ref Listener2Rule3Condition1Field
+        RuleCondition1Values: !Join [",", !Ref Listener2Rule3Condition1Values]
+        RuleCondition1HttpHeaderName: !Ref Listener2Rule3Condition1HttpHeaderName
+        RuleCondition2Field: !Ref Listener2Rule3Condition2Field
+        RuleCondition2Values: !Join [",", !Ref Listener2Rule3Condition2Values]
+        RuleCondition2HttpHeaderName: !Ref Listener2Rule3Condition2HttpHeaderName
+        RuleCondition3Field: !Ref Listener2Rule3Condition3Field
+        RuleCondition3Values: !Join [",", !Ref Listener2Rule3Condition3Values]
+        RuleCondition3HttpHeaderName: !Ref Listener2Rule3Condition3HttpHeaderName
+        RuleCondition4Field: !Ref Listener2Rule3Condition4Field
+        RuleCondition4Values: !Join [",", !Ref Listener2Rule3Condition4Values]
+        RuleCondition4HttpHeaderName: !Ref Listener2Rule3Condition4HttpHeaderName
+
+  listener3Stack:
+    Condition: SpecifyListener3
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/load-balancing/application/load-balancer/_listener.yml"
+      Parameters:
+        Identifier: "3"
+        ParentStack: !Ref "AWS::StackName"
+        LoadBalancerArn: !GetAtt loadBalancerStack.Outputs.loadBalancerArn
+        Protocol: !Ref Listener3Protocol
+        Port: !Ref Listener3Port
+        SslPolicy: !Ref Listener3SslPolicy
+        Certificate: !Ref Listener3Certificate
+        RuleDefaultAuthActionType: !Ref Listener3RuleDefaultAuthActionType
+        RuleDefaultAuthActionValues: !Join [",", !Ref Listener3RuleDefaultAuthActionValues]
+        RuleDefaultHandleActionType: !Ref Listener3RuleDefaultHandleActionType
+        RuleDefaultHandleActionValues: !Join [",", !Ref Listener3RuleDefaultHandleActionValues]
+
+  listener3Rule1Stack:
+    Condition: SpecifyListener3Rule1
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/load-balancing/application/load-balancer/_listener-rule.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        ListenerArn: !GetAtt listener3Stack.Outputs.listenerArn
+        Priority: 1
+        RuleCondition1Field: !Ref Listener3Rule1Condition1Field
+        RuleCondition1Values: !Join [",", !Ref Listener3Rule1Condition1Values]
+        RuleCondition1HttpHeaderName: !Ref Listener3Rule1Condition1HttpHeaderName
+        RuleCondition2Field: !Ref Listener3Rule1Condition2Field
+        RuleCondition2Values: !Join [",", !Ref Listener3Rule1Condition2Values]
+        RuleCondition2HttpHeaderName: !Ref Listener3Rule1Condition2HttpHeaderName
+        RuleCondition3Field: !Ref Listener3Rule1Condition3Field
+        RuleCondition3Values: !Join [",", !Ref Listener3Rule1Condition3Values]
+        RuleCondition3HttpHeaderName: !Ref Listener3Rule1Condition3HttpHeaderName
+        RuleCondition4Field: !Ref Listener3Rule1Condition4Field
+        RuleCondition4Values: !Join [",", !Ref Listener3Rule1Condition4Values]
+        RuleCondition4HttpHeaderName: !Ref Listener3Rule1Condition4HttpHeaderName
+
+  listener3Rule2Stack:
+    Condition: SpecifyListener3Rule2
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/load-balancing/application/load-balancer/_listener-rule.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        ListenerArn: !GetAtt listener3Stack.Outputs.listenerArn
+        Priority: 2
+        RuleCondition1Field: !Ref Listener3Rule2Condition1Field
+        RuleCondition1Values: !Join [",", !Ref Listener3Rule2Condition1Values]
+        RuleCondition1HttpHeaderName: !Ref Listener3Rule2Condition1HttpHeaderName
+        RuleCondition2Field: !Ref Listener3Rule2Condition2Field
+        RuleCondition2Values: !Join [",", !Ref Listener3Rule2Condition2Values]
+        RuleCondition2HttpHeaderName: !Ref Listener3Rule2Condition2HttpHeaderName
+        RuleCondition3Field: !Ref Listener3Rule2Condition3Field
+        RuleCondition3Values: !Join [",", !Ref Listener3Rule2Condition3Values]
+        RuleCondition3HttpHeaderName: !Ref Listener3Rule2Condition3HttpHeaderName
+        RuleCondition4Field: !Ref Listener3Rule2Condition4Field
+        RuleCondition4Values: !Join [",", !Ref Listener3Rule2Condition4Values]
+        RuleCondition4HttpHeaderName: !Ref Listener3Rule2Condition4HttpHeaderName
+
+  listener3Rule3Stack:
+    Condition: SpecifyListener3Rule3
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/load-balancing/application/load-balancer/_listener-rule.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        ListenerArn: !GetAtt listener3Stack.Outputs.listenerArn
+        Priority: 3
+        RuleCondition1Field: !Ref Listener3Rule3Condition1Field
+        RuleCondition1Values: !Join [",", !Ref Listener3Rule3Condition1Values]
+        RuleCondition1HttpHeaderName: !Ref Listener3Rule3Condition1HttpHeaderName
+        RuleCondition2Field: !Ref Listener3Rule3Condition2Field
+        RuleCondition2Values: !Join [",", !Ref Listener3Rule3Condition2Values]
+        RuleCondition2HttpHeaderName: !Ref Listener3Rule3Condition2HttpHeaderName
+        RuleCondition3Field: !Ref Listener3Rule3Condition3Field
+        RuleCondition3Values: !Join [",", !Ref Listener3Rule3Condition3Values]
+        RuleCondition3HttpHeaderName: !Ref Listener3Rule3Condition3HttpHeaderName
+        RuleCondition4Field: !Ref Listener3Rule3Condition4Field
+        RuleCondition4Values: !Join [",", !Ref Listener3Rule3Condition4Values]
+        RuleCondition4HttpHeaderName: !Ref Listener3Rule3Condition4HttpHeaderName
+
+  listener4Stack:
+    Condition: SpecifyListener4
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/load-balancing/application/load-balancer/_listener.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        Identifier: "4"
+        LoadBalancerArn: !GetAtt loadBalancerStack.Outputs.loadBalancerArn
+        Protocol: !Ref Listener4Protocol
+        Port: !Ref Listener4Port
+        SslPolicy: !Ref Listener4SslPolicy
+        Certificate: !Ref Listener4Certificate
+        RuleDefaultAuthActionType: !Ref Listener4RuleDefaultAuthActionType
+        RuleDefaultAuthActionValues: !Join [",", !Ref Listener4RuleDefaultAuthActionValues]
+        RuleDefaultHandleActionType: !Ref Listener4RuleDefaultHandleActionType
+        RuleDefaultHandleActionValues: !Join [",", !Ref Listener4RuleDefaultHandleActionValues]
+
+  listener4Rule1Stack:
+    Condition: SpecifyListener4Rule1
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/load-balancing/application/load-balancer/_listener-rule.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        ListenerArn: !GetAtt listener4Stack.Outputs.listenerArn
+        Priority: 1
+        RuleCondition1Field: !Ref Listener4Rule1Condition1Field
+        RuleCondition1Values: !Join [",", !Ref Listener4Rule1Condition1Values]
+        RuleCondition1HttpHeaderName: !Ref Listener4Rule1Condition1HttpHeaderName
+        RuleCondition2Field: !Ref Listener4Rule1Condition2Field
+        RuleCondition2Values: !Join [",", !Ref Listener4Rule1Condition2Values]
+        RuleCondition2HttpHeaderName: !Ref Listener4Rule1Condition2HttpHeaderName
+        RuleCondition3Field: !Ref Listener4Rule1Condition3Field
+        RuleCondition3Values: !Join [",", !Ref Listener4Rule1Condition3Values]
+        RuleCondition3HttpHeaderName: !Ref Listener4Rule1Condition3HttpHeaderName
+        RuleCondition4Field: !Ref Listener4Rule1Condition4Field
+        RuleCondition4Values: !Join [",", !Ref Listener4Rule1Condition4Values]
+        RuleCondition4HttpHeaderName: !Ref Listener4Rule1Condition4HttpHeaderName
+
+  listener4Rule2Stack:
+    Condition: SpecifyListener4Rule2
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/load-balancing/application/load-balancer/_listener-rule.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        ListenerArn: !GetAtt listener4Stack.Outputs.listenerArn
+        Priority: 2
+        RuleCondition1Field: !Ref Listener4Rule2Condition1Field
+        RuleCondition1Values: !Join [",", !Ref Listener4Rule2Condition1Values]
+        RuleCondition1HttpHeaderName: !Ref Listener4Rule2Condition1HttpHeaderName
+        RuleCondition2Field: !Ref Listener4Rule2Condition2Field
+        RuleCondition2Values: !Join [",", !Ref Listener4Rule2Condition2Values]
+        RuleCondition2HttpHeaderName: !Ref Listener4Rule2Condition2HttpHeaderName
+        RuleCondition3Field: !Ref Listener4Rule2Condition3Field
+        RuleCondition3Values: !Join [",", !Ref Listener4Rule2Condition3Values]
+        RuleCondition3HttpHeaderName: !Ref Listener4Rule2Condition3HttpHeaderName
+        RuleCondition4Field: !Ref Listener4Rule2Condition4Field
+        RuleCondition4Values: !Join [",", !Ref Listener4Rule2Condition4Values]
+        RuleCondition4HttpHeaderName: !Ref Listener4Rule2Condition4HttpHeaderName
+
+  listener4Rule3Stack:
+    Condition: SpecifyListener4Rule3
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://$__BUCKET_NAME__.s3.eu-west-2.amazonaws.com/$__BUCKET_FOLDER__/load-balancing/application/load-balancer/_listener-rule.yml"
+      Parameters:
+        ParentStack: !Ref "AWS::StackName"
+        ListenerArn: !GetAtt listener4Stack.Outputs.listenerArn
+        Priority: 3
+        RuleCondition1Field: !Ref Listener4Rule3Condition1Field
+        RuleCondition1Values: !Join [",", !Ref Listener4Rule3Condition1Values]
+        RuleCondition1HttpHeaderName: !Ref Listener4Rule3Condition1HttpHeaderName
+        RuleCondition2Field: !Ref Listener4Rule3Condition2Field
+        RuleCondition2Values: !Join [",", !Ref Listener4Rule3Condition2Values]
+        RuleCondition2HttpHeaderName: !Ref Listener4Rule3Condition2HttpHeaderName
+        RuleCondition3Field: !Ref Listener4Rule3Condition3Field
+        RuleCondition3Values: !Join [",", !Ref Listener4Rule3Condition3Values]
+        RuleCondition3HttpHeaderName: !Ref Listener4Rule3Condition3HttpHeaderName
+        RuleCondition4Field: !Ref Listener4Rule3Condition4Field
+        RuleCondition4Values: !Join [",", !Ref Listener4Rule3Condition4Values]
+        RuleCondition4HttpHeaderName: !Ref Listener4Rule3Condition4HttpHeaderName

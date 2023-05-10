@@ -1,0 +1,334 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Amazon ElastiCache cache cluster. Specifically Memcahced cluster
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: Cluster Parameters
+        Parameters:
+          - ClusterName
+          - EngineVersion
+          - Port
+          - CacheParameterGroupName
+          - CacheNodeType
+          - NumCacheNodes
+          - PreferredMaintenanceWindow
+      - Label:
+          default: Network Parameters
+        Parameters:
+          - CacheVPCId
+          - CacheSubnetIds
+          - AZMode
+          - PreferredAvailabilityZones
+      - Label:
+          default: CloudWatch Logging Parameters
+        Parameters:
+          - EnableCloudWatchLogs
+          - CloudWatchLogGroup
+          - CloudWatchLogType
+          - CloudWatchLogFormat
+      - Label:
+          default: Kinesis Firehose Parameters
+        Parameters:
+          - EnableKinesisFirehoseLogs
+          - KinesisFirehoseDeliveryStream
+          - KinesisFirehoseLogType
+          - KinesisFirehoseLogFormat
+      - Label:
+          default: SNS Parameters
+        Parameters:
+          - NotificationTopicArn
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  ClusterName:
+    Type: String
+    Description: >-
+      A name for the cache cluster. If you don't specify a name,
+      AWSCloudFormation generates a unique physical ID and uses that ID for the
+      cache cluster
+
+  EngineVersion:
+    Type: String
+    Description: >-
+      The version number of the cache engine to be used for this cluster. You
+      can upgrade to a newer engine version, but you cannot downgrade to an
+      earlier engine version. If you want to use an earlier engine version, you
+      must delete the existing cluster or replication group and create it anew
+      with the earlier engine version. For available versions see:
+      https://docs.aws.amazon.com/AmazonElastiCache/latest/mem-ug/supported-engine-versions.html
+    Default: "1.6.6"
+
+  Port:
+    Type: Number
+    Description: >-
+      The port number on which each of the cache nodes accepts connections
+    Default: 11211
+
+  CacheParameterGroupName:
+    Type: String
+    Description: >-
+      (optional) The name of the parameter group to associate with this cluster.
+      If this argument is omitted, the default parameter group for the specified
+      engine is used. You cannot use any parameter group which has
+      cluster-enabled='yes' when creating a cluster
+    Default: ""
+
+  CacheNodeType:
+    Type: String
+    Description: >-
+      The compute and memory capacity of the nodes in the node group (shard).
+      Generally speaking, the current generation types provide more memory and
+      computational power at lower cost when compared to their equivalent
+      previous generation counterparts. Changing the CacheNodeType of a
+      Memcached instance is currently not supported. If you need to scale using
+      Memcached, we recommend forcing a replacement update by changing the
+      LogicalResourceId of the resource
+    Default: "cache.t2.micro"
+
+  NumCacheNodes:
+    Type: Number
+    Description: >-
+      The number of cache nodes that the cache cluster should have. NOTE: if the
+      PreferredAvailabilityZone and PreferredAvailabilityZones properties were
+      not previously specified and you don't specify any new values, an update
+      requires replacement
+    Default: 1
+
+  PreferredMaintenanceWindow:
+    Type: String
+    Description: >-
+      Specifies the weekly time range during which maintenance on the cluster is
+      performed. It is specified as a range in the format
+      ddd:hh24:mi-ddd:hh24:mi (24H Clock UTC). The minimum maintenance window is
+      a 60 minute period. Valid values for ddd are: sun, mon, tue, wed, thu,
+      fri, sat
+    Default: sun:23:00-mon:01:30
+
+  CacheVPCId:
+    Type: AWS::EC2::VPC::Id
+    Description: The VPC ID for the cache subnet group and security groups
+
+  CacheSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: The EC2 subnet IDs for the cache subnet group
+
+  AZMode:
+    Type: String
+    Description: >-
+      Specifies whether the nodes in this Memcached cluster are created in a
+      single Availability Zone or created across multiple Availability Zones in
+      the cluster's region
+    Default: single-az
+    AllowedValues:
+      - single-az
+      - cross-az
+
+  PreferredAvailabilityZones:
+    Type: CommaDelimitedList
+    Description: >-
+      (optional) Preferred availability zone to place the cluster nodes on e.g.
+      eu-west-2a, eu-west-2b, eu-west-2c. NOTE: if you specify cross-az only
+      specify one availability zone
+    Default: ",,,,"
+
+  EnableCloudWatchLogs:
+    Type: String
+    Description: Enables cloud watch logging
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  CloudWatchLogGroup:
+    Type: String
+    Description: The name of the CloudWatch Logs log group
+    Default: ""
+
+  CloudWatchLogType:
+    Type: String
+    Description: Logging type
+    Default: engine-log
+    AllowedValues:
+      - slow-log
+      - engine-log
+
+  CloudWatchLogFormat:
+    Type: String
+    Description: Logging format
+    Default: json
+    AllowedValues:
+      - json
+      - text
+
+  EnableKinesisFirehoseLogs:
+    Type: String
+    Description: Enables Kinesis Firehose logging
+    Default: false
+    AllowedValues:
+      - true
+      - false
+
+  KinesisFirehoseDeliveryStream:
+    Type: String
+    Description: The name of the Kinesis Firehose delivery stream log group
+    Default: ""
+
+  KinesisFirehoseLogType:
+    Type: String
+    Description: Logging type
+    Default: engine-log
+    AllowedValues:
+      - slow-log
+      - engine-log
+
+  KinesisFirehoseLogFormat:
+    Type: String
+    Description: Logging format
+    Default: json
+    AllowedValues:
+      - json
+      - text
+
+  NotificationTopicArn:
+    Type: String
+    Description: >-
+      (optional) The Amazon Resource Name (ARN) of the Amazon Simple
+      Notification Service (SNS) topic to which notifications are sent. NOTE:
+      The Amazon SNS topic owner must be the same as the cluster owner
+    Default: ""
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  SpecifyClusterName: !Not [!Equals [!Ref ClusterName, ""]]
+  SpecifyCacheParameterGroupName: !Not [!Equals [!Ref CacheParameterGroupName, ""]]
+  SpecifySinglePreferredAvailabilityZone: !And
+    - !Not [!Equals [!Select [0, !Ref PreferredAvailabilityZones], ""]]
+    - !Equals [!Select [1, !Ref PreferredAvailabilityZones], ""]
+    - !Equals [!Select [2, !Ref PreferredAvailabilityZones], ""]
+    - !Equals [!Select [3, !Ref PreferredAvailabilityZones], ""]
+    - !Equals [!Select [4, !Ref PreferredAvailabilityZones], ""]
+  SpecifyMultiplePreferredAvailabilityZones: !And
+    - !Not [!Equals [!Select [0, !Ref PreferredAvailabilityZones], ""]]
+    - !Or
+      - !Not [!Equals [!Select [1, !Ref PreferredAvailabilityZones], ""]]
+      - !Not [!Equals [!Select [2, !Ref PreferredAvailabilityZones], ""]]
+      - !Not [!Equals [!Select [3, !Ref PreferredAvailabilityZones], ""]]
+      - !Not [!Equals [!Select [4, !Ref PreferredAvailabilityZones], ""]]
+  SpecifyCloudWatchLogs: !Equals [!Ref EnableCloudWatchLogs, true]
+  SpecifyKinesisFirehoseLogs: !Equals [!Ref EnableKinesisFirehoseLogs, true]
+  SpecifyNotificationTopicArn: !Not [!Equals [!Ref NotificationTopicArn, ""]]
+
+Resources:
+
+  subnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: !Sub "Subnets associated with ${AWS::StackName}"
+      SubnetIds: !Ref CacheSubnetIds
+
+  serverMemcachedSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: !If
+        - SpecifyClusterName
+        - !Sub "Memcached cluster server SG for ${ClusterName}"
+        - !Sub "Memcached cluster server SG for ${AWS::StackName}"
+      GroupName: !If
+        - SpecifyClusterName
+        - !Sub "${ClusterName}-memcached-server"
+        - !Sub "${AWS::StackName}-memcached-server"
+      SecurityGroupEgress: # replaces the default all traffic 0.0.0.0/0 rule
+      - CidrIp: 127.0.0.1/32
+        IpProtocol: "-1"
+        Description: "Dummy to replace default rule"
+      VpcId: !Ref CacheVPCId
+
+  clientMemcachedSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: !If
+        - SpecifyClusterName
+        - !Sub "Memcached cluster client SG for ${ClusterName}"
+        - !Sub "Memcached cluster client SG for ${AWS::StackName}"
+      GroupName: !If
+        - SpecifyClusterName
+        - !Sub "${ClusterName}-memcached-client"
+        - !Sub "${AWS::StackName}-memcached-client"
+      VpcId: !Ref CacheVPCId
+
+  serverMemcachedSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties: 
+      GroupId: !Ref serverMemcachedSecurityGroup
+      IpProtocol: tcp
+      SourceSecurityGroupId: !Ref clientMemcachedSecurityGroup
+      FromPort: !Ref Port
+      ToPort: !Ref Port
+
+  clientMemcachedSecurityGroupEgress:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties: 
+      GroupId: !Ref clientMemcachedSecurityGroup
+      IpProtocol: tcp
+      DestinationSecurityGroupId: !Ref serverMemcachedSecurityGroup
+      FromPort: !Ref Port
+      ToPort: !Ref Port
+
+  cacheCluster:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      AZMode: !Ref AZMode
+      CacheNodeType: !Ref CacheNodeType
+      CacheParameterGroupName: !If [SpecifyCacheParameterGroupName, !Ref CacheParameterGroupName, !Ref "AWS::NoValue"]
+      CacheSubnetGroupName: !Ref subnetGroup
+      ClusterName: !If [SpecifyClusterName, !Ref ClusterName, !Ref "AWS::NoValue"]
+      Engine: memcached
+      EngineVersion: !Ref EngineVersion
+      LogDeliveryConfigurations: 
+        - !If
+          - SpecifyCloudWatchLogs
+          - DestinationDetails: 
+              CloudWatchLogsDetails: 
+                LogGroup: !Ref CloudWatchLogGroup
+            DestinationType: cloudwatch-logs
+            LogFormat: !Ref CloudWatchLogFormat
+            LogType: !Ref CloudWatchLogType
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyKinesisFirehoseLogs
+          - DestinationDetails: 
+              KinesisFirehoseDetails: 
+                DeliveryStream: !Ref KinesisFirehoseDeliveryStream
+            DestinationType: kinesis-firehose
+            LogFormat: !Ref KinesisFirehoseLogFormat
+            LogType: !Ref KinesisFirehoseLogType
+          - !Ref "AWS::NoValue"
+      NotificationTopicArn: !If [SpecifyNotificationTopicArn, !Ref NotificationTopicArn, !Ref "AWS::NoValue"]
+      NumCacheNodes: !Ref NumCacheNodes
+      Port: !Ref Port
+      PreferredAvailabilityZone: !If
+        - SpecifySinglePreferredAvailabilityZone
+        - !Select [0, !Ref PreferredAvailabilityZones]
+        - !Ref "AWS::NoValue"
+      PreferredAvailabilityZones: !If
+        - SpecifySinglePreferredAvailabilityZone
+        - !Ref PreferredAvailabilityZones
+        - !Ref "AWS::NoValue"
+      PreferredMaintenanceWindow: !Ref PreferredMaintenanceWindow
+      VpcSecurityGroupIds: 
+        - !Ref serverSecurityGroup
+
+# Outputs:
+  # specify when needed

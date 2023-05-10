@@ -1,0 +1,213 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  NAT Gateway(s) that can be distributed across multiple subnets (i.e.
+  availability zones)
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: NAT Parameters
+        Parameters:
+          - VpcId
+          - ConnectivityType
+          - SubnetA
+          - SubnetB
+          - SubnetC
+          - SubnetD
+          - SubnetE
+          - AvailabilityZonePlacement
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: ID of the VPC to associate with the NAT
+
+  ConnectivityType:
+    Type: String
+    Description: >-
+      Indicates whether the NAT gateway supports public or private connectivity
+    Default: public
+    AllowedValues:
+      - private
+      - public
+
+  SubnetA:
+    Type: String
+    Description: >-
+      (optional) The availability zone A subnet to place a NAT in
+    Default: ""
+
+  SubnetB:
+    Type: String
+    Description: >-
+      (optional) The availability zone A subnet to place a NAT in
+    Default: ""
+
+  SubnetC:
+    Type: String
+    Description: >-
+      (optional) The availability zone A subnet to place a NAT in
+    Default: ""
+
+  SubnetD:
+    Type: String
+    Description: >-
+      (optional) The availability zone A subnet to place a NAT in
+    Default: ""
+
+  SubnetE:
+    Type: String
+    Description: >-
+      (optional) The availability zone A subnet to place a NAT in
+    Default: ""
+
+  AvailabilityZonePlacement:
+    Type: String
+    Description: >-
+      The availability zone that the NAT is active in. It's useful to change
+      this value if the current AZ goes down, or if you want to save money and
+      use a single AZ. NOTE: the subnet must be specified for you to move over
+      to it. Setting all will place a NAT on all specified subnets
+    Default: all
+    AllowedValues:
+      - all
+      - a
+      - b
+      - c
+      - d
+      - e
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  IsPublic: !Equals [!Ref ConnectivityType, "public"]
+  SpecifySubnetA: !Not [!Equals [!Ref SubnetA, ""]]
+  SpecifySubnetB: !Not [!Equals [!Ref SubnetB, ""]]
+  SpecifySubnetC: !Not [!Equals [!Ref SubnetC, ""]]
+  SpecifySubnetD: !Not [!Equals [!Ref SubnetD, ""]]
+  SpecifySubnetE: !Not [!Equals [!Ref SubnetE, ""]]
+  SpecifyNatA: !And
+    - !Condition SpecifySubnetA
+    - !Or
+      - !Equals [!Ref AvailabilityZonePlacement, "all"]
+      - !Equals [!Ref AvailabilityZonePlacement, "a"]
+  SpecifyNatB: !And
+    - !Condition SpecifySubnetB
+    - !Or
+      - !Equals [!Ref AvailabilityZonePlacement, "all"]
+      - !Equals [!Ref AvailabilityZonePlacement, "b"]
+  SpecifyNatC: !And
+    - !Condition SpecifySubnetC
+    - !Or
+      - !Equals [!Ref AvailabilityZonePlacement, "all"]
+      - !Equals [!Ref AvailabilityZonePlacement, "c"]
+  SpecifyNatD: !And
+    - !Condition SpecifySubnetD
+    - !Or
+      - !Equals [!Ref AvailabilityZonePlacement, "all"]
+      - !Equals [!Ref AvailabilityZonePlacement, "d"]
+  SpecifyNatE: !And
+    - !Condition SpecifySubnetE
+    - !Or
+      - !Equals [!Ref AvailabilityZonePlacement, "all"]
+      - !Equals [!Ref AvailabilityZonePlacement, "e"]
+  SpecifyNatEipA: !And 
+    - !Condition IsPublic
+    - !Condition SpecifyNatA
+  SpecifyNatEipB: !And 
+    - !Condition IsPublic
+    - !Condition SpecifyNatB
+  SpecifyNatEipC: !And 
+    - !Condition IsPublic
+    - !Condition SpecifyNatC
+  SpecifyNatEipD: !And 
+    - !Condition IsPublic
+    - !Condition SpecifyNatD
+  SpecifyNatEipE: !And 
+    - !Condition IsPublic
+    - !Condition SpecifyNatE
+
+Resources:
+  natEipA:
+    Condition: SpecifyNatEipA
+    Type: "AWS::EC2::EIP"
+    Properties:
+      Domain: !Ref VpcId
+
+  natEipB:
+    Condition: SpecifyNatEipB
+    Type: "AWS::EC2::EIP"
+    Properties:
+      Domain: !Ref VpcId
+
+  natEipC:
+    Condition: SpecifyNatEipC
+    Type: "AWS::EC2::EIP"
+    Properties:
+      Domain: !Ref VpcId
+
+  natEipD:
+    Condition: SpecifyNatEipD
+    Type: "AWS::EC2::EIP"
+    Properties:
+      Domain: !Ref VpcId
+
+  natEipE:
+    Condition: SpecifyNatEipE
+    Type: "AWS::EC2::EIP"
+    Properties:
+      Domain: !Ref VpcId
+
+  natGatewayA:
+    Condition: SpecifyNatA
+    Type: "AWS::EC2::NatGateway"
+    Properties:
+      AllocationId: !GetAtt natEipA.AllocationId
+      ConnectivityType: !Ref ConnectivityType
+      SubnetId: !Ref SubnetA
+
+  natGatewayB:
+    Condition: SpecifyNatB
+    Type: "AWS::EC2::NatGateway"
+    Properties:
+      AllocationId: !GetAtt natEipB.AllocationId
+      ConnectivityType: !Ref ConnectivityType
+      SubnetId: !Ref SubnetB
+
+  natGatewayC:
+    Condition: SpecifyNatC
+    Type: "AWS::EC2::NatGateway"
+    Properties:
+      AllocationId: !GetAtt natEipC.AllocationId
+      ConnectivityType: !Ref ConnectivityType
+      SubnetId: !Ref SubnetC
+
+  natGatewayD:
+    Condition: SpecifyNatD
+    Type: "AWS::EC2::NatGateway"
+    Properties:
+      AllocationId: !GetAtt natEipD.AllocationId
+      ConnectivityType: !Ref ConnectivityType
+      SubnetId: !Ref SubnetD
+
+  natGatewayE:
+    Condition: SpecifyNatE
+    Type: "AWS::EC2::NatGateway"
+    Properties:
+      AllocationId: !GetAtt natEipE.AllocationId
+      ConnectivityType: !Ref ConnectivityType
+      SubnetId: !Ref SubnetE
+
+# Outputs
+  # NOTE: leave empty until we need it

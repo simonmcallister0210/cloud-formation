@@ -1,0 +1,91 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Prefix list for IPv4 CIDRs
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: Prefix List Parameters
+        Parameters:
+          - PrefixListName
+          - CidrBlocks
+          - MaxEntries
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  PrefixListName:
+    Type: String
+    Description: >-
+      Name of the prefix list. Will be used to name resources, for example a
+      prefix list name of "test" would generate "test-pl", etc.
+    Default: ""
+
+  CidrBlocks:
+    Type: CommaDelimitedList
+    Description: IPv4 CIDR block entries
+    Default: ",,,,"
+
+  MaxEntries:
+    Type: Number
+    Description: The maximum number of entries for the prefix list
+
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  SpecifyCidrBlock1: !Not [!Equals [!Select [0, !Ref CidrBlocks], ""]]
+  SpecifyCidrBlock2: !Not [!Equals [!Select [1, !Ref CidrBlocks], ""]]
+  SpecifyCidrBlock3: !Not [!Equals [!Select [2, !Ref CidrBlocks], ""]]
+  SpecifyCidrBlock4: !Not [!Equals [!Select [3, !Ref CidrBlocks], ""]]
+  SpecifyCidrBlock5: !Not [!Equals [!Select [4, !Ref CidrBlocks], ""]]
+
+Resources:
+
+  prefixList:
+    Type: AWS::EC2::PrefixList
+    Properties:
+      AddressFamily: IPv4
+      Entries:
+        - !If
+          - SpecifyCidrBlock1
+          - Cidr: !Select [0, !Ref CidrBlocks]
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyCidrBlock2
+          - Cidr: !Select [1, !Ref CidrBlocks]
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyCidrBlock3
+          - Cidr: !Select [2, !Ref CidrBlocks]
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyCidrBlock4
+          - Cidr: !Select [3, !Ref CidrBlocks]
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyCidrBlock5
+          - Cidr: !Select [4, !Ref CidrBlocks]
+          - !Ref "AWS::NoValue"
+        
+      MaxEntries: !Ref MaxEntries
+      PrefixListName: !Sub "${PrefixListName}-pl"
+
+Outputs:
+  prefixListId:
+    Value: !Ref prefixList
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-prefixListId", !Sub "${AWS::StackName}-prefixListId"]
+
+  prefixListArn:
+    Value: !GetAtt prefixList.Arn
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-prefixListArn", !Sub "${AWS::StackName}-prefixListArn"]

@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Route table
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: Route Table Parameters
+        Parameters:
+          - VpcId
+          - SubnetId
+          - RouteTableName
+          - RouteTableSuffix
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: Name of the parent stack. (used for exports)
+
+  VpcId:
+    Type: String
+    Description: ID of the VPC to associate with the route table
+
+  SubnetId:
+    Type: String
+    Description: ID of the subnet to associate with the route table
+
+  RouteTableName:
+    Type: String
+    Description: >-
+      Name of the route table. Will be used to name resources, for example a
+      route table name of "test" would generate "test-rt-xyz", etc.
+
+  RouteTableSuffix:
+    Type: String
+    Description: >-
+      Suffix of the route table. Will be used to name resources, for example a
+      route table suffix of "a" would generate "xyz-rt-a", etc. Useful for
+      denoting AZ
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+
+Resources:
+  routeTable:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${RouteTableName}-rt-${RouteTableSuffix}"
+      VpcId: !Ref VpcId
+
+  routeTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref routeTable
+      SubnetId: !Ref SubnetId
+
+Outputs:
+  RouteTableId:
+    Value: !Ref routeTable
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-RouteTableId-${RouteTableSuffix}", !Sub "${AWS::StackName}-RouteTableId-${RouteTableSuffix}"]
+
+
+

@@ -1,0 +1,983 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  Specifies a listener rule. The listener must be associated with an
+  Application Load Balancer. Each rule consists of a priority, one or more
+  actions, and one or more conditions
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: Listener Rule Parameters
+        Parameters:
+          - ListenerArn
+          - Priority
+      - Label:
+          default: Condition 1
+        Parameters:
+          - RuleCondition1Field
+          - RuleCondition1Values
+          - RuleCondition1HttpHeaderName
+      - Label:
+          default: Condition 2
+        Parameters:
+          - RuleCondition2Field
+          - RuleCondition2Values
+          - RuleCondition2HttpHeaderName
+      - Label:
+          default: Condition 3
+        Parameters:
+          - RuleCondition3Field
+          - RuleCondition3Values
+          - RuleCondition3HttpHeaderName
+      - Label:
+          default: Condition 4
+        Parameters:
+          - RuleCondition4Field
+          - RuleCondition4Values
+          - RuleCondition4HttpHeaderName
+      - Label:
+          default: Condition 5
+        Parameters:
+          - RuleCondition5Field
+          - RuleCondition5Values
+          - RuleCondition5HttpHeaderName
+      - Label:
+          default: Condition 6
+        Parameters:
+          - RuleCondition6Field
+          - RuleCondition6Values
+          - RuleCondition6HttpHeaderName
+      - Label:
+          default: Condition 7
+        Parameters:
+          - RuleCondition7Field
+          - RuleCondition7Values
+          - RuleCondition7HttpHeaderName
+      - Label:
+          default: Condition 8
+        Parameters:
+          - RuleCondition8Field
+          - RuleCondition8Values
+          - RuleCondition8HttpHeaderName
+      - Label:
+          default: Condition 9
+        Parameters:
+          - RuleCondition9Field
+          - RuleCondition9Values
+          - RuleCondition9HttpHeaderName
+      - Label:
+          default: Condition 10
+        Parameters:
+          - RuleCondition10Field
+          - RuleCondition10Values
+          - RuleCondition10HttpHeaderName
+      - Label:
+          default: Auth Action
+        Parameters:
+          - RuleAuthActionType
+          - RuleAuthActionValues
+      - Label:
+          default: Handle Action
+        Parameters:
+          - RuleHandleActionType
+          - RuleHandleActionValues
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  ListenerArn:
+    Type: String
+    Description: The Amazon Resource Name (ARN) of the listener
+
+  Priority:
+    Type: Number
+    Description: >-
+      The rule priority. A listener can't have multiple rules with the same
+      priority. NOTE: If you try to reorder rules by updating their priorities,
+      do not specify a new priority if an existing rule already uses this
+      priority, as this can cause an error. If you need to reuse a priority with
+      a different rule, you must remove it as a priority first, and then specify
+      it in a subsequent update
+
+  RuleCondition1Field:
+    Type: String
+    Description: The field in the HTTP request to check against
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  RuleCondition1Values:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your condition. Specific values depend on
+      the condition field. NOTE: only one value needs to satisfy the condition.
+      If you need multiple values to be satisfied, specify multiple conditions
+      
+      ... If your condition is host-header, values are one or more host names.
+      The maximum size of each name is 128 characters. The comparison is case
+      insensitive. The following wildcard characters are supported: * (matches 0
+      or more characters) and ? (matches exactly 1 character). Can contain the
+      characters: A-z, a-z, 0-9, -, ., * (matches 0 or more characters), ?
+      (matches exactly 1 character). e.g: *.google.com, www.bing.com
+      
+      ... If your condition is http-header, values are one or more strings to
+      compare against the value of the HTTP header. The maximum size of each
+      string is 128 characters. The comparison strings are case insensitive. The
+      following wildcard characters are supported: * (matches 0 or more
+      characters) and ? (matches exactly 1 character). If the same header
+      appears multiple times in the request, we search them in order until a
+      match is found. e.g: if header is Sec-CH-UA-Platform then values might be
+      "Android", "Chrome OS", "iOS"
+      
+      ... If your condition is http-request-method, values are the name of the
+      request method. The maximum size is 40 characters. The allowed characters
+      are A-Z, hyphen (-), and underscore (_). The comparison is case sensitive.
+      Wildcards are not supported; therefore, the method name must be an exact
+      match. We recommend that you route GET and HEAD requests in the same way,
+      because the response to a HEAD request may be cached. e.g.: GET, HEAD,
+      POST
+      
+      ... If your condition is path-pattern, values are one or more path
+      patterns to compare against the request URL. The maximum size of each
+      string is 128 characters. The comparison is case sensitive. The following
+      wildcard characters are supported: * (matches 0 or more characters) and ?
+      (matches exactly 1 character). The path pattern is compared only to the
+      path of the URL, not to its query string. Can contain the characters: A-Z,
+      a-z, 0-9, _, -, ., $, /, ~, ", ', @, :, +, & (using &amp;), * (matches 0
+      or more characters), ? (matches exactly 1 character). e.g.: /football/*,
+      /Football/*, /soccer/*, /Soccer/*
+      
+      ... If your condition is query-string, values are *ONE* key value pair, in
+      respectively. The maximum size of each string is 128 characters. The
+      comparison is case insensitive. The following wildcard characters are
+      supported: * (matches 0 or more characters) and ? (matches exactly 1
+      character). To search for a literal '*' or '?' character in a query string
+      you must escape these characters in Values using a '\' character. e.g:
+      region, europe
+      
+      ... If your condition is source-ip, values are one or more source IP
+      addresses, in CIDR format. You can use both IPv4 and IPv6 addresses.
+      Wildcards are not supported. This condition is not satisfied by the
+      addresses in the X-Forwarded-For header. e.g. 12.34.56.78/32,
+      11.22.33.44/24
+    Default: ",,,,"
+  
+  RuleCondition1HttpHeaderName:
+    Type: String
+    Description: >-
+      (conditional: only specify if Field is http-header) The name of the HTTP
+      header field. The maximum size is 40 characters. The header name is case
+      insensitive. The allowed characters are specified by RFC 7230. Wildcards are
+      not supported
+    Default: ""
+
+  RuleCondition2Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+
+  RuleCondition2Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+
+  RuleCondition2HttpHeaderName:
+    Type: String
+    Default: ""
+
+  RuleCondition3Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  RuleCondition3Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  RuleCondition3HttpHeaderName:
+    Type: String
+    Default: ""
+
+  RuleCondition4Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  RuleCondition4Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  RuleCondition4HttpHeaderName:
+    Type: String
+    Default: ""
+
+  RuleCondition5Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  RuleCondition5Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  RuleCondition5HttpHeaderName:
+    Type: String
+    Default: ""
+
+  RuleCondition6Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  RuleCondition6Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  RuleCondition6HttpHeaderName:
+    Type: String
+    Default: ""
+
+  RuleCondition7Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  RuleCondition7Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  RuleCondition7HttpHeaderName:
+    Type: String
+    Default: ""
+
+  RuleCondition8Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  RuleCondition8Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  RuleCondition8HttpHeaderName:
+    Type: String
+    Default: ""
+
+  RuleCondition9Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  RuleCondition9Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  RuleCondition9HttpHeaderName:
+    Type: String
+    Default: ""
+
+  RuleCondition10Field:
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - host-header
+      - http-header
+      - http-request-method
+      - path-pattern
+      - query-string
+      - source-ip
+  
+  RuleCondition10Values:
+    Type: CommaDelimitedList
+    Default: ",,,,"
+  
+  RuleCondition10HttpHeaderName:
+    Type: String
+    Default: ""
+
+  RuleAuthActionType:
+    Type: String
+    Description: The type of action
+    Default: none
+    AllowedValues:
+      - none
+      - authenticate-cognito
+      - authenticate-oidc
+
+  RuleAuthActionValues:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your action. Specific values depend on the
+      action type.
+      
+      ... If your action is authenticate-cognito, values are:
+      USER_POOL_ARN, USER_POOL_CLIENT_ID, USER_POOL_DOMAIN, [ON_UNAUTH_REQUEST, SCOPE, SESSION_COOKIE_NAME, SESSION_TIMEOUT] .
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-authenticatecognitoconfig.html
+      
+      ... If your action is authenticate-oidc, values are:
+      ISSUER, AUTH_ENDPOINT, TOKEN_ENDPOINT, USER_INFO_ENDPOINT, CLIENT_ID, CLIENT_SECRET, [ON_UNAUTH_REQUEST, SCOPE, SESSION_COOKIE_NAME, SESSION_TIMEOUT, USE_EXISTING_CLIENT_SECRET] .
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-authenticateoidcconfig.html
+    Default: ",,,,,,,,,,"
+
+  RuleHandleActionType:
+    Type: String
+    Description: The type of action
+    Default: fixed-response
+    AllowedValues:
+      - fixed-response
+      - forward
+      - redirect
+
+  RuleHandleActionValues:
+    Type: CommaDelimitedList
+    Description: >-
+      Specifies values necessary for your action. Specific values depend on the
+      action type.
+      
+      ... If your action is fixed-response, values are:
+      STATUS_CODE, [CONTENT_TYPE, MESSAGE_BODY] . e.g: 404 text/plain, not found
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-fixedresponseconfig.html
+      
+      ... If your action is forward, values are:
+      STICKINESS_ENABLED, [STICKINESS_DURATION_SECS, TARGET_GROUP_ARN_1, WEIGHT_1, TARGET_GROUP_ARN_2, WEIGHT_2, TARGET_GROUP_ARN_3, WEIGHT_3] . e.g: false,,arn-123,9,arn-456,1
+      NOTE: WEIGHT_N is requied if TARGET_GROUP_N is specified. Look here to see
+      what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-forwardconfig.html
+      
+      ... If your action is redirect, values are:
+      STATUS_CODE, [PROTOCOL, HOST, PORT, PATH, QUERY] . e.g.: 301,HTTPS,#{host},443,#{path},#{query}
+      Look here to see what these values specify:
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-elasticloadbalancingv2-listenerrule-redirectconfig.html
+    Default: ",,,,,,,"
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  # Condition 1
+  SpecifyRuleCondition1: !Not [!Equals [!Ref RuleCondition1Field, "none"]]
+  SpecifyRuleCondition1AsHostHeader: !Equals [!Ref RuleCondition1Field, "host-header"]
+  SpecifyRuleCondition1AsHttpHeader: !Equals [!Ref RuleCondition1Field, "http-header"]
+  SpecifyRuleCondition1AsRequestMethod: !Equals [!Ref RuleCondition1Field, "http-request-method"]
+  SpecifyRuleCondition1AsPathPattern: !Equals [!Ref RuleCondition1Field, "path-pattern"]
+  SpecifyRuleCondition1AsQueryString: !Equals [!Ref RuleCondition1Field, "query-string"]
+  SpecifyRuleCondition1AsSourceIpConfig: !Equals [!Ref RuleCondition1Field, "source-ip"]
+  # Condition 2
+  SpecifyRuleCondition2: !Not [!Equals [!Ref RuleCondition2Field, "none"]]
+  SpecifyRuleCondition2AsHostHeader: !Equals [!Ref RuleCondition2Field, "host-header"]
+  SpecifyRuleCondition2AsHttpHeader: !Equals [!Ref RuleCondition2Field, "http-header"]
+  SpecifyRuleCondition2AsRequestMethod: !Equals [!Ref RuleCondition2Field, "http-request-method"]
+  SpecifyRuleCondition2AsPathPattern: !Equals [!Ref RuleCondition2Field, "path-pattern"]
+  SpecifyRuleCondition2AsQueryString: !Equals [!Ref RuleCondition2Field, "query-string"]
+  SpecifyRuleCondition2AsSourceIpConfig: !Equals [!Ref RuleCondition2Field, "source-ip"]
+  # Condition 3
+  SpecifyRuleCondition3: !Not [!Equals [!Ref RuleCondition3Field, "none"]]
+  SpecifyRuleCondition3AsHostHeader: !Equals [!Ref RuleCondition3Field, "host-header"]
+  SpecifyRuleCondition3AsHttpHeader: !Equals [!Ref RuleCondition3Field, "http-header"]
+  SpecifyRuleCondition3AsRequestMethod: !Equals [!Ref RuleCondition3Field, "http-request-method"]
+  SpecifyRuleCondition3AsPathPattern: !Equals [!Ref RuleCondition3Field, "path-pattern"]
+  SpecifyRuleCondition3AsQueryString: !Equals [!Ref RuleCondition3Field, "query-string"]
+  SpecifyRuleCondition3AsSourceIpConfig: !Equals [!Ref RuleCondition3Field, "source-ip"]
+  # Condition 4
+  SpecifyRuleCondition4: !Not [!Equals [!Ref RuleCondition4Field, "none"]]
+  SpecifyRuleCondition4AsHostHeader: !Equals [!Ref RuleCondition4Field, "host-header"]
+  SpecifyRuleCondition4AsHttpHeader: !Equals [!Ref RuleCondition4Field, "http-header"]
+  SpecifyRuleCondition4AsRequestMethod: !Equals [!Ref RuleCondition4Field, "http-request-method"]
+  SpecifyRuleCondition4AsPathPattern: !Equals [!Ref RuleCondition4Field, "path-pattern"]
+  SpecifyRuleCondition4AsQueryString: !Equals [!Ref RuleCondition4Field, "query-string"]
+  SpecifyRuleCondition4AsSourceIpConfig: !Equals [!Ref RuleCondition4Field, "source-ip"]
+  # Condition 5
+  SpecifyRuleCondition5: !Not [!Equals [!Ref RuleCondition5Field, "none"]]
+  SpecifyRuleCondition5AsHostHeader: !Equals [!Ref RuleCondition5Field, "host-header"]
+  SpecifyRuleCondition5AsHttpHeader: !Equals [!Ref RuleCondition5Field, "http-header"]
+  SpecifyRuleCondition5AsRequestMethod: !Equals [!Ref RuleCondition5Field, "http-request-method"]
+  SpecifyRuleCondition5AsPathPattern: !Equals [!Ref RuleCondition5Field, "path-pattern"]
+  SpecifyRuleCondition5AsQueryString: !Equals [!Ref RuleCondition5Field, "query-string"]
+  SpecifyRuleCondition5AsSourceIpConfig: !Equals [!Ref RuleCondition5Field, "source-ip"]
+  # Condition 6
+  SpecifyRuleCondition6: !Not [!Equals [!Ref RuleCondition6Field, "none"]]
+  SpecifyRuleCondition6AsHostHeader: !Equals [!Ref RuleCondition6Field, "host-header"]
+  SpecifyRuleCondition6AsHttpHeader: !Equals [!Ref RuleCondition6Field, "http-header"]
+  SpecifyRuleCondition6AsRequestMethod: !Equals [!Ref RuleCondition6Field, "http-request-method"]
+  SpecifyRuleCondition6AsPathPattern: !Equals [!Ref RuleCondition6Field, "path-pattern"]
+  SpecifyRuleCondition6AsQueryString: !Equals [!Ref RuleCondition6Field, "query-string"]
+  SpecifyRuleCondition6AsSourceIpConfig: !Equals [!Ref RuleCondition6Field, "source-ip"]
+  # Condition 7
+  SpecifyRuleCondition7: !Not [!Equals [!Ref RuleCondition7Field, "none"]]
+  SpecifyRuleCondition7AsHostHeader: !Equals [!Ref RuleCondition7Field, "host-header"]
+  SpecifyRuleCondition7AsHttpHeader: !Equals [!Ref RuleCondition7Field, "http-header"]
+  SpecifyRuleCondition7AsRequestMethod: !Equals [!Ref RuleCondition7Field, "http-request-method"]
+  SpecifyRuleCondition7AsPathPattern: !Equals [!Ref RuleCondition7Field, "path-pattern"]
+  SpecifyRuleCondition7AsQueryString: !Equals [!Ref RuleCondition7Field, "query-string"]
+  SpecifyRuleCondition7AsSourceIpConfig: !Equals [!Ref RuleCondition7Field, "source-ip"]
+  # Condition 8
+  SpecifyRuleCondition8: !Not [!Equals [!Ref RuleCondition8Field, "none"]]
+  SpecifyRuleCondition8AsHostHeader: !Equals [!Ref RuleCondition8Field, "host-header"]
+  SpecifyRuleCondition8AsHttpHeader: !Equals [!Ref RuleCondition8Field, "http-header"]
+  SpecifyRuleCondition8AsRequestMethod: !Equals [!Ref RuleCondition8Field, "http-request-method"]
+  SpecifyRuleCondition8AsPathPattern: !Equals [!Ref RuleCondition8Field, "path-pattern"]
+  SpecifyRuleCondition8AsQueryString: !Equals [!Ref RuleCondition8Field, "query-string"]
+  SpecifyRuleCondition8AsSourceIpConfig: !Equals [!Ref RuleCondition8Field, "source-ip"]
+  # Condition 9
+  SpecifyRuleCondition9: !Not [!Equals [!Ref RuleCondition9Field, "none"]]
+  SpecifyRuleCondition9AsHostHeader: !Equals [!Ref RuleCondition9Field, "host-header"]
+  SpecifyRuleCondition9AsHttpHeader: !Equals [!Ref RuleCondition9Field, "http-header"]
+  SpecifyRuleCondition9AsRequestMethod: !Equals [!Ref RuleCondition9Field, "http-request-method"]
+  SpecifyRuleCondition9AsPathPattern: !Equals [!Ref RuleCondition9Field, "path-pattern"]
+  SpecifyRuleCondition9AsQueryString: !Equals [!Ref RuleCondition9Field, "query-string"]
+  SpecifyRuleCondition9AsSourceIpConfig: !Equals [!Ref RuleCondition9Field, "source-ip"]
+  # Condition 10
+  SpecifyRuleCondition10: !Not [!Equals [!Ref RuleCondition10Field, "none"]]
+  SpecifyRuleCondition10AsHostHeader: !Equals [!Ref RuleCondition10Field, "host-header"]
+  SpecifyRuleCondition10AsHttpHeader: !Equals [!Ref RuleCondition10Field, "http-header"]
+  SpecifyRuleCondition10AsRequestMethod: !Equals [!Ref RuleCondition10Field, "http-request-method"]
+  SpecifyRuleCondition10AsPathPattern: !Equals [!Ref RuleCondition10Field, "path-pattern"]
+  SpecifyRuleCondition10AsQueryString: !Equals [!Ref RuleCondition10Field, "query-string"]
+  SpecifyRuleCondition10AsSourceIpConfig: !Equals [!Ref RuleCondition10Field, "source-ip"]
+  # Auth Action
+  SpecifyRuleAuthAction: !Not [!Equals [!Ref RuleAuthActionType, "none"]]
+  SpecifyRuleAuthActionAsAuthenticateCognito: !Equals [!Ref RuleAuthActionType, "authenticate-cognito"]
+  SpecifyRuleAuthActionAsAuthenticateOidc: !Equals [!Ref RuleAuthActionType, "authenticate-oidc"]
+  SpecifyRuleAuthActionValue1: !Not [!Equals [!Select [0, !Ref RuleAuthActionValues], ""]]
+  SpecifyRuleAuthActionValue2: !Not [!Equals [!Select [1, !Ref RuleAuthActionValues], ""]]
+  SpecifyRuleAuthActionValue3: !Not [!Equals [!Select [2, !Ref RuleAuthActionValues], ""]]
+  SpecifyRuleAuthActionValue4: !Not [!Equals [!Select [3, !Ref RuleAuthActionValues], ""]]
+  SpecifyRuleAuthActionValue5: !Not [!Equals [!Select [4, !Ref RuleAuthActionValues], ""]]
+  SpecifyRuleAuthActionValue6: !Not [!Equals [!Select [5, !Ref RuleAuthActionValues], ""]]
+  SpecifyRuleAuthActionValue7: !Not [!Equals [!Select [6, !Ref RuleAuthActionValues], ""]]
+  SpecifyRuleAuthActionValue8: !Not [!Equals [!Select [7, !Ref RuleAuthActionValues], ""]]
+  SpecifyRuleAuthActionValue9: !Not [!Equals [!Select [8, !Ref RuleAuthActionValues], ""]]
+  SpecifyRuleAuthActionValue10: !Not [!Equals [!Select [9, !Ref RuleAuthActionValues], ""]]
+  SpecifyRuleAuthActionValue11: !Not [!Equals [!Select [10, !Ref RuleAuthActionValues], ""]]
+  # Handle Action
+  SpecifyRuleHandleActionAsAuthenticateCognito: !Equals [!Ref RuleHandleActionType, "authenticate-cognito"]
+  SpecifyRuleHandleActionAsAuthenticateOidc: !Equals [!Ref RuleHandleActionType, "authenticate-oidc"]
+  SpecifyRuleHandleActionAsAuthenticateFixedResponse: !Equals [!Ref RuleHandleActionType, "fixed-response"]
+  SpecifyRuleHandleActionAsAuthenticateFoward: !Equals [!Ref RuleHandleActionType, "forward"]
+  SpecifyRuleHandleActionAsAuthenticateRedirect: !Equals [!Ref RuleHandleActionType, "redirect"]
+  SpecifyRuleHandleActionValue1: !Not [!Equals [!Select [0, !Ref RuleHandleActionValues], ""]]
+  SpecifyRuleHandleActionValue2: !Not [!Equals [!Select [1, !Ref RuleHandleActionValues], ""]]
+  SpecifyRuleHandleActionValue3: !Not [!Equals [!Select [2, !Ref RuleHandleActionValues], ""]]
+  SpecifyRuleHandleActionValue4: !Not [!Equals [!Select [3, !Ref RuleHandleActionValues], ""]]
+  SpecifyRuleHandleActionValue5: !Not [!Equals [!Select [4, !Ref RuleHandleActionValues], ""]]
+  SpecifyRuleHandleActionValue6: !Not [!Equals [!Select [5, !Ref RuleHandleActionValues], ""]]
+  SpecifyRuleHandleActionValue7: !Not [!Equals [!Select [6, !Ref RuleHandleActionValues], ""]]
+  SpecifyRuleHandleActionValue8: !Not [!Equals [!Select [7, !Ref RuleHandleActionValues], ""]]
+
+
+Resources:
+
+  listenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties: 
+      ListenerArn: String
+      Priority: Integer
+      Conditions: 
+        - !If
+          - SpecifyRuleCondition1
+          - Field: !Ref RuleCondition1Field
+            HostHeaderConfig: !If
+              - SpecifyRuleCondition1AsHostHeader
+              - Values: !Ref RuleCondition1Values
+              - !Ref "AWS::NoValue"
+            HttpHeaderConfig: !If
+              - SpecifyRuleCondition1AsHttpHeader
+              - HttpHeaderName: !Ref RuleCondition1HttpHeaderName
+                Values: !Ref RuleCondition1Values
+              - !Ref "AWS::NoValue"
+            HttpRequestMethodConfig: !If
+              - SpecifyRuleCondition1AsRequestMethod
+              - Values: !Ref RuleCondition1Values
+              - !Ref "AWS::NoValue"
+            PathPatternConfig: !If
+              - SpecifyRuleCondition1AsPathPattern
+              - Values: !Ref RuleCondition1Values
+              - !Ref "AWS::NoValue"
+            QueryStringConfig: !If
+              - SpecifyRuleCondition1AsQueryString
+              - Values:
+                  Key: !Select [0, !Ref RuleCondition1Values]
+                  Value: !Select [1, !Ref RuleCondition1Values]
+              - !Ref "AWS::NoValue"
+            SourceIpConfig: !If
+              - SpecifyRuleCondition1AsSourceIpConfig
+              - Values: !Ref RuleCondition1Values
+              - !Ref "AWS::NoValue"
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyRuleCondition2
+          - Field: !Ref RuleCondition2Field
+            HostHeaderConfig: !If
+              - SpecifyRuleCondition2AsHostHeader
+              - Values: !Ref RuleCondition2Values
+              - !Ref "AWS::NoValue"
+            HttpHeaderConfig: !If
+              - SpecifyRuleCondition2AsHttpHeader
+              - HttpHeaderName: !Ref RuleCondition2HttpHeaderName
+                Values: !Ref RuleCondition2Values
+              - !Ref "AWS::NoValue"
+            HttpRequestMethodConfig: !If
+              - SpecifyRuleCondition2AsRequestMethod
+              - Values: !Ref RuleCondition2Values
+              - !Ref "AWS::NoValue"
+            PathPatternConfig: !If
+              - SpecifyRuleCondition2AsPathPattern
+              - Values: !Ref RuleCondition2Values
+              - !Ref "AWS::NoValue"
+            QueryStringConfig: !If
+              - SpecifyRuleCondition2AsQueryString
+              - Values:
+                  Key: !Select [0, !Ref RuleCondition2Values]
+                  Value: !Select [1, !Ref RuleCondition2Values]
+              - !Ref "AWS::NoValue"
+            SourceIpConfig: !If
+              - SpecifyRuleCondition2AsSourceIpConfig
+              - Values: !Ref RuleCondition2Values
+              - !Ref "AWS::NoValue"
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyRuleCondition3
+          - Field: !Ref RuleCondition3Field
+            HostHeaderConfig: !If
+              - SpecifyRuleCondition3AsHostHeader
+              - Values: !Ref RuleCondition3Values
+              - !Ref "AWS::NoValue"
+            HttpHeaderConfig: !If
+              - SpecifyRuleCondition3AsHttpHeader
+              - HttpHeaderName: !Ref RuleCondition3HttpHeaderName
+                Values: !Ref RuleCondition3Values
+              - !Ref "AWS::NoValue"
+            HttpRequestMethodConfig: !If
+              - SpecifyRuleCondition3AsRequestMethod
+              - Values: !Ref RuleCondition3Values
+              - !Ref "AWS::NoValue"
+            PathPatternConfig: !If
+              - SpecifyRuleCondition3AsPathPattern
+              - Values: !Ref RuleCondition3Values
+              - !Ref "AWS::NoValue"
+            QueryStringConfig: !If
+              - SpecifyRuleCondition3AsQueryString
+              - Values:
+                  Key: !Select [0, !Ref RuleCondition3Values]
+                  Value: !Select [1, !Ref RuleCondition3Values]
+              - !Ref "AWS::NoValue"
+            SourceIpConfig: !If
+              - SpecifyRuleCondition3AsSourceIpConfig
+              - Values: !Ref RuleCondition3Values
+              - !Ref "AWS::NoValue"
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyRuleCondition4
+          - Field: !Ref RuleCondition4Field
+            HostHeaderConfig: !If
+              - SpecifyRuleCondition4AsHostHeader
+              - Values: !Ref RuleCondition4Values
+              - !Ref "AWS::NoValue"
+            HttpHeaderConfig: !If
+              - SpecifyRuleCondition4AsHttpHeader
+              - HttpHeaderName: !Ref RuleCondition4HttpHeaderName
+                Values: !Ref RuleCondition4Values
+              - !Ref "AWS::NoValue"
+            HttpRequestMethodConfig: !If
+              - SpecifyRuleCondition4AsRequestMethod
+              - Values: !Ref RuleCondition4Values
+              - !Ref "AWS::NoValue"
+            PathPatternConfig: !If
+              - SpecifyRuleCondition4AsPathPattern
+              - Values: !Ref RuleCondition4Values
+              - !Ref "AWS::NoValue"
+            QueryStringConfig: !If
+              - SpecifyRuleCondition4AsQueryString
+              - Values:
+                  Key: !Select [0, !Ref RuleCondition4Values]
+                  Value: !Select [1, !Ref RuleCondition4Values]
+              - !Ref "AWS::NoValue"
+            SourceIpConfig: !If
+              - SpecifyRuleCondition4AsSourceIpConfig
+              - Values: !Ref RuleCondition4Values
+              - !Ref "AWS::NoValue"
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyRuleCondition5
+          - Field: !Ref RuleCondition5Field
+            HostHeaderConfig: !If
+              - SpecifyRuleCondition5AsHostHeader
+              - Values: !Ref RuleCondition5Values
+              - !Ref "AWS::NoValue"
+            HttpHeaderConfig: !If
+              - SpecifyRuleCondition5AsHttpHeader
+              - HttpHeaderName: !Ref RuleCondition5HttpHeaderName
+                Values: !Ref RuleCondition5Values
+              - !Ref "AWS::NoValue"
+            HttpRequestMethodConfig: !If
+              - SpecifyRuleCondition5AsRequestMethod
+              - Values: !Ref RuleCondition5Values
+              - !Ref "AWS::NoValue"
+            PathPatternConfig: !If
+              - SpecifyRuleCondition5AsPathPattern
+              - Values: !Ref RuleCondition5Values
+              - !Ref "AWS::NoValue"
+            QueryStringConfig: !If
+              - SpecifyRuleCondition5AsQueryString
+              - Values:
+                  Key: !Select [0, !Ref RuleCondition5Values]
+                  Value: !Select [1, !Ref RuleCondition5Values]
+              - !Ref "AWS::NoValue"
+            SourceIpConfig: !If
+              - SpecifyRuleCondition5AsSourceIpConfig
+              - Values: !Ref RuleCondition5Values
+              - !Ref "AWS::NoValue"
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyRuleCondition6
+          - Field: !Ref RuleCondition6Field
+            HostHeaderConfig: !If
+              - SpecifyRuleCondition6AsHostHeader
+              - Values: !Ref RuleCondition6Values
+              - !Ref "AWS::NoValue"
+            HttpHeaderConfig: !If
+              - SpecifyRuleCondition6AsHttpHeader
+              - HttpHeaderName: !Ref RuleCondition6HttpHeaderName
+                Values: !Ref RuleCondition6Values
+              - !Ref "AWS::NoValue"
+            HttpRequestMethodConfig: !If
+              - SpecifyRuleCondition6AsRequestMethod
+              - Values: !Ref RuleCondition6Values
+              - !Ref "AWS::NoValue"
+            PathPatternConfig: !If
+              - SpecifyRuleCondition6AsPathPattern
+              - Values: !Ref RuleCondition6Values
+              - !Ref "AWS::NoValue"
+            QueryStringConfig: !If
+              - SpecifyRuleCondition6AsQueryString
+              - Values:
+                  Key: !Select [0, !Ref RuleCondition6Values]
+                  Value: !Select [1, !Ref RuleCondition6Values]
+              - !Ref "AWS::NoValue"
+            SourceIpConfig: !If
+              - SpecifyRuleCondition6AsSourceIpConfig
+              - Values: !Ref RuleCondition6Values
+              - !Ref "AWS::NoValue"
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyRuleCondition7
+          - Field: !Ref RuleCondition7Field
+            HostHeaderConfig: !If
+              - SpecifyRuleCondition7AsHostHeader
+              - Values: !Ref RuleCondition7Values
+              - !Ref "AWS::NoValue"
+            HttpHeaderConfig: !If
+              - SpecifyRuleCondition7AsHttpHeader
+              - HttpHeaderName: !Ref RuleCondition7HttpHeaderName
+                Values: !Ref RuleCondition7Values
+              - !Ref "AWS::NoValue"
+            HttpRequestMethodConfig: !If
+              - SpecifyRuleCondition7AsRequestMethod
+              - Values: !Ref RuleCondition7Values
+              - !Ref "AWS::NoValue"
+            PathPatternConfig: !If
+              - SpecifyRuleCondition7AsPathPattern
+              - Values: !Ref RuleCondition7Values
+              - !Ref "AWS::NoValue"
+            QueryStringConfig: !If
+              - SpecifyRuleCondition7AsQueryString
+              - Values:
+                  Key: !Select [0, !Ref RuleCondition7Values]
+                  Value: !Select [1, !Ref RuleCondition7Values]
+              - !Ref "AWS::NoValue"
+            SourceIpConfig: !If
+              - SpecifyRuleCondition7AsSourceIpConfig
+              - Values: !Ref RuleCondition7Values
+              - !Ref "AWS::NoValue"
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyRuleCondition8
+          - Field: !Ref RuleCondition8Field
+            HostHeaderConfig: !If
+              - SpecifyRuleCondition8AsHostHeader
+              - Values: !Ref RuleCondition8Values
+              - !Ref "AWS::NoValue"
+            HttpHeaderConfig: !If
+              - SpecifyRuleCondition8AsHttpHeader
+              - HttpHeaderName: !Ref RuleCondition8HttpHeaderName
+                Values: !Ref RuleCondition8Values
+              - !Ref "AWS::NoValue"
+            HttpRequestMethodConfig: !If
+              - SpecifyRuleCondition8AsRequestMethod
+              - Values: !Ref RuleCondition8Values
+              - !Ref "AWS::NoValue"
+            PathPatternConfig: !If
+              - SpecifyRuleCondition8AsPathPattern
+              - Values: !Ref RuleCondition8Values
+              - !Ref "AWS::NoValue"
+            QueryStringConfig: !If
+              - SpecifyRuleCondition8AsQueryString
+              - Values:
+                  Key: !Select [0, !Ref RuleCondition8Values]
+                  Value: !Select [1, !Ref RuleCondition8Values]
+              - !Ref "AWS::NoValue"
+            SourceIpConfig: !If
+              - SpecifyRuleCondition8AsSourceIpConfig
+              - Values: !Ref RuleCondition8Values
+              - !Ref "AWS::NoValue"
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyRuleCondition9
+          - Field: !Ref RuleCondition9Field
+            HostHeaderConfig: !If
+              - SpecifyRuleCondition9AsHostHeader
+              - Values: !Ref RuleCondition9Values
+              - !Ref "AWS::NoValue"
+            HttpHeaderConfig: !If
+              - SpecifyRuleCondition9AsHttpHeader
+              - HttpHeaderName: !Ref RuleCondition9HttpHeaderName
+                Values: !Ref RuleCondition9Values
+              - !Ref "AWS::NoValue"
+            HttpRequestMethodConfig: !If
+              - SpecifyRuleCondition9AsRequestMethod
+              - Values: !Ref RuleCondition9Values
+              - !Ref "AWS::NoValue"
+            PathPatternConfig: !If
+              - SpecifyRuleCondition9AsPathPattern
+              - Values: !Ref RuleCondition9Values
+              - !Ref "AWS::NoValue"
+            QueryStringConfig: !If
+              - SpecifyRuleCondition9AsQueryString
+              - Values:
+                  Key: !Select [0, !Ref RuleCondition9Values]
+                  Value: !Select [1, !Ref RuleCondition9Values]
+              - !Ref "AWS::NoValue"
+            SourceIpConfig: !If
+              - SpecifyRuleCondition9AsSourceIpConfig
+              - Values: !Ref RuleCondition9Values
+              - !Ref "AWS::NoValue"
+          - !Ref "AWS::NoValue"
+        - !If
+          - SpecifyRuleCondition10
+          - Field: !Ref RuleCondition10Field
+            HostHeaderConfig: !If
+              - SpecifyRuleCondition10AsHostHeader
+              - Values: !Ref RuleCondition10Values
+              - !Ref "AWS::NoValue"
+            HttpHeaderConfig: !If
+              - SpecifyRuleCondition10AsHttpHeader
+              - HttpHeaderName: !Ref RuleCondition10HttpHeaderName
+                Values: !Ref RuleCondition10Values
+              - !Ref "AWS::NoValue"
+            HttpRequestMethodConfig: !If
+              - SpecifyRuleCondition10AsRequestMethod
+              - Values: !Ref RuleCondition10Values
+              - !Ref "AWS::NoValue"
+            PathPatternConfig: !If
+              - SpecifyRuleCondition10AsPathPattern
+              - Values: !Ref RuleCondition10Values
+              - !Ref "AWS::NoValue"
+            QueryStringConfig: !If
+              - SpecifyRuleCondition10AsQueryString
+              - Values:
+                  Key: !Select [0, !Ref RuleCondition10Values]
+                  Value: !Select [1, !Ref RuleCondition10Values]
+              - !Ref "AWS::NoValue"
+            SourceIpConfig: !If
+              - SpecifyRuleCondition10AsSourceIpConfig
+              - Values: !Ref RuleCondition10Values
+              - !Ref "AWS::NoValue"
+          - !Ref "AWS::NoValue"
+      Actions: 
+        - !If
+          - SpecifyRuleAuthAction
+          - Type: !Ref RuleAuthActionType
+            Order: 1
+            AuthenticateCognitoConfig: !If
+              - SpecifyRuleAuthActionAsAuthenticateCognito
+              - # AuthenticationRequestExtraParams: 
+                #   Key : Value
+                UserPoolArn:      !Select [0, !Ref RuleAuthActionValues]
+                UserPoolClientId: !Select [1, !Ref RuleAuthActionValues]
+                UserPoolDomain:   !Select [2, !Ref RuleAuthActionValues]
+                OnUnauthenticatedRequest: !If
+                  - SpecifyRuleAuthActionValue4
+                  - !Select [3, !Ref RuleAuthActionValues]
+                  - !Ref "AWS::NoValue"
+                Scope: !If
+                  - SpecifyRuleAuthActionValue5
+                  - !Select [4, !Ref RuleAuthActionValues]
+                  - !Ref "AWS::NoValue"
+                SessionCookieName: !If
+                  - SpecifyRuleAuthActionValue6
+                  - !Select [5, !Ref RuleAuthActionValues]
+                  - !Ref "AWS::NoValue"
+                SessionTimeout: !If
+                  - SpecifyRuleAuthActionValue7
+                  - !Select [6, !Ref RuleAuthActionValues]
+                  - !Ref "AWS::NoValue"
+              - !Ref "AWS::NoValue"
+            AuthenticateOidcConfig: !If
+              - SpecifyRuleAuthActionAsAuthenticateOidc
+              - # AuthenticationRequestExtraParams: 
+                #   Key : Value
+                Issuer:                !Select [0, !Ref RuleAuthActionValues]
+                AuthorizationEndpoint: !Select [1, !Ref RuleAuthActionValues]
+                TokenEndpoint:         !Select [2, !Ref RuleAuthActionValues]
+                UserInfoEndpoint:      !Select [3, !Ref RuleAuthActionValues]
+                ClientId:              !Select [4, !Ref RuleAuthActionValues]
+                ClientSecret:          !Select [5, !Ref RuleAuthActionValues]
+                OnUnauthenticatedRequest: !If
+                - SpecifyRuleAuthActionValue7
+                - !Select [6, !Ref RuleAuthActionValues]
+                - !Ref "AWS::NoValue"
+                Scope: !If
+                - SpecifyRuleAuthActionValue8
+                - !Select [7, !Ref RuleAuthActionValues]
+                - !Ref "AWS::NoValue"
+                SessionCookieName: !If
+                - SpecifyRuleAuthActionValue9
+                - !Select [8, !Ref RuleAuthActionValues]
+                - !Ref "AWS::NoValue"
+                SessionTimeout: !If
+                - SpecifyRuleAuthActionValue10
+                - !Select [9, !Ref RuleAuthActionValues]
+                - !Ref "AWS::NoValue"
+                UseExistingClientSecret: !If
+                - SpecifyRuleAuthActionValue11
+                - !Select [10, !Ref RuleAuthActionValues]
+                - !Ref "AWS::NoValue"
+              - !Ref "AWS::NoValue"
+          - !Ref "AWS::NoValue"
+        - Type: !Ref RuleHandleActionType
+          Order: 2
+          FixedResponseConfig: !If
+            - SpecifyRuleHandleActionAsFixedResponse
+            - ContentType: String
+              MessageBody: String
+              StatusCode: String
+            - !Ref "AWS::NoValue"
+          ForwardConfig: !If
+            - SpecifyRuleHandleActionAsForward
+            - TargetGroupStickinessConfig:
+                Enabled: !Select [0, !Ref RuleHandleActionValues] 
+                DurationSeconds: !If
+                  - SpecifyRuleHandleActionValue2
+                  - !Select [1, !Ref RuleHandleActionValues]
+                  - !Ref "AWS::NoValue"
+              TargetGroups: 
+                - !If
+                  - SpecifyRuleHandleActionValue3
+                  - TargetGroupArn: !Select [2, !Ref RuleHandleActionValues]
+                    Weight:         !Select [3, !Ref RuleHandleActionValues]
+                  - !Ref "AWS::NoValue"
+                - !If
+                  - SpecifyRuleHandleActionValue5
+                  - TargetGroupArn: !Select [4, !Ref RuleHandleActionValues]
+                    Weight:         !Select [5, !Ref RuleHandleActionValues]
+                  - !Ref "AWS::NoValue"
+                - !If
+                  - SpecifyRuleHandleActionValue7
+                  - TargetGroupArn: !Select [6, !Ref RuleHandleActionValues]
+                    Weight:         !Select [7, !Ref RuleHandleActionValues]
+                  - !Ref "AWS::NoValue"
+            - !Ref "AWS::NoValue"
+          RedirectConfig: !If
+            - SpecifyRuleHandleActionAsRedirect
+            - StatusCode: !Select [0, !Ref RuleHandleActionValues] 
+              Protocol: !If
+              - SpecifyRuleHandleActionValue2
+              - !Select [1, !Ref RuleHandleActionValues]
+              - !Ref "AWS::NoValue"
+              Host: !If
+              - SpecifyRuleHandleActionValue3
+              - !Select [2, !Ref RuleHandleActionValues]
+              - !Ref "AWS::NoValue"
+              Port: !If
+              - SpecifyRuleHandleActionValue4
+              - !Select [3, !Ref RuleHandleActionValues]
+              - !Ref "AWS::NoValue"
+              Path: !If
+              - SpecifyRuleHandleActionValue5
+              - !Select [4, !Ref RuleHandleActionValues]
+              - !Ref "AWS::NoValue"
+              Query: !If
+              - SpecifyRuleHandleActionValue6
+              - !Select [5, !Ref RuleHandleActionValues]
+              - !Ref "AWS::NoValue"
+            - !Ref "AWS::NoValue"
+
+# Outputs: # TODO: fill in
+#   OutputName:
+#     Description: ...
+#     Value: ...
+#     Export:
+#       Name: !If [SpecifyParentStack, !Sub "${ParentStack}-...", !Sub "${AWS::StackName}-..."]

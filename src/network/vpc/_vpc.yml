@@ -1,0 +1,181 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >-
+  A standard VPC using the 10.x.x.x format of subnets with most commonly
+  required resources e.g. internet gateways, prefix lists, endpoints, etc.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Stack Parameters
+        Parameters:
+          - ParentStack
+      - Label:
+          default: VPC Parameters
+        Parameters:
+          - VPCName
+          - PrimaryCidrBlock
+          - SecondaryCidrBlock1
+          - SecondaryCidrBlock2
+          - SecondaryCidrBlock3
+          - SecondaryCidrBlock4
+          - EnableDnsHostnames
+          - EnableDnsSupport
+          - InstanceTenancy
+
+Parameters:
+  ParentStack:
+    Type: String
+    Description: (optional) If this stack is nested; name of the parent stack
+    Default: ""
+
+  VPCName:
+    Type: String
+    Description: >-
+      Name of the VPC. This is also used when naming dependant resources, e.g.
+      a name of 'foo' would result in a prefix list called foo-ipv4-primary
+    Default: ""
+
+  PrimaryCidrBlock:
+    Type: String
+    Description: The primary IPv4 CIDR block for the VPC
+    Default: "10.0.0.0/16"
+
+  SecondaryCidrBlock1:
+    Type: String
+    Description: (optional) The secondary IPv4 CIDR block for the VPC
+    Default: "10.1.0.0/16"
+
+  SecondaryCidrBlock2:
+    Type: String
+    Description: (optional) The secondary IPv4 CIDR block for the VPC
+    Default: "10.2.0.0/16"
+
+  SecondaryCidrBlock3:
+    Type: String
+    Description: (optional) The secondary IPv4 CIDR block for the VPC
+    Default: "10.3.0.0/16"
+
+  SecondaryCidrBlock4:
+    Type: String
+    Description: (optional) The secondary IPv4 CIDR block for the VPC
+    Default: "10.4.0.0/16"
+
+  EnableDnsHostnames:
+    Type: String
+    Description: >-
+      Indicates whether the instances launched in the VPC get DNS hostnames. If
+      enabled, instances in the VPC get DNS hostnames; otherwise, they do not
+    Default: true
+    AllowedValues:
+      - true
+      - false
+
+  EnableDnsSupport:
+    Type: String
+    Description: >-
+      Indicates whether the DNS resolution is supported for the VPC. If enabled,
+      queries to the Amazon provided DNS server at the 169.254.169.253 IP
+      address, or the reserved IP address at the base of the VPC network range
+      "plus two" succeed. If disabled, the Amazon provided DNS service in the
+      VPC that resolves public DNS hostnames to IP addresses is not enabled
+    Default: true
+    AllowedValues:
+      - true
+      - false
+
+  InstanceTenancy:
+    Type: String
+    Description: >-
+      The allowed tenancy of instances launched into the VPC. "default": An
+      instance launched into the VPC runs on shared hardware by default, unless
+      you explicitly specify a different tenancy during instance launch.
+      "dedicated": An instance launched into the VPC is a Dedicated Instance by
+      default, unless you explicitly specify a tenancy of host during instance
+      launch. You cannot specify a tenancy of default during instance launch.
+      NOTE: Updating InstanceTenancy requires no replacement only if you are
+      updating its value from "dedicated" to "default". Updating InstanceTenancy
+      from "default" to "dedicated" requires replacement
+    Default: default
+    AllowedValues:
+      - default
+      - dedicated
+      - host
+
+Conditions:
+  SpecifyParentStack: !Not [!Equals [!Ref ParentStack, ""]]
+  SpecifySecondaryCidrBlock1: !Not [!Equals [!Ref SecondaryCidrBlock1, ""]]
+  SpecifySecondaryCidrBlock2: !Not [!Equals [!Ref SecondaryCidrBlock2, ""]]
+  SpecifySecondaryCidrBlock3: !Not [!Equals [!Ref SecondaryCidrBlock3, ""]]
+  SpecifySecondaryCidrBlock4: !Not [!Equals [!Ref SecondaryCidrBlock4, ""]]
+
+Resources:
+
+  vpc:
+    Type: AWS::EC2::VPC
+    Properties: 
+      CidrBlock: !Ref PrimaryCidrBlock
+      EnableDnsHostnames: !Ref EnableDnsHostnames
+      EnableDnsSupport: !Ref EnableDnsSupport
+      InstanceTenancy: !Ref InstanceTenancy
+
+  internetGateway:
+    Type: "AWS::EC2::InternetGateway"
+
+  vpcInternetGatewayAttachment:
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties:
+      InternetGatewayId: !Ref internetGateway
+      VpcId: !Ref vpc
+
+  secondaryVPCCIDRBlock1:
+    Condition: SpecifySecondaryCidrBlock1
+    Type: AWS::EC2::VPCCidrBlock
+    Properties:
+      CidrBlock: !Ref SecondaryCidrBlock1
+      VpcId: !Ref vpc
+
+  secondaryVPCCIDRBlock2:
+    Condition: SpecifySecondaryCidrBlock2
+    Type: AWS::EC2::VPCCidrBlock
+    Properties:
+      CidrBlock: !Ref SecondaryCidrBlock2
+      VpcId: !Ref vpc
+
+  secondaryVPCCIDRBlock3:
+    Condition: SpecifySecondaryCidrBlock3
+    Type: AWS::EC2::VPCCidrBlock
+    Properties:
+      CidrBlock: !Ref SecondaryCidrBlock3
+      VpcId: !Ref vpc
+
+  secondaryVPCCIDRBlock4:
+    Condition: SpecifySecondaryCidrBlock4
+    Type: AWS::EC2::VPCCidrBlock
+    Properties:
+      CidrBlock: !Ref SecondaryCidrBlock4
+      VpcId: !Ref vpc
+
+Outputs:
+  vpcId:
+    Value: !Ref vpc
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-vpcId", !Sub "${AWS::StackName}-vpcId"]
+
+  vpcCidrBlocks:
+    Value: !Join
+      - ","
+      - - !GetAtt vpc.CidrBlock
+        - !If [SpecifySecondaryCidrBlock1, !Ref SecondaryCidrBlock1, ""]
+        - !If [SpecifySecondaryCidrBlock2, !Ref SecondaryCidrBlock2, ""]
+        - !If [SpecifySecondaryCidrBlock3, !Ref SecondaryCidrBlock3, ""]
+        - !If [SpecifySecondaryCidrBlock4, !Ref SecondaryCidrBlock4, ""]
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-vpcCidrBlocks", !Sub "${AWS::StackName}-vpcCidrBlocks"]
+
+  internetGatewayId:
+    Value: !GetAtt internetGateway.InternetGatewayId
+    Export:
+      Name: !If [SpecifyParentStack, !Sub "${ParentStack}-internetGatewayId", !Sub "${AWS::StackName}-internetGatewayId"]
